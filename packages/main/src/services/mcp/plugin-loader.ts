@@ -35,7 +35,15 @@ export interface LoadedPlugin {
   prompts: Map<string, { description: string; content: string; args?: Array<{ name: string; description: string; required?: boolean }> }>;
 }
 
-const loadedPlugins = new Map<string, LoadedPlugin>();
+// NOTE: 惰性初始化。esbuild 打包后模块顶层初始化被包进 __esm 延迟执行器，
+// 若该模块因循环依赖未能完成 init，模块级变量会保持 undefined。
+// 用 ensurePlugins() 访问可避免此问题，不依赖模块初始化时序。
+let loadedPlugins: Map<string, LoadedPlugin> | undefined;
+
+function ensurePlugins(): Map<string, LoadedPlugin> {
+  if (!loadedPlugins) loadedPlugins = new Map();
+  return loadedPlugins;
+}
 
 /** Get plugin search paths */
 function getPluginPaths(): string[] {
@@ -59,7 +67,8 @@ function getPluginPaths(): string[] {
 
 /** Scan and load all plugins */
 export function loadPlugins(): void {
-  loadedPlugins.clear();
+  const plugins = ensurePlugins();
+  plugins.clear();
   for (const pluginsDir of getPluginPaths()) {
     if (!fs.existsSync(pluginsDir)) continue;
     for (const entry of fs.readdirSync(pluginsDir, { withFileTypes: true })) {
@@ -102,7 +111,7 @@ export function loadPlugins(): void {
           }
         }
 
-        loadedPlugins.set(manifest.name, plugin);
+        plugins.set(manifest.name, plugin);
         console.log(`[Plugin] Loaded: ${manifest.name} v${manifest.version}`);
       } catch (err) {
         console.error(`[Plugin] Failed to load ${entry.name}:`, (err as Error).message);
@@ -113,13 +122,13 @@ export function loadPlugins(): void {
 
 /** Get all loaded plugin manifests */
 export function getLoadedPlugins(): LoadedPlugin[] {
-  return Array.from(loadedPlugins.values());
+  return Array.from(ensurePlugins().values());
 }
 
 /** Get plugin-contributed resources (merged) */
 export function getPluginResources(): Array<{ uri: string; name: string; description: string; mimeType: string }> {
   const result: Array<{ uri: string; name: string; description: string; mimeType: string }> = [];
-  for (const plugin of loadedPlugins.values()) {
+  for (const plugin of ensurePlugins().values()) {
     // Manifest-declared resources
     if (plugin.manifest.contributes.resources) {
       for (const r of plugin.manifest.contributes.resources) {
@@ -141,7 +150,7 @@ export function getPluginResources(): Array<{ uri: string; name: string; descrip
 
 /** Read a plugin resource by URI */
 export function readPluginResource(uri: string): { mimeType: string; text: string } | null {
-  for (const plugin of loadedPlugins.values()) {
+  for (const plugin of ensurePlugins().values()) {
     for (const [name, res] of plugin.resources) {
       if (uri === `qserial://docs/${plugin.manifest.name}/${name}`) {
         return { mimeType: res.mimeType, text: res.content };
@@ -162,7 +171,7 @@ export function getPluginPrompts(): Array<{
     description: string;
     arguments?: Array<{ name: string; description: string; required?: boolean }>;
   }> = [];
-  for (const plugin of loadedPlugins.values()) {
+  for (const plugin of ensurePlugins().values()) {
     if (plugin.manifest.contributes.prompts) {
       result.push(...plugin.manifest.contributes.prompts);
     }
@@ -175,7 +184,7 @@ export function getPluginPrompts(): Array<{
 
 /** Get a plugin prompt by name */
 export function getPluginPrompt(name: string): string | null {
-  for (const plugin of loadedPlugins.values()) {
+  for (const plugin of ensurePlugins().values()) {
     const prefix = `${plugin.manifest.name}/`;
     if (name.startsWith(prefix)) {
       const promptName = name.slice(prefix.length);

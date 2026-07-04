@@ -86,6 +86,7 @@ echo -e "${YELLOW}[2/3] 编译 main 包...${NC}"
   --external:uuid --external:'@serialport/*' \
   --alias:@qserial/shared=./packages/shared/src \
   --tsconfig=packages/main/tsconfig.json \
+  --banner:js="import{createRequire as __bannerCreateRequire}from'module';const require=__bannerCreateRequire(import.meta.url);" \
   || err_exit "main 编译失败"
 
 "$ESBUILD" packages/main/src/preload.ts \
