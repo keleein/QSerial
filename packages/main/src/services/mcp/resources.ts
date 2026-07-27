@@ -27,7 +27,7 @@ export const MCP_RESOURCES = [
 ];
 
 export async function readResource(uri: string): Promise<{ contents: Array<{ uri: string; mimeType: string; text?: string }> } | null> {
-  const opts = (c: { options?: Record<string, unknown> }) => c.options || {};
+  const opts = (c: { options?: unknown }) => (c.options as Record<string, unknown>) || {};
 
   switch (uri) {
     case 'qserial://connections/active': {

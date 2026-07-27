@@ -197,13 +197,13 @@ export async function startFtpServer(port: number, rootDir: string, username: st
 
     // 处理登录
     server.on('login', (data: unknown, resolve: unknown, reject: unknown) => {
+      const rejectFn = reject as (err: Error) => void;
       try {
         const loginData = data as FtpLoginData;
         const connection = loginData?.connection;
         const user = loginData?.username;
         const pass = loginData?.password;
         const resolveFn = resolve as (opts: { root: string }) => void;
-        const rejectFn = reject as (err: Error) => void;
 
         // 记录客户端连接
         const clientIp = connection?.ip || 'unknown';
@@ -239,7 +239,8 @@ export async function startFtpServer(port: number, rootDir: string, username: st
     });
 
     // 监听客户端断开
-    server.on('disconnect', ({ connection }: { connection: { id?: string } }) => {
+    server.on('disconnect', (data: unknown) => {
+      const { connection } = data as { connection?: { id?: string } };
       try {
         const clientKey = connection?.id;
         if (clientKey) {
@@ -259,7 +260,8 @@ export async function startFtpServer(port: number, rootDir: string, username: st
     });
 
     // 监听客户端错误
-    server.on('client-error', ({ error }: { error: Error }) => {
+    server.on('client-error', (data: unknown) => {
+      const { error } = data as { error?: Error };
       console.error('[FTP] Client error:', error?.message || error);
     });
 

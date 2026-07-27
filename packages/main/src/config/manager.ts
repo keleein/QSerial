@@ -40,7 +40,7 @@ class ConfigManagerImpl {
       this.config = this.mergeConfig(
         DEFAULT_CONFIG as unknown as Record<string, unknown>,
         loaded as Record<string, unknown>
-      ) as AppConfig;
+      ) as unknown as AppConfig;
       // 成功加载后立即更新备份
       try {
         const dir = path.dirname(bakPath);
@@ -83,7 +83,7 @@ class ConfigManagerImpl {
           !Array.isArray(defaultValue) &&
           defaultValue !== null
         ) {
-          result[key] = this.mergeConfig(defaultValue, userValue);
+          result[key] = this.mergeConfig(defaultValue as Record<string, unknown>, userValue as Record<string, unknown>);
         } else {
           result[key] = userValue;
         }
@@ -129,11 +129,11 @@ class ConfigManagerImpl {
   get<T = unknown>(key: string): T | undefined;
   get(key: string): unknown {
     const keys = key.split('.');
-    let value: Record<string, unknown> = this.config as unknown as Record<string, unknown>;
+    let value: unknown = this.config;
 
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {
-        value = value[k];
+        value = (value as Record<string, unknown>)[k];
       } else {
         return undefined;
       }
@@ -149,17 +149,18 @@ class ConfigManagerImpl {
   set(key: string, value: unknown): void;
   set(key: string, value: unknown): void {
     const keys = key.split('.');
-    let obj: Record<string, unknown> = this.config as unknown as Record<string, unknown>;
+    const obj = this.config as unknown as Record<string, unknown>;
+    let current: Record<string, unknown> = obj;
 
     for (let i = 0; i < keys.length - 1; i++) {
       const k = keys[i];
-      if (!(k in obj)) {
-        obj[k] = {};
+      if (!(k in current)) {
+        current[k] = {};
       }
-      obj = obj[k];
+      current = current[k] as Record<string, unknown>;
     }
 
-    obj[keys[keys.length - 1]] = value;
+    current[keys[keys.length - 1]] = value;
     this.save();
     this.eventEmitter.emit('change', key, value);
   }
@@ -169,14 +170,16 @@ class ConfigManagerImpl {
    */
   delete(key: string): void {
     const keys = key.split('.');
-    let obj: Record<string, unknown> = this.config as unknown as Record<string, unknown>;
+    let current: Record<string, unknown> | undefined = this.config as unknown as Record<string, unknown>;
 
     for (let i = 0; i < keys.length - 1; i++) {
-      obj = obj[keys[i]];
-      if (!obj) return;
+      current = current[keys[i]] as Record<string, unknown> | undefined;
+      if (!current) return;
     }
 
-    delete obj[keys[keys.length - 1]];
+    if (current) {
+      delete current[keys[keys.length - 1]];
+    }
     this.save();
   }
 
