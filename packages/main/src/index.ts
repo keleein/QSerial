@@ -285,6 +285,21 @@ async function initBackgroundServices(): Promise<void> {
   try {
     console.log('Initializing background services...');
 
+    // Linux: 主动安装 udev 规则，确保所有用户都能访问串口设备
+    // 在后台执行，不阻塞 UI（pkexec 会弹出密码对话框）
+    if (process.platform === 'linux') {
+      setTimeout(() => {
+        import('./utils/linux-serial-permissions.js')
+          .then(m => m.ensureUdevRules())
+          .then(installed => {
+            if (installed) {
+              console.log('[init] udev rules check complete - serial devices accessible');
+            }
+          })
+          .catch(() => {});
+      }, 3000); // 延迟3秒，让窗口先显示
+    }
+
     // 设置 IPC 处理器（handlers 内部使用动态 import）
     const { setupIpcHandlers } = await import('./ipc/index.js');
     setupIpcHandlers();
@@ -362,6 +377,6 @@ interface ChildProcessGoneDetails {
   serviceName?: string;
   name?: string;
 }
-app.on('child-process-gone' as keyof Electron.AppEvents, (_event: Electron.Event, details: ChildProcessGoneDetails) => {
+app.on('child-process-gone', (_event: unknown, details: ChildProcessGoneDetails) => {
   crashLog(`[CRASH] Child process gone: ${JSON.stringify(details)}`);
 });

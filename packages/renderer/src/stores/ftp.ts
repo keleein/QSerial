@@ -111,8 +111,16 @@ export const useFtpStore = create<FtpState & FtpActions>()(
           const { starting, stopping, running: currentRunning } = get();
           if (starting || stopping) return;
           if (status.running) {
+            // 同步客户端列表（补充 action/timestamp 以匹配 FtpClient 类型）
+            const clientInfos = await window.qserial.ftp.getClients();
+            const clients = (clientInfos || []).map(c => ({
+              ...c,
+              action: 'connected' as const,
+              timestamp: Date.now(),
+            }));
             set({
               running: true,
+              clients,
               config: {
                 ...get().config,
                 port: status.port,

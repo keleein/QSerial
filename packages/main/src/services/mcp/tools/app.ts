@@ -156,10 +156,10 @@ export const appHandlers: Record<string, ToolHandler> = {
 
           switch (step.type) {
             case 'send': {
-              const text = substituteVars(step.data);
+              const text = substituteVars(step.data!);
               conn.write(text);
               results.push(text.replace(/\r?\n/g, '\\n'));
-              if (step.delay > 0) await new Promise(r => setTimeout(r, step.delay));
+              if (step.delay! > 0) await new Promise(r => setTimeout(r, step.delay));
               break;
             }
             case 'wait':
@@ -167,7 +167,7 @@ export const appHandlers: Record<string, ToolHandler> = {
               results.push('(wait ' + step.ms + 'ms)');
               break;
             case 'expect': {
-              const pattern = substituteVars(step.pattern);
+              const pattern = substituteVars(step.pattern!);
               const timeout = step.timeout || 5000;
               try {
                 await expectPattern(pattern, timeout);
@@ -178,14 +178,14 @@ export const appHandlers: Record<string, ToolHandler> = {
               break;
             }
             case 'loop':
-              for (let i = 0; i < step.count; i++) {
+              for (let i = 0; i < step.count!; i++) {
                 const loopVars = { ...scopeVars, _i: String(i) };
-                await execSteps(step.steps, loopVars);
+                await execSteps(step.steps!, loopVars);
               }
               break;
             case 'if': {
               // ??????: "key op value" e.g. "retry < 3" or "count > 0" or "ok == true"
-              const cond = step.condition.trim();
+              const cond = step.condition!.trim();
               const match = cond.match(/^(\w+)\s*(==|!=|<|>|<=|>=)\s*(.+)$/);
               let result = false;
               if (match) {
@@ -202,14 +202,14 @@ export const appHandlers: Record<string, ToolHandler> = {
                 }
               }
               if (result) {
-                await execSteps(step.steps, scopeVars);
+                await execSteps(step.steps!, scopeVars);
               } else if (step.elseSteps) {
                 await execSteps(step.elseSteps, scopeVars);
               }
               break;
             }
             case 'set':
-              scopeVars[step.variable] = substituteVars(step.value);
+              scopeVars[step.variable!] = substituteVars(step.value!);
               break;
           }
         }

@@ -25,10 +25,14 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
     clearClients,
     clearTransfers,
   } = useFtpStore();
-  const [localPort, setLocalPort] = useState(config.port);
-  const [localRootDir, setLocalRootDir] = useState(config.rootDir);
-  const [localUsername, setLocalUsername] = useState(config.username);
-  const [localPassword, setLocalPassword] = useState(config.password);
+  // 安全回退：store 可能未初始化某些字段
+  const safeClients = clients || [];
+  const safeTransfers = transfers || [];
+  const safeConfig = config || { port: 2121, rootDir: '', username: 'anonymous', password: '', autoStart: false };
+  const [localPort, setLocalPort] = useState(safeConfig.port);
+  const [localRootDir, setLocalRootDir] = useState(safeConfig.rootDir);
+  const [localUsername, setLocalUsername] = useState(safeConfig.username);
+  const [localPassword, setLocalPassword] = useState(safeConfig.password);
   const [copied, setCopied] = useState('');
   const [localIp, setLocalIp] = useState('');
 
@@ -185,7 +189,7 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
               <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  checked={config.autoStart}
+                  checked={safeConfig.autoStart}
                   onChange={(e) => updateConfig({ autoStart: e.target.checked })}
                   className="dialog-checkbox w-3.5 h-3.5"
                 />
@@ -228,11 +232,11 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
                 </button>
               </div>
               <div className="flex items-center gap-3 text-xs text-text-secondary">
-                <span className="font-mono text-text-secondary/70">:{config.port}</span>
+                <span className="font-mono text-text-secondary/70">:{safeConfig.port}</span>
                 <span className="text-border/50">·</span>
-                <span className="truncate font-mono text-text-secondary/70" title={config.rootDir}>{config.rootDir}</span>
+                <span className="truncate font-mono text-text-secondary/70" title={safeConfig.rootDir}>{safeConfig.rootDir}</span>
                 <span className="text-border/50">·</span>
-                <span>{config.username === 'anonymous' ? '匿名' : config.username}</span>
+                <span>{safeConfig.username === 'anonymous' ? '匿名' : safeConfig.username}</span>
               </div>
               {error && (
                 <div className="flex items-center gap-2 text-sm text-error bg-error/10 border-l-2 border-error px-3 py-2 rounded-r-lg">
@@ -265,9 +269,9 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
                       <span className="text-[10px] text-text-secondary/40 font-mono">FTP 连接</span>
                       <button
                         onClick={() => handleCopy(
-                          config.username === 'anonymous'
+                          safeConfig.username === 'anonymous'
                             ? `ftp ${localIp || '<本机IP>'}`
-                            : `ftp ${config.username}@${localIp || '<本机IP>'}`,
+                            : `ftp ${safeConfig.username}@${localIp || '<本机IP>'}`,
                           'cmd'
                         )}
                         className="text-[10px] text-primary hover:text-primary/80 transition-colors"
@@ -277,7 +281,7 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
                     </div>
                     <div className="px-2.5 py-2 font-mono text-xs text-text">
                       <div className="leading-relaxed">
-                        <span className="text-text-secondary/40">$ </span>ftp {config.username === 'anonymous' ? localIp || '&lt;本机IP&gt;' : `${config.username}@${localIp || '<本机IP>'}`}
+                        <span className="text-text-secondary/40">$ </span>ftp {safeConfig.username === 'anonymous' ? localIp || '&lt;本机IP&gt;' : `${safeConfig.username}@${localIp || '<本机IP>'}`}
                       </div>
                     </div>
                   </div>
@@ -296,13 +300,13 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
                       <div className="flex items-center justify-between px-2 py-1.5 border-b border-border/20 bg-background/40">
                         <span className="text-[10px] text-text-secondary/40 font-mono">端口</span>
                       </div>
-                      <div className="px-2 py-2 font-mono text-xs text-text"><div className="leading-relaxed">{config.port}</div></div>
+                      <div className="px-2 py-2 font-mono text-xs text-text"><div className="leading-relaxed">{safeConfig.port}</div></div>
                     </div>
                     <div className="bg-background/70 border border-border/30 rounded-md overflow-hidden">
                       <div className="flex items-center justify-between px-2 py-1.5 border-b border-border/20 bg-background/40">
                         <span className="text-[10px] text-text-secondary/40 font-mono">认证</span>
                       </div>
-                      <div className="px-2 py-2 font-mono text-xs text-text"><div className="leading-relaxed">{config.username === 'anonymous' ? '匿名' : config.username}</div></div>
+                      <div className="px-2 py-2 font-mono text-xs text-text"><div className="leading-relaxed">{safeConfig.username === 'anonymous' ? '匿名' : safeConfig.username}</div></div>
                     </div>
                   </div>
                 </div>
@@ -313,7 +317,7 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">客户端连接</h4>
-                {clients.length > 0 && (
+                {safeClients.length > 0 && (
                   <button
                     onClick={clearClients}
                     className="text-xs text-text-secondary hover:text-text transition-colors"
@@ -322,15 +326,15 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
                   </button>
                 )}
               </div>
-              <div className="border border-border/50 rounded-lg bg-background/50 overflow-y-auto" style={{ minHeight: clients.length > 0 ? 'auto' : '56px' }}>
-                {clients.length === 0 ? (
+              <div className="border border-border/50 rounded-lg bg-background/50 overflow-y-auto" style={{ minHeight: safeClients.length > 0 ? 'auto' : '56px' }}>
+                {safeClients.length === 0 ? (
                   <div className="flex flex-col items-center justify-center gap-1.5 py-3 text-text-secondary/30">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     <span className="text-xs">等待客户端连接</span>
                   </div>
                 ) : (
                   <div className="divide-y divide-border/50">
-                    {clients.map((client, index) => (
+                    {safeClients.map((client: { address: string; userName?: string }, index: number) => (
                       <div key={index} className="p-2 text-sm">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
@@ -354,7 +358,7 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
             </div>
 
             {/* 传输记录 */}
-            {transfers.length > 0 && (
+            {safeTransfers.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">传输记录</h4>
@@ -367,7 +371,7 @@ export const FtpDialog: React.FC<FtpDialogProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="border border-border/50 rounded-lg bg-background/50 max-h-32 overflow-y-auto">
                   <div className="divide-y divide-border/50">
-                    {transfers.map((t) => (
+                    {safeTransfers.map((t: { id: string; direction: string; file: string; status: string; percent?: number; fileSize?: number; remoteAddress?: string }) => (
                       <div key={t.id} className="p-2 text-xs">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">

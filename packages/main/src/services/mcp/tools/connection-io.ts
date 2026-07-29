@@ -381,7 +381,6 @@ export const connIOHandlers: Record<string, ToolHandler> = {
         await ctx.sleep(delayMs);
       }
 
-      const meta = `file=${localPath}, lines=${lines.length}, bytes=${totalWritten}B, ts=${Date.now()}`;
       return formatOk({
         sent_lines: lines.length,
         total_bytes: totalWritten,

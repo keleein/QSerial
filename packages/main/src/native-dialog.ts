@@ -4,19 +4,27 @@
  * Electron 的 dialog.showOpenDialog/showSaveDialog 在 Windows 上与 frameless 窗口交互时
  * 会导致 GPU 进程崩溃（特别是在创建新文件夹后选择目录时）。
  *
- * 此模块使用 PowerShell 的 System.Windows.Forms.FolderBrowserDialog / OpenFileDialog / SaveFileDialog
+ * 在 Windows 上使用 PowerShell 的 System.Windows.Forms.FolderBrowserDialog / OpenFileDialog / SaveFileDialog
  * 在独立子进程中显示原生对话框，完全绕过 Electron 的原生对话框实现。
+ *
+ * 在 Linux / macOS 上直接使用 Electron 的 dialog API（无 GPU 兼容问题）。
  */
 
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { app } from 'electron';
+import { app, dialog, BrowserWindow } from 'electron';
 
 /**
- * 通过 PowerShell FolderBrowserDialog 选择目录
+ * 通过对话框选择目录
+ * Windows: PowerShell FolderBrowserDialog（避免 GPU 崩溃）
+ * Linux/macOS: Electron dialog.showOpenDialog
  */
 export async function pickFolder(title: string): Promise<string | null> {
+  if (process.platform !== 'win32') {
+    return electronPickFolder(title);
+  }
+
   const ps = `
 Add-Type -AssemblyName System.Windows.Forms
 $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
@@ -35,9 +43,15 @@ $dialog.Dispose()
 }
 
 /**
- * 通过 PowerShell OpenFileDialog 选择文件
+ * 通过对话框选择文件
+ * Windows: PowerShell OpenFileDialog
+ * Linux/macOS: Electron dialog.showOpenDialog
  */
 export async function pickFile(title: string, filters?: Array<{ name: string; extensions: string[] }>): Promise<string | null> {
+  if (process.platform !== 'win32') {
+    return electronPickFile(title, filters);
+  }
+
   const filterStr = filters
     ? filters.map(f => `${f.name}|${f.extensions.map(e => e === '*' ? '*.*' : `*.${e}`).join(';')}`).join('|')
     : 'All Files|*.*';
@@ -60,13 +74,19 @@ $dialog.Dispose()
 }
 
 /**
- * 通过 PowerShell SaveFileDialog 选择保存路径
+ * 通过对话框选择保存路径
+ * Windows: PowerShell SaveFileDialog
+ * Linux/macOS: Electron dialog.showSaveDialog
  */
 export async function pickSaveFile(
   title: string,
   defaultName?: string,
   filters?: Array<{ name: string; extensions: string[] }>
 ): Promise<string | null> {
+  if (process.platform !== 'win32') {
+    return electronPickSaveFile(title, defaultName, filters);
+  }
+
   const filterStr = filters
     ? filters.map(f => `${f.name}|${f.extensions.map(e => e === '*' ? '*.*' : `*.${e}`).join(';')}`).join('|')
     : 'All Files|*.*';
@@ -86,6 +106,45 @@ $dialog.Dispose()
 `.trim();
 
   return runPowerShell(ps);
+}
+
+/**
+ * Electron 原生对话框（Linux / macOS 回退方案）
+ */
+async function electronPickFolder(title: string): Promise<string | null> {
+  const win = BrowserWindow.getFocusedWindow() ?? undefined;
+  const result = await dialog.showOpenDialog(win as Electron.BrowserWindow, {
+    title,
+    properties: ['openDirectory', 'createDirectory'],
+  });
+  return result.canceled ? null : result.filePaths[0] || null;
+}
+
+async function electronPickFile(
+  title: string,
+  filters?: Array<{ name: string; extensions: string[] }>
+): Promise<string | null> {
+  const win = BrowserWindow.getFocusedWindow() ?? undefined;
+  const result = await dialog.showOpenDialog(win as Electron.BrowserWindow, {
+    title,
+    filters,
+    properties: ['openFile'],
+  });
+  return result.canceled ? null : result.filePaths[0] || null;
+}
+
+async function electronPickSaveFile(
+  title: string,
+  defaultName?: string,
+  filters?: Array<{ name: string; extensions: string[] }>
+): Promise<string | null> {
+  const win = BrowserWindow.getFocusedWindow() ?? undefined;
+  const result = await dialog.showSaveDialog(win as Electron.BrowserWindow, {
+    title,
+    defaultPath: defaultName,
+    filters,
+  });
+  return result.canceled ? null : result.filePath || null;
 }
 
 /**
