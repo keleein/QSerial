@@ -11,7 +11,7 @@ sequenceDiagram
     participant IPC as Electron Main
     participant HW as Hardware Device
 
-    AI->>MCP: tools/list (discover 43 tools)
+    AI->>MCP: tools/list (discover 47 tools)
     MCP-->>AI: 9 namespaces: conn, sftp, device, etc.
 
     AI->>MCP: conn.create (serial COM3, 115200)
@@ -70,7 +70,7 @@ Add to your AI client's MCP configuration:
 | Styling | Tailwind CSS |
 | State | Zustand + immer |
 | Protocol | MCP (Model Context Protocol) over Streamable HTTP / SSE |
-| Testing | Vitest (97 tests) |
+| Testing | Vitest (135 tests) |
 | Build | electron-builder, Vite, pnpm workspace |
 
 ## Project Structure

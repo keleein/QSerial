@@ -1,5 +1,5 @@
 /**
- * MCP AI 服务器对话框 — 28 个工具 + Resources + Prompts + Notifications + Sampling + 控制面板
+ * MCP AI 服务器对话框 — 47 个工具 + Resources + Prompts + Notifications + Sampling + 控制面板
  */
 
 import React, { useEffect, useState } from "react";
@@ -35,17 +35,16 @@ const ALL_TOOLS = [
   { name: "conn.analyze.state", cat: "analyze", desc: "Analyze connection state (login/shell/booting/idle)", inputs: "id" },
   { name: "conn.analyze.probe", cat: "analyze", desc: "Auto-detect device type (ESP32/STM32/RPi/Cisco/Arduino/BusyBox)", inputs: "id, timeout_ms?" },
   { name: "conn.analyze.report", cat: "analyze", desc: "Generate session summary (duration, commands, bytes)", inputs: "id" },
-  // conn.file.* — 文件传输 (1)
+  // conn.file.* — 文件传输 (2)
   { name: "conn.file.send", cat: "file", desc: "Send file via XMODEM/YMODEM protocol", inputs: "id, file_path, protocol?" },
+  { name: "conn.file.write", cat: "file", desc: "Send local text file line-by-line via echo/printf", inputs: "id, localPath, remote_path?, write_cmd?, chunk_size?, delay_ms?" },
   // device.* — 设备发现 (1)
   { name: "device.ports", cat: "discover", desc: "List available serial ports on this machine", inputs: "(none)" },
   // session.* — 会话管理 (3)
   { name: "session.list", cat: "session", desc: "List saved connection sessions with full config", inputs: "(none)" },
   { name: "session.save", cat: "session", desc: "Save current connection as a session (auto-detect type from id)", inputs: "id, name" },
   { name: "session.delete", cat: "session", desc: "Delete a saved session", inputs: "session_id" },
-  // conn.watch.* (3)
-  { name: "conn.watch.start", cat: "watch", desc: "Monitor connection for patterns, sends data_alert notifications", inputs: "id, rules[], duration_ms?" },
-  { name: "conn.watch.stop", cat: "watch", desc: "Stop a running watch", inputs: "watch_id" },
+  // conn.watch.* (1)
   { name: "conn.watch.results", cat: "watch", desc: "Get persisted watch alerts with timestamps", inputs: "watch_id?" },
   // conn.record.* (4)
   { name: "conn.record.start", cat: "record", desc: "Start recording terminal output with timestamps", inputs: "id" },
@@ -61,8 +60,13 @@ const ALL_TOOLS = [
   { name: "sftp.mkdir", cat: "sftp", desc: "Create directory on remote host", inputs: "sftp_id, path" },
   { name: "sftp.stat", cat: "sftp", desc: "Get file metadata (size, permissions)", inputs: "sftp_id, path" },
   { name: "sftp.rm", cat: "sftp", desc: "Delete file or directory on remote host", inputs: "sftp_id, path" },
-    // app.* — 应用工具 (1)
+    // app.* — 应用工具 (6)
   { name: "app.screenshot", cat: "app", desc: "Capture terminal window screenshot", inputs: "id?" },
+  { name: "app.macro.list", cat: "app", desc: "List saved terminal macros", inputs: "(none)" },
+  { name: "app.macro.run", cat: "app", desc: "Run a saved macro on a connection", inputs: "id, name" },
+  { name: "app.record.start", cat: "app", desc: "Start screen recording of the application window", inputs: "fps?" },
+  { name: "app.record.stop", cat: "app", desc: "Stop screen recording and encode to MP4", inputs: "recording_id, output?" },
+  { name: "app.record.list", cat: "app", desc: "List active screen recordings", inputs: "(none)" },
 ];
 
 const CATEGORIES: Record<string, { label: string; icon: string }> = {

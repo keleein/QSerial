@@ -25,7 +25,7 @@ QSerial/
 | `pnpm run dev` | Full dev mode: builds all packages, starts Vite (port 5173), then Electron |
 | `pnpm start` | Launch Electron with pre-built renderer (no Vite) |
 | `pnpm run build` | Build shared → main → renderer sequentially |
-| `pnpm test` | Run all vitest tests (8 suites, ~97 cases) |
+| `pnpm test` | Run all vitest tests (13 suites, ~135 cases) |
 | `pnpm run test:coverage` | Run tests with V8 coverage (shared/src threshold: 85%) |
 | `pnpm run lint` | ESLint on all source packages |
 | `pnpm run lint:fix` | ESLint with auto-fix |
@@ -38,7 +38,7 @@ Tests live in `packages/*/__tests__/` matching the source structure. Use `descri
 
 - **Indentation**: 2 spaces (see `.editorconfig`)
 - **Quotes**: single quotes, semicolons required
-- **TypeScript**: strict mode disabled, `no-explicit-any` is a warning
+- **TypeScript**: strict mode disabled, `no-explicit-any` is an error
 - **Linting**: ESLint with `@typescript-eslint/recommended` + Prettier
 - **Formatting**: Prettier before commit (`pnpm run format`)
 - **Styling**: Tailwind CSS for all UI components

@@ -4,7 +4,7 @@
  * 测试策略：由于函数内部直接 import node:fs 和 node:child_process，
  * 我们通过 vi.mock 在模块加载前拦截这些依赖。
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // vi.mock 被 hoisted，共享状态需要用 vi.hoisted 包裹
 const { mockFs, mockSpawnExitCode } = vi.hoisted(() => {
@@ -64,8 +64,23 @@ import {
   __resetUdevState,
 } from '../../src/utils/linux-serial-permissions.js';
 
+// process.platform is 'win32' on Windows, which makes the module skip its logic.
+// Pin it to 'linux' so the tests exercise the real Linux path on every OS.
+const originalPlatformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
+
+function mockLinuxPlatform(): void {
+  Object.defineProperty(process, 'platform', { value: 'linux', configurable: true });
+}
+
+function restorePlatform(): void {
+  if (originalPlatformDescriptor) {
+    Object.defineProperty(process, 'platform', originalPlatformDescriptor);
+  }
+}
+
 describe('linux-serial-permissions', () => {
   beforeEach(() => {
+    mockLinuxPlatform();
     vi.clearAllMocks();
     mockSpawnExitCode.value = 0;
     __resetUdevState();
@@ -74,6 +89,10 @@ describe('linux-serial-permissions', () => {
     mockFs.existsSync.mockReturnValue(false);
     mockFs.readFileSync.mockReturnValue('');
     mockFs.accessSync.mockReturnValue(undefined); // 默认有权限
+  });
+
+  afterEach(() => {
+    restorePlatform();
   });
 
   describe('getPermissionErrorHint', () => {

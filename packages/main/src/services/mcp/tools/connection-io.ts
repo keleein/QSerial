@@ -352,7 +352,7 @@ export const connIOHandlers: Record<string, ToolHandler> = {
       const MAX_CHUNK = Math.min(chunkSize, 256);
 
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        const line = lines[i];
         // 跳过空行（保留文件结构）
         if (line === '' && i === lines.length - 1) break;
 
