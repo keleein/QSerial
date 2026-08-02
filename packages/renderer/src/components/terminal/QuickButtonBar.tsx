@@ -115,7 +115,7 @@ const ButtonDialog: React.FC<ButtonDialogProps> = ({ isOpen, onClose, editingBut
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="dialog-input"
-                placeholder="按钮名称"
+                placeholder={t('quickButtons.buttonNamePlaceholder')}
                 autoFocus
               />
             </div>
@@ -128,7 +128,7 @@ const ButtonDialog: React.FC<ButtonDialogProps> = ({ isOpen, onClose, editingBut
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="dialog-input"
-                placeholder="可选"
+                placeholder={t('quickButtons.optionalPlaceholder')}
               />
             </div>
           </div>
@@ -142,7 +142,7 @@ const ButtonDialog: React.FC<ButtonDialogProps> = ({ isOpen, onClose, editingBut
               value={command}
               onChange={(e) => setCommand(e.target.value)}
               className="dialog-input min-h-[72px] resize-y"
-              placeholder={'要发送的命令（每行一条，支持 \\xHH \\n \\r 转义）'}
+              placeholder={t('quickButtons.commandPlaceholder')}
               rows={3}
             />
             <div className="flex items-center gap-3 mt-1.5">
@@ -153,7 +153,7 @@ const ButtonDialog: React.FC<ButtonDialogProps> = ({ isOpen, onClose, editingBut
                   onChange={(e) => setNoNewline(e.target.checked)}
                   className="dialog-checkbox w-3.5 h-3.5"
                 />
-                不追加换行
+                {t('quickButtons.noNewline')}
               </label>
               {command.includes('\n') && (
                 <label className="flex items-center gap-1.5 text-[11px] text-text-secondary">
@@ -270,7 +270,7 @@ const ButtonDialog: React.FC<ButtonDialogProps> = ({ isOpen, onClose, editingBut
             disabled={!name.trim() || !command.trim()}
             className="dialog-btn dialog-btn-primary text-xs px-4 py-1.5"
           >
-            保存
+            {t('quickButtons.save')}
           </button>
         </div>
       </div>
@@ -302,7 +302,9 @@ const GroupDialog: React.FC<GroupDialogProps> = ({ isOpen, onClose, editingGroup
     <div className="dialog-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-surface border border-border/80 rounded-xl shadow-md w-[360px]">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h3 className="text-sm font-medium">{editingGroup ? '编辑分组' : '新建分组'}</h3>
+          <h3 className="text-sm font-medium">
+            {editingGroup ? t('quickButtons.editGroup') : t('quickButtons.newGroup')}
+          </h3>
         </div>
         <div className="p-4">
           <label className="block text-xs text-text-secondary mb-1.5 font-medium">
@@ -313,7 +315,7 @@ const GroupDialog: React.FC<GroupDialogProps> = ({ isOpen, onClose, editingGroup
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="dialog-input"
-            placeholder="分组名称"
+            placeholder={t('quickButtons.groupName')}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSave();
@@ -329,7 +331,7 @@ const GroupDialog: React.FC<GroupDialogProps> = ({ isOpen, onClose, editingGroup
             disabled={!name.trim()}
             className="dialog-btn dialog-btn-primary text-xs px-4 py-1.5"
           >
-            保存
+            {t('quickButtons.save')}
           </button>
         </div>
       </div>
@@ -547,8 +549,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
     if (!contextMenu) return;
     const group = groups.find((g) => g.id === contextMenu.groupId);
     if (!group) return;
-    if (!window.confirm(`确定要删除分组「${group.name}」吗？\n分组内的所有按钮将被一并删除。`))
-      return;
+    if (!window.confirm(t('quickButtons.deleteGroupConfirm', { name: group.name }))) return;
     removeGroup(contextMenu.groupId);
     setContextMenu(null);
   };
@@ -618,7 +619,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
             >
               {groups.length === 0 ? (
                 <option value={-1} disabled>
-                  暂无分组
+                  {t('quickButtons.noGroups')}
                 </option>
               ) : (
                 groups.map((group: ButtonGroup, index: number) => (
@@ -632,7 +633,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
               <button
                 onClick={handleGroupMenuClick}
                 className="h-6 w-5 rounded hover:bg-hover transition-colors flex items-center justify-center flex-shrink-0 text-text-secondary/40 hover:text-text-secondary"
-                title="分组操作"
+                title={t('quickButtons.groupActions')}
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                   <circle cx="5" cy="2" r="0.9" />
@@ -644,7 +645,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
             <button
               onClick={() => setDirection?.('horizontal')}
               className="h-6 w-6 text-xs rounded-md border border-border hover:bg-hover hover:border-text-secondary transition-colors flex items-center justify-center flex-shrink-0 text-text-secondary"
-              title="切换为水平布局"
+              title={t('quickButtons.horizontalLayout')}
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <rect x="1" y="1.5" width="10" height="2" rx="0.5" fill="currentColor" />
@@ -698,8 +699,8 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                       title={
                         button.description ||
                         (button.commands?.length
-                          ? `发送 ${button.commands.length} 条命令`
-                          : `发送: ${button.command}`)
+                          ? t('quickButtons.sendCommands', { count: button.commands.length })
+                          : t('quickButtons.send', { command: button.command }))
                       }
                       onMouseEnter={(e) => {
                         if (fc) {
@@ -732,7 +733,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                     setShowButtonDialog(true);
                   }}
                   className="h-7 w-full text-xs rounded-md border border-dashed border-border hover:bg-hover hover:border-text-secondary transition-colors flex items-center justify-center gap-1 text-text-tertiary"
-                  title="添加按钮"
+                  title={t('quickButtons.addButtonTitle')}
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                     <path
@@ -742,13 +743,13 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span>添加</span>
+                  <span>{t('quickButtons.add')}</span>
                 </button>
               </div>
             ) : (
               <div className="p-2">
                 <span className="text-[11px] text-text-tertiary/60 italic leading-snug">
-                  创建终端连接后可发送快捷命令
+                  {t('quickButtons.createTerminalHint')}
                 </span>
               </div>
             )}
@@ -762,7 +763,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                 setShowGroupDialog(true);
               }}
               className="h-7 w-full text-xs rounded-md border border-dashed border-border hover:bg-hover hover:border-text-secondary transition-colors flex items-center justify-center gap-1 text-text-tertiary"
-              title="添加分组"
+              title={t('quickButtons.addGroupTitle')}
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path
@@ -772,7 +773,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   strokeLinecap="round"
                 />
               </svg>
-              分组
+              {t('quickButtons.group')}
             </button>
           </div>
         </div>
@@ -795,7 +796,9 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                 fill="none"
               />
             </svg>
-            <span className="text-[11px] text-text-secondary/50 font-medium">组</span>
+            <span className="text-[11px] text-text-secondary/50 font-medium">
+              {t('quickButtons.group')}
+            </span>
             <select
               value={groups.length > 0 ? activeGroupIndex : -1}
               onChange={(e) => setActiveGroupIndex(Number(e.target.value))}
@@ -822,7 +825,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
             >
               {groups.length === 0 ? (
                 <option value={-1} disabled>
-                  暂无分组
+                  {t('quickButtons.noGroups')}
                 </option>
               ) : (
                 groups.map((group: ButtonGroup, index: number) => (
@@ -836,7 +839,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
               <button
                 onClick={handleGroupMenuClick}
                 className="h-6 w-4 rounded hover:bg-hover transition-colors flex items-center justify-center flex-shrink-0 text-text-secondary/20 hover:text-text-secondary/50"
-                title="分组操作"
+                title={t('quickButtons.groupActions')}
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                   <circle cx="5" cy="2" r="0.8" />
@@ -891,8 +894,8 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                     title={
                       button.description ||
                       (button.commands?.length
-                        ? `发送 ${button.commands.length} 条命令`
-                        : `发送: ${button.command}`)
+                        ? t('quickButtons.sendCommands', { count: button.commands.length })
+                        : t('quickButtons.send', { command: button.command }))
                     }
                     onMouseEnter={(e) => {
                       if (fc) {
@@ -925,7 +928,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   setShowButtonDialog(true);
                 }}
                 className="h-[26px] w-[26px] text-xs rounded-md border border-dashed border-border hover:bg-hover hover:border-text-secondary transition-colors flex items-center justify-center flex-shrink-0 text-text-tertiary hover:text-text-secondary"
-                title="添加按钮"
+                title={t('quickButtons.addButtonTitle')}
               >
                 <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
                   <path
@@ -955,7 +958,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                 />
               </svg>
               <span className="text-[11px] text-text-tertiary/50 px-0.5 truncate">
-                连接终端后使用快捷命令
+                {t('quickButtons.connectTerminalHint')}
               </span>
             </div>
           )}
@@ -965,7 +968,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
             <button
               onClick={() => setDirection?.('vertical')}
               className="h-[26px] w-[26px] text-xs rounded-md border border-border hover:bg-hover hover:border-text-secondary transition-colors flex items-center justify-center flex-shrink-0 text-text-secondary/60 hover:text-text-secondary"
-              title="切换为垂直布局"
+              title={t('quickButtons.verticalLayout')}
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <rect x="0.5" y="0.5" width="4" height="4" rx="0.5" fill="currentColor" />
@@ -988,7 +991,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                 setShowGroupDialog(true);
               }}
               className="h-[26px] w-[26px] text-xs rounded-md border border-dashed border-border hover:bg-hover hover:border-text-secondary transition-colors flex items-center justify-center flex-shrink-0 text-text-tertiary hover:text-text-secondary"
-              title="添加分组"
+              title={t('quickButtons.addGroupTitle')}
             >
               <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
                 <path
@@ -1058,13 +1061,13 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   onClick={handleEditButton}
                   className="w-full px-3 py-1.5 text-left text-sm hover:bg-hover"
                 >
-                  编辑
+                  {t('common.edit')}
                 </button>
                 <button
                   onClick={handleDeleteButton}
                   className="w-full px-3 py-1.5 text-left text-sm text-error hover:bg-hover"
                 >
-                  删除
+                  {t('common.delete')}
                 </button>
                 <div className="my-1 border-t border-border" />
                 <button
@@ -1086,7 +1089,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   disabled={contextMenu.buttonIndex === 0}
                   className="w-full px-3 py-1.5 text-left text-sm hover:bg-hover disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  左移
+                  {t('quickButtons.moveLeft')}
                 </button>
                 <button
                   onClick={() => {
@@ -1111,7 +1114,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   }
                   className="w-full px-3 py-1.5 text-left text-sm hover:bg-hover disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  右移
+                  {t('quickButtons.moveRight')}
                 </button>
               </>
             ) : (
@@ -1120,7 +1123,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   onClick={handleEditGroup}
                   className="w-full px-3 py-1.5 text-left text-sm hover:bg-hover"
                 >
-                  编辑分组
+                  {t('quickButtons.editGroupMenu')}
                 </button>
                 <button
                   onClick={handleDeleteGroup}
@@ -1139,7 +1142,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   disabled={contextMenu.groupIndex === 0}
                   className="w-full px-3 py-1.5 text-left text-sm hover:bg-hover disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  左移
+                  {t('quickButtons.moveLeft')}
                 </button>
                 <button
                   onClick={() => {
@@ -1158,7 +1161,7 @@ export const QuickButtonBar: React.FC<QuickButtonBarProps> = ({ direction: direc
                   }
                   className="w-full px-3 py-1.5 text-left text-sm hover:bg-hover disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  右移
+                  {t('quickButtons.moveRight')}
                 </button>
               </>
             )}

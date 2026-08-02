@@ -174,7 +174,7 @@ export const Sidebar: React.FC = () => {
       const connectionId = crypto.randomUUID();
       await window.qserial.connection.create({
         id: connectionId,
-        name: '本地终端',
+        name: t('sidebar.localTerminal'),
         type: ConnectionType.PTY,
         shell: options.shell,
         cwd: options.cwd,
@@ -184,13 +184,17 @@ export const Sidebar: React.FC = () => {
         reconnectInterval: terminalConfig.reconnectInterval,
         reconnectAttempts: terminalConfig.reconnectAttempts,
       });
-      sessionId = await connectWithCleanup(connectionId, '本地终端', ConnectionType.PTY);
+      sessionId = await connectWithCleanup(
+        connectionId,
+        t('sidebar.localTerminal'),
+        ConnectionType.PTY
+      );
     } catch (error) {
-      globalError.show('创建终端失败: ' + (error as Error).message);
+      globalError.show(t('sidebar.createTerminalFailed', { message: (error as Error).message }));
     }
     if (options.saveConfig) {
       const savedId = addSession({
-        name: options.configName || '本地终端',
+        name: options.configName || t('sidebar.localTerminal'),
         type: 'pty',
         ptyConfig: { shell: options.shell, cwd: options.cwd },
       });
@@ -214,7 +218,7 @@ export const Sidebar: React.FC = () => {
       const connectionId = crypto.randomUUID();
       await window.qserial.connection.create({
         id: connectionId,
-        name: `串口 ${options.path}`,
+        name: t('sidebar.serialName', { path: options.path }),
         type: ConnectionType.SERIAL,
         path: options.path,
         baudRate: options.baudRate,
@@ -227,16 +231,16 @@ export const Sidebar: React.FC = () => {
       });
       sessionId = await connectWithCleanup(
         connectionId,
-        `串口 ${options.path}`,
+        t('sidebar.serialName', { path: options.path }),
         ConnectionType.SERIAL,
         options.path
       );
     } catch (error) {
-      globalError.show('创建串口连接失败: ' + (error as Error).message);
+      globalError.show(t('sidebar.createSerialFailed', { message: (error as Error).message }));
     }
     if (options.saveConfig && sessionId) {
       const savedId = addSession({
-        name: options.configName || `串口 ${options.path}`,
+        name: options.configName || t('sidebar.serialName', { path: options.path }),
         type: 'serial',
         serialConfig: {
           path: options.path,
@@ -288,7 +292,7 @@ export const Sidebar: React.FC = () => {
             cfg.id
           );
         } catch (error) {
-          globalError.show('快速连接失败: ' + (error as Error).message);
+          globalError.show(t('sidebar.quickConnectFailed', { message: (error as Error).message }));
         }
         setConnectingType(null);
         return;
@@ -321,7 +325,9 @@ export const Sidebar: React.FC = () => {
             cfg.id
           );
         } catch (error) {
-          globalError.show('SSH 快速连接失败: ' + (error as Error).message);
+          globalError.show(
+            t('sidebar.sshQuickConnectFailed', { message: (error as Error).message })
+          );
         }
         setConnectingType(null);
         return;
@@ -350,7 +356,9 @@ export const Sidebar: React.FC = () => {
             cfg.id
           );
         } catch (error) {
-          globalError.show('Telnet 快速连接失败: ' + (error as Error).message);
+          globalError.show(
+            t('sidebar.telnetQuickConnectFailed', { message: (error as Error).message })
+          );
         }
         setConnectingType(null);
         return;
@@ -381,7 +389,9 @@ export const Sidebar: React.FC = () => {
             cfg.id
           );
         } catch (error) {
-          globalError.show('本地终端快速连接失败: ' + (error as Error).message);
+          globalError.show(
+            t('sidebar.ptyQuickConnectFailed', { message: (error as Error).message })
+          );
         }
         setConnectingType(null);
         return;
@@ -439,7 +449,7 @@ export const Sidebar: React.FC = () => {
         options.host
       );
     } catch (error) {
-      globalError.show('SSH 连接失败: ' + (error as Error).message);
+      globalError.show(t('sidebar.sshConnectFailed', { message: (error as Error).message }));
     }
     if (options.saveConfig && sessionId) {
       const savedId = addSession({
@@ -487,7 +497,7 @@ export const Sidebar: React.FC = () => {
         options.host
       );
     } catch (error) {
-      globalError.show('Telnet 连接失败: ' + (error as Error).message);
+      globalError.show(t('sidebar.telnetConnectFailed', { message: (error as Error).message }));
     }
     if (options.saveConfig && sessionId) {
       const savedId = addSession({
@@ -628,7 +638,7 @@ export const Sidebar: React.FC = () => {
           <path d="M9 11.5h2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
         </svg>
       ),
-      label: connectingType === 'pty' ? '连接中...' : '本地终端',
+      label: connectingType === 'pty' ? t('terminal.connecting') : t('sidebar.localTerminal'),
       onClick: () => setShowPtyDialog(true),
       disabled: connectingType === 'pty',
     },
@@ -648,7 +658,7 @@ export const Sidebar: React.FC = () => {
           />
         </svg>
       ),
-      label: '串口连接',
+      label: t('sidebar.serialConnect'),
       onClick: () => setShowSerialDialog(true),
       disabled: connectingType === 'serial',
     },
@@ -669,7 +679,7 @@ export const Sidebar: React.FC = () => {
           <circle cx="12" cy="6" r="0.8" fill="currentColor" opacity="0.5" />
         </svg>
       ),
-      label: 'SSH 连接',
+      label: t('sidebar.sshConnect'),
       onClick: () => setShowSshDialog(true),
       disabled: connectingType === 'ssh',
     },
@@ -686,7 +696,7 @@ export const Sidebar: React.FC = () => {
           <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2" />
         </svg>
       ),
-      label: 'Telnet 连接',
+      label: t('sidebar.telnetConnect'),
       onClick: () => setShowTelnetDialog(true),
       disabled: connectingType === 'telnet',
     },
@@ -699,7 +709,7 @@ export const Sidebar: React.FC = () => {
         <button
           onClick={() => setIsCollapsed(false)}
           className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-hover text-text-secondary transition-colors mb-2"
-          title="展开侧边栏"
+          title={t('sidebar.expandSidebar')}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
             <path
@@ -779,7 +789,7 @@ export const Sidebar: React.FC = () => {
         <button
           onClick={() => window.dispatchEvent(new CustomEvent('qserial:open-settings'))}
           className="w-5 h-5 flex items-center justify-center rounded hover:bg-hover text-text-secondary/50 hover:text-text-secondary transition-colors"
-          title="设置"
+          title={t('common.settings')}
         >
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="2.2" stroke="currentColor" strokeWidth="1" />
@@ -794,7 +804,7 @@ export const Sidebar: React.FC = () => {
         <button
           onClick={() => setIsCollapsed(true)}
           className="w-5 h-5 flex items-center justify-center rounded hover:bg-hover text-text-secondary transition-colors"
-          title="折叠侧边栏"
+          title={t('sidebar.collapseSidebar')}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path
@@ -837,7 +847,7 @@ export const Sidebar: React.FC = () => {
           <h3 className="section-header">{t('sidebar.savedSessions')}</h3>
           {savedSessions.length === 0 ? (
             <div className="text-xs text-text-secondary px-2 py-3 text-center opacity-60">
-              暂无保存的配置
+              {t('sidebar.noSavedSessions')}
             </div>
           ) : (
             <div className="flex flex-col gap-0.5">
@@ -1091,7 +1101,7 @@ export const Sidebar: React.FC = () => {
               <button
                 onClick={() => {
                   addSession({
-                    name: contextMenu.session.name + ' - 副本',
+                    name: contextMenu.session.name + t('sidebar.duplicateSuffix'),
                     type: contextMenu.session.type,
                     sshConfig: contextMenu.session.sshConfig
                       ? { ...contextMenu.session.sshConfig }

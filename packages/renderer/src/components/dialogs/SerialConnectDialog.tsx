@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SerialPortInfo } from '@qserial/shared';
 import type { SavedSession } from '@/stores/sessions';
 
@@ -26,18 +27,13 @@ export interface SerialConnectOptions {
 const BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 const DATA_BITS = [5, 6, 7, 8] as const;
 const STOP_BITS = [1, 1.5, 2] as const;
-const PARITY_OPTIONS = [
-  { value: 'none', label: '无' },
-  { value: 'even', label: '偶校验' },
-  { value: 'odd', label: '奇校验' },
-] as const;
-
 export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
   isOpen,
   onClose,
   onConnect,
   editSession,
 }) => {
+  const { t } = useTranslation();
   const [ports, setPorts] = useState<SerialPortInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +45,11 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
   const [parity, setParity] = useState<'none' | 'even' | 'odd' | 'mark' | 'space'>('none');
   const [saveConfig, setSaveConfig] = useState(false);
   const [configName, setConfigName] = useState('');
+  const PARITY_OPTIONS = [
+    { value: 'none', label: t('dialogs.serialConnect.parityNone') },
+    { value: 'even', label: t('dialogs.serialConnect.parityEven') },
+    { value: 'odd', label: t('dialogs.serialConnect.parityOdd') },
+  ] as const;
 
   // 加载串口列表
   useEffect(() => {
@@ -80,7 +81,7 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
         setSelectedPort(portList[0].path);
       }
     } catch (err) {
-      setError('获取串口列表失败: ' + (err as Error).message);
+      setError(t('dialogs.serialConnect.fetchFailed', { message: (err as Error).message }));
     } finally {
       setLoading(false);
     }
@@ -88,7 +89,7 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
 
   const handleConnect = () => {
     if (!selectedPort) {
-      setError('请选择串口');
+      setError(t('dialogs.serialConnect.selectPortFirst'));
       return;
     }
 
@@ -126,7 +127,11 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
               <line x1="12" y1="19" x2="12" y2="22" />
               <line x1="8" y1="22" x2="16" y2="22" />
             </svg>
-            <h2 className="text-base font-semibold">{editSession ? '编辑串口配置' : '串口连接'}</h2>
+            <h2 className="text-base font-semibold">
+              {editSession
+                ? t('dialogs.serialConnect.editTitle')
+                : t('dialogs.serialConnect.title')}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -149,7 +154,9 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
         <div className="p-5 space-y-4">
           {/* 串口选择 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">串口</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.serialConnect.port')}
+            </label>
             <div className="flex gap-2">
               <select
                 value={selectedPort}
@@ -158,7 +165,7 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
                 disabled={loading || ports.length === 0}
               >
                 {ports.length === 0 ? (
-                  <option value="">未检测到串口</option>
+                  <option value="">{t('dialogs.serialConnect.noPortsDetected')}</option>
                 ) : (
                   ports.map((port) => (
                     <option key={port.path} value={port.path}>
@@ -172,7 +179,7 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
                 onClick={loadPorts}
                 disabled={loading}
                 className="dialog-btn dialog-btn-secondary px-3 flex items-center gap-1.5 disabled:opacity-50"
-                title="刷新串口列表"
+                title={t('dialogs.serialConnect.refreshTitle')}
               >
                 <svg
                   width="14"
@@ -185,14 +192,16 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
                 >
                   <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.3" />
                 </svg>
-                {loading ? '' : '刷新'}
+                {loading ? '' : t('dialogs.serialConnect.refresh')}
               </button>
             </div>
           </div>
 
           {/* 波特率 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">波特率</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.serialConnect.baudRate')}
+            </label>
             <select
               value={baudRate}
               onChange={(e) => setBaudRate(Number(e.target.value))}
@@ -209,7 +218,9 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
           {/* 数据位、停止位、校验位 */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">数据位</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.serialConnect.dataBits')}
+              </label>
               <select
                 value={dataBits}
                 onChange={(e) => setDataBits(Number(e.target.value) as 5 | 6 | 7 | 8)}
@@ -224,7 +235,9 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">停止位</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.serialConnect.stopBits')}
+              </label>
               <select
                 value={stopBits}
                 onChange={(e) => setStopBits(Number(e.target.value) as 1 | 1.5 | 2)}
@@ -239,7 +252,9 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">校验位</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.serialConnect.parity')}
+              </label>
               <select
                 value={parity}
                 onChange={(e) => setParity(e.target.value as typeof parity)}
@@ -263,14 +278,14 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
                 onChange={(e) => setSaveConfig(e.target.checked)}
                 className="dialog-checkbox"
               />
-              <span className="text-sm">保存此配置</span>
+              <span className="text-sm">{t('dialogs.serialConnect.saveConfig')}</span>
             </label>
             {saveConfig && (
               <input
                 type="text"
                 value={configName}
                 onChange={(e) => setConfigName(e.target.value)}
-                placeholder="配置名称，如：Arduino、ESP32..."
+                placeholder={t('dialogs.serialConnect.configNamePlaceholder')}
                 className="dialog-input mt-2.5"
               />
             )}
@@ -299,8 +314,16 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
               if (!port) return null;
               return (
                 <div className="text-xs text-text-secondary p-2.5 bg-background/50 rounded-lg space-y-0.5">
-                  {port.manufacturer && <div>制造商: {port.manufacturer}</div>}
-                  {port.serialNumber && <div>序列号: {port.serialNumber}</div>}
+                  {port.manufacturer && (
+                    <div>
+                      {t('dialogs.serialConnect.manufacturer', { value: port.manufacturer })}
+                    </div>
+                  )}
+                  {port.serialNumber && (
+                    <div>
+                      {t('dialogs.serialConnect.serialNumber', { value: port.serialNumber })}
+                    </div>
+                  )}
                   {port.vendorId && <div>VID: {port.vendorId}</div>}
                   {port.productId && <div>PID: {port.productId}</div>}
                 </div>
@@ -311,14 +334,14 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
         {/* 底部按钮 */}
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
           <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
-            取消
+            {t('dialogs.serialConnect.cancel')}
           </button>
           <button
             onClick={handleConnect}
             disabled={!selectedPort || loading}
             className="dialog-btn dialog-btn-primary disabled:opacity-50"
           >
-            {editSession ? '保存' : '连接'}
+            {editSession ? t('dialogs.serialConnect.save') : t('dialogs.serialConnect.connect')}
           </button>
         </div>
       </div>

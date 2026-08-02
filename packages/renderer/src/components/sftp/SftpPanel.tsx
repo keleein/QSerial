@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSftpStore } from '@/stores/sftp';
 import { useTerminalStore } from '@/stores/terminal';
 
@@ -338,7 +339,8 @@ const ConfirmDialog: React.FC<{
   danger?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-}> = ({ isOpen, title, message, confirmLabel = '确认', danger, onConfirm, onCancel }) => {
+}> = ({ isOpen, title, message, confirmLabel, danger, onConfirm, onCancel }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
   return (
     <div
@@ -356,7 +358,7 @@ const ConfirmDialog: React.FC<{
             onClick={onCancel}
             className="px-3 py-1.5 text-sm rounded border border-border hover:bg-hover transition-colors"
           >
-            取消
+            {t('common.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -366,7 +368,7 @@ const ConfirmDialog: React.FC<{
                 : 'bg-primary text-white hover:bg-primary/80'
             }`}
           >
-            {confirmLabel}
+            {confirmLabel || t('common.confirm')}
           </button>
         </div>
       </div>
@@ -384,6 +386,7 @@ const InputDialog: React.FC<{
   onConfirm: (value: string) => void;
   onCancel: () => void;
 }> = ({ isOpen, title, placeholder, defaultValue = '', onConfirm, onCancel }) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
@@ -424,14 +427,14 @@ const InputDialog: React.FC<{
             onClick={onCancel}
             className="px-3 py-1.5 text-sm rounded border border-border hover:bg-hover transition-colors"
           >
-            取消
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSubmit}
             disabled={!value.trim()}
             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary/80 disabled:opacity-50 transition-colors"
           >
-            确认
+            {t('common.confirm')}
           </button>
         </div>
       </div>
@@ -468,6 +471,7 @@ type SortDirection = 'asc' | 'desc';
 // ============ 主组件 ============
 
 export const SftpPanel: React.FC = () => {
+  const { t } = useTranslation();
   const {
     sessions,
     activeSftpId,
@@ -658,8 +662,8 @@ export const SftpPanel: React.FC = () => {
   const handleMkdir = () => {
     if (!activeSession || !activeSftpId) return;
     setInputDialog({
-      title: '新建文件夹',
-      placeholder: '输入文件夹名称',
+      title: t('sftpPanel.newFolder'),
+      placeholder: t('sftpPanel.newFolderPlaceholder'),
       onConfirm: async (name) => {
         const remotePath =
           activeSession.currentPath === '/' ? `/${name}` : `${activeSession.currentPath}/${name}`;
@@ -679,8 +683,8 @@ export const SftpPanel: React.FC = () => {
     if (!activeSession || !activeSftpId) return;
     closeContextMenu();
     setInputDialog({
-      title: '重命名',
-      placeholder: '输入新名称',
+      title: t('sftpPanel.rename'),
+      placeholder: t('sftpPanel.renamePlaceholder'),
       defaultValue: fileName,
       onConfirm: async (newName) => {
         const oldRemotePath =
@@ -707,8 +711,11 @@ export const SftpPanel: React.FC = () => {
     if (!activeSession || !activeSftpId) return;
     closeContextMenu();
     setConfirmDialog({
-      title: '确认删除',
-      message: `确定要删除 "${fileName}" 吗？${type === 'directory' ? '该文件夹下的所有内容也将被删除。' : ''}`,
+      title: t('sftpPanel.confirmDelete'),
+      message: t('sftpPanel.deleteConfirmMessage', {
+        name: fileName,
+        extra: type === 'directory' ? t('sftpPanel.deleteFolderExtra') : '',
+      }),
       onConfirm: async () => {
         const remotePath =
           activeSession.currentPath === '/'
@@ -784,7 +791,9 @@ export const SftpPanel: React.FC = () => {
         <div className="flex items-center justify-between px-3 h-8 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <IconFolder size={14} />
-            <span className="text-xs font-medium text-text-secondary">远程文件</span>
+            <span className="text-xs font-medium text-text-secondary">
+              {t('sftpPanel.remoteFiles')}
+            </span>
             {Object.keys(sessions).length > 1 && activeSession && (
               <select
                 value={activeSftpId || ''}
@@ -802,7 +811,7 @@ export const SftpPanel: React.FC = () => {
           <button
             onClick={() => setPanelVisible(false)}
             className="w-5 h-5 flex items-center justify-center rounded hover:bg-hover text-text-secondary"
-            title="关闭面板"
+            title={t('sftpPanel.closePanel')}
           >
             <IconX size={12} />
           </button>
@@ -816,7 +825,7 @@ export const SftpPanel: React.FC = () => {
                 onClick={() => goBack(activeSftpId!)}
                 disabled={activeSession.historyIndex <= 0}
                 className="w-6 h-5 flex items-center justify-center rounded hover:bg-hover disabled:opacity-30 transition-colors"
-                title="后退"
+                title={t('sftpPanel.back')}
               >
                 <IconArrowLeft size={13} />
               </button>
@@ -824,14 +833,14 @@ export const SftpPanel: React.FC = () => {
                 onClick={() => goForward(activeSftpId!)}
                 disabled={activeSession.historyIndex >= activeSession.history.length - 1}
                 className="w-6 h-5 flex items-center justify-center rounded hover:bg-hover disabled:opacity-30 transition-colors"
-                title="前进"
+                title={t('sftpPanel.forward')}
               >
                 <IconArrowRight size={13} />
               </button>
               <button
                 onClick={() => refresh(activeSftpId!)}
                 className="w-6 h-5 flex items-center justify-center rounded hover:bg-hover transition-colors"
-                title="刷新"
+                title={t('common.refresh')}
               >
                 <IconRefresh size={13} />
               </button>
@@ -839,14 +848,14 @@ export const SftpPanel: React.FC = () => {
               <button
                 onClick={handleUpload}
                 className="w-6 h-5 flex items-center justify-center rounded hover:bg-hover transition-colors"
-                title="上传文件"
+                title={t('sftpPanel.uploadFile')}
               >
                 <IconUpload size={13} />
               </button>
               <button
                 onClick={handleMkdir}
                 className="w-6 h-5 flex items-center justify-center rounded hover:bg-hover transition-colors"
-                title="新建文件夹"
+                title={t('sftpPanel.newFolder')}
               >
                 <IconFolderPlus size={13} />
               </button>
@@ -877,21 +886,21 @@ export const SftpPanel: React.FC = () => {
                 onClick={() => handleSort('name')}
                 className="flex items-center gap-1 flex-1 min-w-0 hover:text-text transition-colors"
               >
-                <span>名称</span>
+                <span>{t('sftpPanel.name')}</span>
                 <IconSort size={8} direction={sortField === 'name' ? sortDirection : undefined} />
               </button>
               <button
                 onClick={() => handleSort('size')}
                 className="flex items-center gap-1 w-16 justify-end hover:text-text transition-colors"
               >
-                <span>大小</span>
+                <span>{t('sftpPanel.size')}</span>
                 <IconSort size={8} direction={sortField === 'size' ? sortDirection : undefined} />
               </button>
               <button
                 onClick={() => handleSort('modifyTime')}
                 className="flex items-center gap-1 w-28 justify-end hover:text-text transition-colors"
               >
-                <span>修改时间</span>
+                <span>{t('sftpPanel.modified')}</span>
                 <IconSort
                   size={8}
                   direction={sortField === 'modifyTime' ? sortDirection : undefined}
@@ -907,7 +916,7 @@ export const SftpPanel: React.FC = () => {
               {activeSession.loading ? (
                 <div className="flex items-center justify-center h-20 text-text-secondary text-xs">
                   <IconRefresh size={14} />
-                  <span className="ml-2">加载中...</span>
+                  <span className="ml-2">{t('common.loading')}</span>
                 </div>
               ) : activeSession.error ? (
                 <div className="flex items-center justify-center h-20 text-error text-xs">
@@ -915,7 +924,7 @@ export const SftpPanel: React.FC = () => {
                 </div>
               ) : sortedFiles.length === 0 ? (
                 <div className="flex items-center justify-center h-20 text-text-secondary text-xs">
-                  空目录
+                  {t('sftpPanel.emptyDir')}
                 </div>
               ) : (
                 <div className="py-0.5">
@@ -976,9 +985,9 @@ export const SftpPanel: React.FC = () => {
           /* 无活动会话 */
           <div className="flex-1 flex flex-col items-center justify-center text-text-secondary">
             <IconFolder size={32} />
-            <p className="text-xs mt-3 mb-1">SFTP 文件浏览器</p>
+            <p className="text-xs mt-3 mb-1">{t('sftpPanel.browserTitle')}</p>
             <p className="text-xs text-center px-4 text-text-secondary">
-              连接 SSH 后，点击状态栏上的 SFTP 按钮打开
+              {t('sftpPanel.connectHint')}
             </p>
           </div>
         )}
@@ -1009,7 +1018,7 @@ export const SftpPanel: React.FC = () => {
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-hover transition-colors"
               >
                 <IconDownload size={12} />
-                <span>下载</span>
+                <span>{t('sftpPanel.download')}</span>
               </button>
             )}
             {contextMenu.type === 'directory' && (
@@ -1026,7 +1035,7 @@ export const SftpPanel: React.FC = () => {
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-hover transition-colors"
               >
                 <IconOpenFolder size={12} />
-                <span>打开</span>
+                <span>{t('sftpPanel.open')}</span>
               </button>
             )}
             <button
@@ -1034,7 +1043,7 @@ export const SftpPanel: React.FC = () => {
               className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-hover transition-colors"
             >
               <IconRename size={12} />
-              <span>重命名</span>
+              <span>{t('sftpPanel.rename')}</span>
             </button>
             <div className="my-1 border-t border-border" />
             <button
@@ -1042,7 +1051,7 @@ export const SftpPanel: React.FC = () => {
               className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-hover text-error transition-colors"
             >
               <IconTrash size={12} />
-              <span>删除</span>
+              <span>{t('common.delete')}</span>
             </button>
           </div>
         </>
@@ -1053,7 +1062,7 @@ export const SftpPanel: React.FC = () => {
         isOpen={!!confirmDialog}
         title={confirmDialog?.title || ''}
         message={confirmDialog?.message || ''}
-        confirmLabel="删除"
+        confirmLabel={t('common.delete')}
         danger
         onConfirm={confirmDialog?.onConfirm || (() => {})}
         onCancel={() => setConfirmDialog(null)}

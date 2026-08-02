@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Tab 鏍忕粍浠? */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -167,7 +167,7 @@ export const TabBar: React.FC = () => {
                   className="w-4 h-4 flex items-center justify-center rounded hover:bg-active opacity-0 group-hover:opacity-100 ml-1 text-text-secondary hover:text-text"
                   style={{ opacity: isActive ? 1 : undefined }}
                 >
-                  脳
+                  ×
                 </button>
               </div>
             );

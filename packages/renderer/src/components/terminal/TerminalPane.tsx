@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
@@ -38,6 +39,7 @@ interface TerminalPaneProps {
 
 export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
   ({ sessionId, connectionId, isActive, activeTabId }) => {
+    const { t } = useTranslation();
     const containerRef = useRef<HTMLDivElement>(null);
     const xtermRef = useRef<XTerm | null>(null);
     const fitAddonRef = useRef<FitAddon | null>(null);
@@ -159,10 +161,12 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
         terminal.write('\r\n');
         terminal.write('  \x1b[1;36m╔════════════════════════════════════════╗\x1b[0m\r\n');
         terminal.write(makeLine('') + '\r\n');
-        terminal.write(makeLine('  \x1b[1;32m★ 串口连接成功 ★\x1b[0m') + '\r\n');
+        terminal.write(
+          makeLine(`  \x1b[1;32m★ ${t('terminalPane.serialConnectSuccess')} ★\x1b[0m`) + '\r\n'
+        );
         terminal.write(makeLine('') + '\r\n');
-        terminal.write(makeLine('  \x1b[33m●\x1b[0m 日期: ' + date) + '\r\n');
-        terminal.write(makeLine('  \x1b[33m●\x1b[0m 时间: ' + time) + '\r\n');
+        terminal.write(makeLine(`  \x1b[33m●\x1b[0m ${t('terminalPane.date')}: ` + date) + '\r\n');
+        terminal.write(makeLine(`  \x1b[33m●\x1b[0m ${t('terminalPane.time')}: ` + time) + '\r\n');
         terminal.write(makeLine('') + '\r\n');
         terminal.write('  \x1b[1;36m╚════════════════════════════════════════╝\x1b[0m\r\n');
         terminal.write('\r\n');
@@ -469,7 +473,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
               showConnectionSuccessMessage(xterm);
             }
             if (wasDisconnectedRef.current && currentSession) {
-              xterm.write('\r\n\x1b[32m--- 连接已恢复 ---\x1b[0m\r\n');
+              xterm.write(`\r\n\x1b[32m${t('terminalPane.connectionRestored')}\x1b[0m\r\n`);
             }
             wasDisconnectedRef.current = false;
           } else if (state === 'disconnected') {
@@ -477,13 +481,11 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
             messageShownRef.current = false;
             const currentSession = useTerminalStore.getState().sessions[sessionId];
             if (currentSession) {
-              xterm.write(
-                '\r\n\x1b[33m--- 连接已断开，点击右上角"重连"按钮重新连接 ---\x1b[0m\r\n'
-              );
+              xterm.write(`\r\n\x1b[33m${t('terminalPane.connectionLost')}\x1b[0m\r\n`);
             }
           } else if (state === 'reconnecting') {
             wasDisconnectedRef.current = true;
-            xterm.write('\r\n\x1b[33m--- 连接已断开，正在重连... ---\x1b[0m\r\n');
+            xterm.write(`\r\n\x1b[33m${t('terminalPane.reconnecting')}\x1b[0m\r\n`);
           }
         }
       );
@@ -497,7 +499,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
           'connectionId:',
           connectionId.slice(0, 8)
         );
-        xterm.write(`\x1b[31m错误: ${error}\x1b[0m\r\n`);
+        xterm.write(`\x1b[31m${t('terminalPane.error')}: ${error}\x1b[0m\r\n`);
       });
       unsubscribersRef.current.push(unsubscribeError);
 
@@ -737,7 +739,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
         startLog(sessionId, filePath);
       } catch (error) {
         console.error('Failed to start log:', error);
-        globalError.show('启动日志记录失败: ' + (error as Error).message);
+        globalError.show(t('terminalPane.logStartFailed') + ': ' + (error as Error).message);
       }
       setLogStarting(false);
     };
@@ -760,7 +762,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
         await window.qserial.connection.open(connectionId);
       } catch (error) {
         console.error('Failed to reconnect:', error);
-        globalError.show('重连失败: ' + (error as Error).message);
+        globalError.show(t('terminalPane.reconnectFailed') + ': ' + (error as Error).message);
       } finally {
         setReconnectLoading(false);
       }
@@ -794,7 +796,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
       setMacroColor('');
       const qbs = useQuickButtonsStore.getState();
       if (qbs.groups.length === 0) {
-        qbs.addGroup('默认分组');
+        qbs.addGroup(t('terminalPane.defaultGroup'));
       }
       qbs.addButton(qbs.groups[0].id, {
         name: saved.name,
@@ -873,12 +875,12 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                       }
                     }}
                     className="bg-transparent text-xs text-text outline-none w-36 placeholder:text-text-tertiary/50"
-                    placeholder="搜索..."
+                    placeholder={t('terminalPane.searchPlaceholder')}
                   />
                   <button
                     onClick={findPrevious}
                     className="text-text-secondary/60 hover:text-text transition-colors p-0.5"
-                    title="上一个 (Shift+Enter)"
+                    title={t('terminalPane.prev')}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path
@@ -893,7 +895,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                   <button
                     onClick={findNext}
                     className="text-text-secondary/60 hover:text-text transition-colors p-0.5"
-                    title="下一个 (Enter)"
+                    title={t('terminalPane.next')}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path
@@ -912,7 +914,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                         ? 'bg-primary/30 text-primary'
                         : 'text-text-secondary/50 hover:text-text-secondary'
                     }`}
-                    title="大小写敏感"
+                    title={t('terminalPane.caseSensitive')}
                   >
                     Aa
                   </button>
@@ -923,7 +925,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                         ? 'bg-accent/30 text-accent'
                         : 'text-text-secondary/50 hover:text-text-secondary'
                     }`}
-                    title="二次筛选 — 只匹配同时包含筛选词的行"
+                    title={t('terminalPane.secondFilter')}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path
@@ -938,7 +940,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                   <button
                     onClick={closeSearch}
                     className="text-text-secondary/50 hover:text-text transition-colors p-0.5"
-                    title="关闭 (Esc)"
+                    title={t('terminalPane.close')}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path
@@ -983,7 +985,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                         }
                       }}
                       className="bg-transparent text-xs text-text outline-none w-36 placeholder:text-text-tertiary/50"
-                      placeholder="筛选词..."
+                      placeholder={t('terminalPane.searchFilterPlaceholder')}
                     />
                   </div>
                 )}
@@ -992,7 +994,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
               <button
                 onClick={openSearch}
                 className="px-2 py-1 border rounded text-xs transition-colors bg-surface/80 border-border hover:bg-hover flex items-center gap-1.5"
-                title="搜索 (Ctrl+F)"
+                title={t('terminalPane.searchTitle')}
               >
                 <svg
                   width="12"
@@ -1009,7 +1011,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                     strokeLinecap="round"
                   />
                 </svg>
-                搜索
+                {t('terminalPane.search')}
               </button>
             )}
 
@@ -1022,7 +1024,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                   ? 'bg-red-500/80 border-red-400 text-white hover:bg-red-600/80'
                   : 'bg-surface/80 border-border hover:bg-hover'
               }`}
-              title={isLogging ? '停止日志记录' : '开始日志记录'}
+              title={isLogging ? t('terminalPane.stopLog') : t('terminalPane.startLog')}
             >
               {logStarting ? (
                 <>
@@ -1035,7 +1037,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                       strokeLinecap="round"
                     />
                   </svg>
-                  启动中...
+                  {t('terminalPane.starting')}
                 </>
               ) : isLogging ? (
                 <>
@@ -1052,7 +1054,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                     <path d="M4.5 2.5v7" stroke="currentColor" strokeWidth="0.8" />
                     <path d="M7.5 2.5v7" stroke="currentColor" strokeWidth="0.8" />
                   </svg>
-                  停止日志
+                  {t('terminalPane.stopLogLabel')}
                 </>
               ) : (
                 <>
@@ -1078,7 +1080,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                       strokeLinejoin="round"
                     />
                   </svg>
-                  开始日志
+                  {t('terminalPane.startLogLabel')}
                 </>
               )}
             </button>
@@ -1088,7 +1090,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
               <button
                 onClick={() => setShowSerialShareDialog(true)}
                 className="px-2 py-1 border rounded text-xs transition-colors bg-surface/80 border-border hover:bg-hover flex items-center gap-1.5"
-                title="连接共享"
+                title={t('terminalPane.shareTitle')}
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-accent">
                   <path
@@ -1106,7 +1108,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                   />
                   <circle cx="3" cy="9.5" r="1.2" stroke="currentColor" strokeWidth="0.8" />
                 </svg>
-                共享
+                {t('terminalPane.share')}
               </button>
             )}
 
@@ -1116,8 +1118,10 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
               className={`px-2 py-1 border rounded text-xs transition-colors flex items-center gap-1.5 ${isRecording ? 'bg-red-500/80 border-red-400 text-white hover:bg-red-600/80' : 'bg-surface/80 border-border hover:bg-hover'}`}
               title={
                 isRecording
-                  ? '停止录制 (' + macroStore.getState().recordingSteps.length + ' 步)'
-                  : '开始录制宏'
+                  ? t('terminalPane.stopRecording', {
+                      count: macroStore.getState().recordingSteps.length,
+                    })
+                  : t('terminalPane.startRecording')
               }
             >
               {isRecording ? (
@@ -1138,7 +1142,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                   >
                     <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.2" />
                   </svg>
-                  录制
+                  {t('terminalPane.record')}
                 </>
               )}
             </button>
@@ -1155,7 +1159,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                       ? 'bg-surface/80 border-border opacity-50'
                       : 'bg-blue-500/80 border-blue-400 text-white hover:bg-blue-600/80'
                   }`}
-                  title="重新连接"
+                  title={t('terminalPane.reconnectTitle')}
                 >
                   {reconnectLoading ? (
                     <>
@@ -1168,7 +1172,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                           strokeLinecap="round"
                         />
                       </svg>
-                      连接中...
+                      {t('terminalPane.connecting')}
                     </>
                   ) : (
                     <>
@@ -1200,7 +1204,7 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                           strokeLinejoin="round"
                         />
                       </svg>
-                      重连
+                      {t('terminalPane.reconnect')}
                     </>
                   )}
                 </button>
@@ -1222,15 +1226,15 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <h3 className="text-sm font-medium">保存录制宏</h3>
+                <h3 className="text-sm font-medium">{t('terminalPane.saveMacroTitle')}</h3>
                 <span className="text-xs text-text-secondary">
-                  {macroStore.getState().recordingSteps.length} 步
+                  {t('terminalPane.steps', { count: macroStore.getState().recordingSteps.length })}
                 </span>
               </div>
               <div className="p-4 space-y-3">
                 <div>
                   <label className="block text-xs text-text-secondary mb-1.5 font-medium">
-                    名称
+                    {t('terminalPane.name')}
                   </label>
                   <input
                     type="text"
@@ -1246,25 +1250,25 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                       }
                     }}
                     className="dialog-input"
-                    placeholder="输入宏名称..."
+                    placeholder={t('terminalPane.namePlaceholder')}
                     autoFocus
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-text-secondary mb-1.5 font-medium">
-                    描述（可选）
+                    {t('terminalPane.descriptionOptional')}
                   </label>
                   <input
                     type="text"
                     value={macroDesc}
                     onChange={(e) => setMacroDesc(e.target.value)}
                     className="dialog-input"
-                    placeholder="用途说明..."
+                    placeholder={t('terminalPane.descriptionPlaceholder')}
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-text-secondary mb-1.5 font-medium">
-                    颜色标记（可选）
+                    {t('terminalPane.colorMarkOptional')}
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     {PRESET_MACRO_COLORS.map((c) => (
@@ -1288,14 +1292,14 @@ export const TerminalPane: React.FC<TerminalPaneProps> = React.memo(
                     }}
                     className="px-3 py-1.5 text-xs rounded border border-border hover:bg-hover"
                   >
-                    取消
+                    {t('terminalPane.cancel')}
                   </button>
                   <button
                     onClick={handleSaveMacro}
                     disabled={!macroName.trim()}
                     className="px-3 py-1.5 text-xs rounded bg-primary text-white disabled:opacity-50"
                   >
-                    保存
+                    {t('terminalPane.save')}
                   </button>
                 </div>
               </div>

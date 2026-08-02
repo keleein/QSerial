@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTftpStore } from '@/stores/tftp';
 
 interface TftpDialogProps {
@@ -11,6 +12,7 @@ interface TftpDialogProps {
 }
 
 export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const {
     config,
     running,
@@ -105,15 +107,15 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
   const getStatusText = (status: string): string => {
     switch (status) {
       case 'started':
-        return '开始';
+        return t('dialogs.tftp.statusStart');
       case 'progress':
-        return '传输中';
+        return t('dialogs.tftp.statusTransferring');
       case 'completed':
-        return '完成';
+        return t('dialogs.tftp.statusCompleted');
       case 'error':
-        return '错误';
+        return t('dialogs.tftp.statusError');
       case 'aborted':
-        return '中止';
+        return t('dialogs.tftp.statusAborted');
       default:
         return status;
     }
@@ -139,7 +141,7 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
               <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z" />
               <polyline points="13 2 13 9 20 9" />
             </svg>
-            <h3 className="text-base font-semibold">TFTP 服务器</h3>
+            <h3 className="text-base font-semibold">{t('dialogs.tftp.title')}</h3>
           </div>
           <button
             onClick={onClose}
@@ -162,7 +164,9 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
         <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
           {/* 端口 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">端口</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.tftp.port')}
+            </label>
             <input
               type="number"
               value={localPort}
@@ -176,7 +180,9 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
 
           {/* 共享目录 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">共享目录</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.tftp.shareDir')}
+            </label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -184,14 +190,14 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => setLocalRootDir(e.target.value)}
                 disabled={running}
                 className="dialog-input flex-1"
-                placeholder="选择或输入目录路径"
+                placeholder={t('dialogs.tftp.shareDirPlaceholder')}
               />
               <button
                 onClick={handlePickDir}
                 disabled={running}
                 className="dialog-btn dialog-btn-secondary px-3 disabled:opacity-50"
               >
-                浏览
+                {t('dialogs.tftp.browse')}
               </button>
             </div>
           </div>
@@ -204,7 +210,7 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
               onChange={(e) => updateConfig({ autoStart: e.target.checked })}
               className="dialog-checkbox w-3.5 h-3.5"
             />
-            应用启动时自动运行
+            {t('dialogs.tftp.autoStart')}
           </label>
 
           {/* 状态 + 操作 */}
@@ -214,7 +220,9 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                 <span
                   className={`w-[9px] h-[9px] rounded-full flex-shrink-0 ${running ? 'bg-green-400 service-dot-active' : 'bg-text-secondary/20'}`}
                 />
-                <span className="text-sm font-medium">{running ? '运行中' : '已停止'}</span>
+                <span className="text-sm font-medium">
+                  {running ? t('dialogs.tftp.running') : t('dialogs.tftp.stopped')}
+                </span>
               </div>
               {running && (
                 <span className="text-xs text-text-secondary/60 font-mono">
@@ -228,7 +236,7 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                   onClick={handleStop}
                   className="dialog-btn flex-1 bg-error text-white hover:bg-error/80 rounded-md text-sm"
                 >
-                  停止
+                  {t('dialogs.tftp.stop')}
                 </button>
               ) : (
                 <button
@@ -236,7 +244,7 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                   disabled={!localRootDir}
                   className="dialog-btn dialog-btn-primary flex-1 disabled:opacity-50 text-sm"
                 >
-                  启动
+                  {t('dialogs.tftp.start')}
                 </button>
               )}
             </div>
@@ -275,24 +283,29 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                <span className="text-xs font-medium text-primary">设备命令</span>
+                <span className="text-xs font-medium text-primary">
+                  {t('dialogs.tftp.deviceCommand')}
+                </span>
               </div>
               <div className="divide-y divide-primary/10">
                 <div className="p-1.5">
                   <div className="bg-background/70 border border-border/30 rounded-md overflow-hidden">
                     <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/20 bg-background/40">
-                      <span className="text-[10px] text-text-secondary/40 font-mono">下载</span>
+                      <span className="text-[10px] text-text-secondary/40 font-mono">
+                        {t('dialogs.tftp.download')}
+                      </span>
                       <button
                         onClick={() => handleCopy('get', `tftp -g -r <filename> ${localIp}`)}
                         className="text-[10px] text-primary hover:text-primary/80 transition-colors"
                       >
-                        {copiedLabel === 'get' ? '已复制' : '复制'}
+                        {copiedLabel === 'get' ? t('dialogs.tftp.copied') : t('dialogs.tftp.copy')}
                       </button>
                     </div>
                     <div className="px-2.5 py-2 font-mono text-xs text-text">
                       <div className="leading-relaxed">
                         <span className="text-text-secondary/40">$ </span>tftp -g -r{' '}
-                        <span className="text-warning/70">&lt;文件名&gt;</span> {localIp}
+                        <span className="text-warning/70">{t('dialogs.tftp.fileName')}</span>{' '}
+                        {localIp}
                       </div>
                     </div>
                   </div>
@@ -300,18 +313,21 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                 <div className="p-1.5">
                   <div className="bg-background/70 border border-border/30 rounded-md overflow-hidden">
                     <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/20 bg-background/40">
-                      <span className="text-[10px] text-text-secondary/40 font-mono">上传</span>
+                      <span className="text-[10px] text-text-secondary/40 font-mono">
+                        {t('dialogs.tftp.upload')}
+                      </span>
                       <button
                         onClick={() => handleCopy('put', `tftp -p -l <localfile> ${localIp}`)}
                         className="text-[10px] text-primary hover:text-primary/80 transition-colors"
                       >
-                        {copiedLabel === 'put' ? '已复制' : '复制'}
+                        {copiedLabel === 'put' ? t('dialogs.tftp.copied') : t('dialogs.tftp.copy')}
                       </button>
                     </div>
                     <div className="px-2.5 py-2 font-mono text-xs text-text">
                       <div className="leading-relaxed">
                         <span className="text-text-secondary/40">$ </span>tftp -p -l{' '}
-                        <span className="text-warning/70">&lt;本地文件&gt;</span> {localIp}
+                        <span className="text-warning/70">{t('dialogs.tftp.localFile')}</span>{' '}
+                        {localIp}
                       </div>
                     </div>
                   </div>
@@ -325,14 +341,14 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                  传输记录
+                  {t('dialogs.tftp.transferLog')}
                 </h4>
                 {transfers.length > 0 && (
                   <button
                     onClick={clearTransfers}
                     className="text-xs text-text-secondary hover:text-text transition-colors"
                   >
-                    清空
+                    {t('dialogs.tftp.clear')}
                   </button>
                 )}
               </div>
@@ -354,7 +370,7 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
                       <polyline points="7 10 12 15 17 10" />
                       <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
-                    <span className="text-xs">暂无传输记录</span>
+                    <span className="text-xs">{t('dialogs.tftp.noTransfers')}</span>
                   </div>
                 ) : (
                   <div className="divide-y divide-border/50">
@@ -433,7 +449,7 @@ export const TftpDialog: React.FC<TftpDialogProps> = ({ isOpen, onClose }) => {
         {/* 关闭按钮 */}
         <div className="flex justify-end px-5 py-4 border-t border-border bg-background/30 flex-shrink-0">
           <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
-            关闭
+            {t('dialogs.tftp.close')}
           </button>
         </div>
       </div>

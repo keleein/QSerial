@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SavedSession } from '@/stores/sessions';
 
 interface TelnetConnectDialogProps {
@@ -25,6 +26,7 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
   onConnect,
   editSession,
 }) => {
+  const { t } = useTranslation();
   const [host, setHost] = useState('');
   const [port, setPort] = useState(23);
   const [saveConfig, setSaveConfig] = useState(false);
@@ -43,7 +45,7 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
 
   const handleConnect = () => {
     if (!host.trim()) {
-      setError('请输入主机地址');
+      setError(t('dialogs.telnetConnect.enterHost'));
       return;
     }
     onConnect({
@@ -81,7 +83,9 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
               <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z" />
             </svg>
             <h2 className="text-base font-semibold">
-              {editSession ? '编辑 Telnet 配置' : 'Telnet 连接'}
+              {editSession
+                ? t('dialogs.telnetConnect.editTitle')
+                : t('dialogs.telnetConnect.title')}
             </h2>
           </div>
           <button
@@ -104,7 +108,9 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
         <div className="p-5 space-y-4">
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">主机</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.telnetConnect.host')}
+              </label>
               <input
                 type="text"
                 value={host}
@@ -114,7 +120,9 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
               />
             </div>
             <div className="w-24">
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">端口</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.telnetConnect.port')}
+              </label>
               <input
                 type="number"
                 value={port}
@@ -132,14 +140,14 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
                 onChange={(e) => setSaveConfig(e.target.checked)}
                 className="dialog-checkbox"
               />
-              <span className="text-sm">保存此配置</span>
+              <span className="text-sm">{t('dialogs.telnetConnect.saveConfig')}</span>
             </label>
             {saveConfig && (
               <input
                 type="text"
                 value={configName}
                 onChange={(e) => setConfigName(e.target.value)}
-                placeholder="配置名称..."
+                placeholder={t('dialogs.telnetConnect.configNamePlaceholder')}
                 className="dialog-input mt-2.5"
               />
             )}
@@ -163,10 +171,10 @@ export const TelnetConnectDialog: React.FC<TelnetConnectDialogProps> = ({
 
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
           <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
-            取消
+            {t('dialogs.telnetConnect.cancel')}
           </button>
           <button onClick={handleConnect} className="dialog-btn dialog-btn-primary">
-            {editSession ? '保存' : '连接'}
+            {editSession ? t('dialogs.telnetConnect.save') : t('dialogs.telnetConnect.connect')}
           </button>
         </div>
       </div>

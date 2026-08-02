@@ -33,7 +33,7 @@ export const TitleBar: React.FC = () => {
   // 当前活动终端信息
   const activeTab = useMemo(() => tabs.find((t) => t.id === activeTabId), [tabs, activeTabId]);
   const activeSession = activeTab?.activeSessionId ? sessions[activeTab.activeSessionId] : null;
-  const activeName = activeTab?.name || '未连接';
+  const activeName = activeTab?.name || t('common.disconnected');
   const isConnected = activeSession?.connectionState === ConnectionState.CONNECTED;
 
   // Tabs 滚轮
@@ -52,14 +52,14 @@ export const TitleBar: React.FC = () => {
   const tabCtxItems = tabContextMenu
     ? [
         {
-          label: '关闭',
+          label: t('titlebar.close'),
           onClick: () => {
             closeTab(tabContextMenu.tabId);
             setTabContextMenu(null);
           },
         },
         {
-          label: '关闭左侧标签页',
+          label: t('titlebar.closeLeft'),
           onClick: () => {
             const idx = tabs.findIndex((t) => t.id === tabContextMenu.tabId);
             for (let i = idx - 1; i >= 0; i--) closeTab(tabs[i].id);
@@ -68,7 +68,7 @@ export const TitleBar: React.FC = () => {
           disabled: tabs.findIndex((t) => t.id === tabContextMenu.tabId) <= 0,
         },
         {
-          label: '关闭右侧标签页',
+          label: t('titlebar.closeRight'),
           onClick: () => {
             const idx = tabs.findIndex((t) => t.id === tabContextMenu.tabId);
             for (let i = tabs.length - 1; i > idx; i--) closeTab(tabs[i].id);
@@ -77,7 +77,7 @@ export const TitleBar: React.FC = () => {
           disabled: tabs.findIndex((t) => t.id === tabContextMenu.tabId) >= tabs.length - 1,
         },
         {
-          label: '关闭其他标签页',
+          label: t('titlebar.closeOthers'),
           onClick: () => {
             tabs.forEach((t) => {
               if (t.id !== tabContextMenu.tabId) closeTab(t.id);
@@ -87,7 +87,7 @@ export const TitleBar: React.FC = () => {
           disabled: tabs.length <= 1,
         },
         {
-          label: '关闭所有标签页',
+          label: t('titlebar.closeAll'),
           onClick: () => {
             [...tabs].reverse().forEach((t) => closeTab(t.id));
             setTabContextMenu(null);
@@ -124,7 +124,7 @@ export const TitleBar: React.FC = () => {
               </span>
             </div>
           ) : (
-            <span className="text-xs text-text-tertiary/60">暂无终端</span>
+            <span className="text-xs text-text-tertiary/60">{t('titlebar.noTerminal')}</span>
           )}
         </div>
 
@@ -133,17 +133,17 @@ export const TitleBar: React.FC = () => {
           <button
             onClick={() => window.qserial.window.minimize()}
             className="w-4 h-4 rounded-full bg-[#febc2e] hover:brightness-90 transition-all"
-            title="最小化"
+            title={t('titlebar.minimize')}
           />
           <button
             onClick={() => window.qserial.window.maximize()}
             className="w-4 h-4 rounded-full bg-[#29c840] hover:brightness-90 transition-all"
-            title="最大化"
+            title={t('titlebar.maximize')}
           />
           <button
             onClick={() => window.qserial.window.close()}
             className="w-4 h-4 rounded-full bg-[#ff5f57] hover:brightness-90 transition-all"
-            title="关闭"
+            title={t('titlebar.close')}
           />
         </div>
       </div>

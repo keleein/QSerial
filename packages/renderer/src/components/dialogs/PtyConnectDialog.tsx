@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SavedSession } from '@/stores/sessions';
 
 interface PtyConnectDialogProps {
@@ -30,6 +31,7 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
   onConnect,
   editSession,
 }) => {
+  const { t } = useTranslation();
   const [shell, setShell] = useState<string>('powershell.exe');
   const [cwd, setCwd] = useState<string>('');
   const [saveConfig, setSaveConfig] = useState(false);
@@ -54,7 +56,7 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
   }, [editSession]);
 
   const handlePickDir = async () => {
-    const result = await window.qserial.dialog.pickDir('选择本地终端起始目录');
+    const result = await window.qserial.dialog.pickDir(t('dialogs.ptyConnect.pickStartDir'));
     if (result) {
       setCwd(result);
     }
@@ -91,7 +93,7 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
               <line x1="12" y1="19" x2="20" y2="19" />
             </svg>
             <h2 className="text-base font-semibold">
-              {editSession ? '编辑本地终端配置' : '本地终端'}
+              {editSession ? t('dialogs.ptyConnect.editTitle') : t('dialogs.ptyConnect.title')}
             </h2>
           </div>
           <button
@@ -115,7 +117,9 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
         <div className="p-5 space-y-4">
           {/* Shell 选择 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">终端类型</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.ptyConnect.terminalType')}
+            </label>
             <select
               value={shell}
               onChange={(e) => setShell(e.target.value)}
@@ -132,18 +136,21 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
           {/* 起始目录 */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              起始目录 <span className="text-text-secondary/50 font-normal">(可选)</span>
+              {t('dialogs.ptyConnect.startDir')}{' '}
+              <span className="text-text-secondary/50 font-normal">
+                ({t('dialogs.ptyConnect.optional')})
+              </span>
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={cwd}
                 onChange={(e) => setCwd(e.target.value)}
-                placeholder="留空则使用默认目录"
+                placeholder={t('dialogs.ptyConnect.startDirPlaceholder')}
                 className="dialog-input flex-1"
               />
               <button onClick={handlePickDir} className="dialog-btn dialog-btn-secondary px-3">
-                浏览
+                {t('dialogs.ptyConnect.browse')}
               </button>
             </div>
           </div>
@@ -157,14 +164,14 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
                 onChange={(e) => setSaveConfig(e.target.checked)}
                 className="dialog-checkbox"
               />
-              <span className="text-sm">保存此配置</span>
+              <span className="text-sm">{t('dialogs.ptyConnect.saveConfig')}</span>
             </label>
             {saveConfig && (
               <input
                 type="text"
                 value={configName}
                 onChange={(e) => setConfigName(e.target.value)}
-                placeholder="配置名称，如：开发环境、Git..."
+                placeholder={t('dialogs.ptyConnect.configNamePlaceholder')}
                 className="dialog-input mt-2.5"
               />
             )}
@@ -190,10 +197,10 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
         {/* 底部按钮 */}
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
           <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
-            取消
+            {t('dialogs.ptyConnect.cancel')}
           </button>
           <button onClick={handleConnect} className="dialog-btn dialog-btn-primary">
-            {editSession ? '保存' : '连接'}
+            {editSession ? t('dialogs.ptyConnect.save') : t('dialogs.ptyConnect.connect')}
           </button>
         </div>
       </div>

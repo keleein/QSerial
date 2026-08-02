@@ -227,7 +227,7 @@ export const StatusBar: React.FC = () => {
           className="text-text-secondary/60 hover:text-text-secondary px-2 py-0.5 rounded hover:bg-hover transition-colors text-[11px] tracking-wide"
           onClick={() => window.dispatchEvent(new CustomEvent('qserial:open-share'))}
         >
-          共享
+          {t('statusBar.share')}
         </button>
         <span className="w-px h-3.5 bg-border flex-shrink-0" />
         <span className="text-text-secondary/60">{t('app.version')}</span>

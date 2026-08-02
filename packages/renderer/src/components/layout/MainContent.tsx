@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTerminalStore } from '@/stores/terminal';
 import { TerminalPane } from '../terminal/TerminalPane';
 import { SftpPanel } from '../sftp';
 import { useSftpStore } from '@/stores/sftp';
 
 export const MainContent: React.FC = () => {
+  const { t } = useTranslation();
   const tabs = useTerminalStore((state) => state.tabs);
   const activeTabId = useTerminalStore((state) => state.activeTabId);
   const { panelVisible } = useSftpStore();
@@ -54,7 +56,9 @@ export const MainContent: React.FC = () => {
                 <path d="M30 46h28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
               <h1 className="text-xl font-semibold text-text tracking-tight">QSerial</h1>
-              <p className="text-xs text-text-secondary/50 mt-0.5">嵌入式终端调试工具</p>
+              <p className="text-xs text-text-secondary/50 mt-0.5">
+                {t('mainContent.embeddedTool')}
+              </p>
 
               <div className="w-[280px] mt-10 space-y-4">
                 <button
@@ -75,7 +79,9 @@ export const MainContent: React.FC = () => {
                       <rect x="3" y="5" width="18" height="14" rx="2" />
                       <polyline points="7 10 10 13 7 16" />
                     </svg>
-                    <span className="text-sm font-medium text-primary">本地终端</span>
+                    <span className="text-sm font-medium text-primary">
+                      {t('sidebar.localTerminal')}
+                    </span>
                     <svg
                       width="12"
                       height="12"
@@ -112,7 +118,7 @@ export const MainContent: React.FC = () => {
                       <line x1="10" y1="16" x2="14" y2="16" />
                     </svg>
                     <span className="text-sm text-text-secondary group-hover:text-text transition-colors">
-                      串口连接
+                      {t('sidebar.serialConnect')}
                     </span>
                     <svg
                       width="12"
@@ -149,7 +155,7 @@ export const MainContent: React.FC = () => {
                       <circle cx="12" cy="12" r="2" />
                     </svg>
                     <span className="text-sm text-text-secondary group-hover:text-text transition-colors">
-                      SSH 连接
+                      {t('sidebar.sshConnect')}
                     </span>
                     <svg
                       width="12"
@@ -185,7 +191,7 @@ export const MainContent: React.FC = () => {
                       <path d="M12 2v6M12 16v6M2 12h6M16 12h6" />
                     </svg>
                     <span className="text-sm text-text-secondary group-hover:text-text transition-colors">
-                      Telnet 连接
+                      {t('sidebar.telnetConnect')}
                     </span>
                     <svg
                       width="12"

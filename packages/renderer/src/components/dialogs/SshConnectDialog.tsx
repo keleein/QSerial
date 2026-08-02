@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SavedSession } from '@/stores/sessions';
 
 interface SshConnectDialogProps {
@@ -27,6 +28,7 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
   onConnect,
   editSession,
 }) => {
+  const { t } = useTranslation();
   const [host, setHost] = useState('');
   const [port, setPort] = useState(22);
   const [username, setUsername] = useState('');
@@ -53,11 +55,11 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
 
   const handleConnect = () => {
     if (!host.trim()) {
-      setError('请输入主机地址');
+      setError(t('dialogs.sshConnect.enterHost'));
       return;
     }
     if (!username.trim()) {
-      setError('请输入用户名');
+      setError(t('dialogs.sshConnect.enterUsername'));
       return;
     }
     onConnect({
@@ -106,7 +108,7 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
               <line x1="13" y1="15" x2="17" y2="15" strokeOpacity="0.6" />
             </svg>
             <h2 className="text-base font-semibold">
-              {editSession ? '编辑 SSH 配置' : 'SSH 连接'}
+              {editSession ? t('dialogs.sshConnect.editTitle') : t('dialogs.sshConnect.title')}
             </h2>
           </div>
           <button
@@ -131,7 +133,9 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
           {/* 主机和端口 */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">主机</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.sshConnect.host')}
+              </label>
               <input
                 type="text"
                 value={host}
@@ -141,7 +145,9 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
               />
             </div>
             <div className="w-24">
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">端口</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                {t('dialogs.sshConnect.port')}
+              </label>
               <input
                 type="number"
                 value={port}
@@ -153,12 +159,14 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
 
           {/* 用户名 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">用户名</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.sshConnect.username')}
+            </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="登录用户名"
+              placeholder={t('dialogs.sshConnect.usernamePlaceholder')}
               className="dialog-input"
             />
           </div>
@@ -166,13 +174,16 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
           {/* 密码（可选） */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              密码 <span className="text-text-secondary/50 font-normal">(可选)</span>
+              {t('dialogs.sshConnect.password')}{' '}
+              <span className="text-text-secondary/50 font-normal">
+                ({t('dialogs.sshConnect.optional')})
+              </span>
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="留空则使用密钥认证"
+              placeholder={t('dialogs.sshConnect.passwordPlaceholder')}
               className="dialog-input"
             />
           </div>
@@ -180,13 +191,16 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
           {/* 私钥文件（可选） */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              私钥文件 <span className="text-text-secondary/50 font-normal">(可选)</span>
+              {t('dialogs.sshConnect.privateKey')}{' '}
+              <span className="text-text-secondary/50 font-normal">
+                ({t('dialogs.sshConnect.optional')})
+              </span>
             </label>
             <input
               type="text"
               value={privateKey}
               onChange={(e) => setPrivateKey(e.target.value)}
-              placeholder="如 ~/.ssh/id_ed25519，留空则自动尝试默认密钥"
+              placeholder={t('dialogs.sshConnect.privateKeyPlaceholder')}
               className="dialog-input"
             />
           </div>
@@ -195,13 +209,16 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
           {privateKey && (
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                密钥密码 <span className="text-text-secondary/50 font-normal">(可选)</span>
+                {t('dialogs.sshConnect.passphrase')}{' '}
+                <span className="text-text-secondary/50 font-normal">
+                  ({t('dialogs.sshConnect.optional')})
+                </span>
               </label>
               <input
                 type="password"
                 value={passphrase}
                 onChange={(e) => setPassphrase(e.target.value)}
-                placeholder="加密私钥的密码"
+                placeholder={t('dialogs.sshConnect.passphrasePlaceholder')}
                 className="dialog-input"
               />
             </div>
@@ -216,14 +233,14 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
                 onChange={(e) => setSaveConfig(e.target.checked)}
                 className="dialog-checkbox"
               />
-              <span className="text-sm">保存此配置</span>
+              <span className="text-sm">{t('dialogs.sshConnect.saveConfig')}</span>
             </label>
             {saveConfig && (
               <input
                 type="text"
                 value={configName}
                 onChange={(e) => setConfigName(e.target.value)}
-                placeholder="配置名称，如：服务器A、树莓派..."
+                placeholder={t('dialogs.sshConnect.configNamePlaceholder')}
                 className="dialog-input mt-2.5"
               />
             )}
@@ -249,10 +266,10 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
         {/* 底部按钮 */}
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
           <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
-            取消
+            {t('dialogs.sshConnect.cancel')}
           </button>
           <button onClick={handleConnect} className="dialog-btn dialog-btn-primary">
-            {editSession ? '保存' : '连接'}
+            {editSession ? t('dialogs.sshConnect.save') : t('dialogs.sshConnect.connect')}
           </button>
         </div>
       </div>

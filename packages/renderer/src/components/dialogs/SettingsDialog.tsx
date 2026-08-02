@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/stores/theme';
 import { useConfigStore } from '@/stores/config';
 import { useSavedSessionsStore, type SavedSession } from '@/stores/sessions';
@@ -31,14 +32,10 @@ interface ExportedConfig {
 
 type SectionId = 'appearance' | 'behavior' | 'terminal' | 'manage';
 
-const SECTIONS: { id: SectionId; label: string }[] = [
-  { id: 'appearance', label: '外观' },
-  { id: 'behavior', label: '应用行为' },
-  { id: 'terminal', label: '终端' },
-  { id: 'manage', label: '配置管理' },
-];
+const SECTIONS: SectionId[] = ['appearance', 'behavior', 'terminal', 'manage'];
 
 export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { currentTheme, themes, setTheme } = useThemeStore();
   const { config, updateConfig } = useConfigStore();
   const savedSessionsState = useSavedSessionsStore();
@@ -144,7 +141,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       setImportError(null);
       setTimeout(() => setExportSuccess(false), 3000);
     } catch (err) {
-      setImportError(`导出失败: ${err instanceof Error ? err.message : String(err)}`);
+      setImportError(
+        t('dialogs.settings.exportFailed', {
+          message: err instanceof Error ? err.message : String(err),
+        })
+      );
     }
   };
 
@@ -158,7 +159,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
         if (!file) return;
         const text = await file.text();
         const data = JSON.parse(text);
-        if (!data.version) throw new Error('无效的配置文件');
+        if (!data.version) throw new Error(t('dialogs.settings.invalidConfigFile'));
 
         if (data.theme?.themeId) setTheme(data.theme.themeId);
 
@@ -189,7 +190,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       };
       input.click();
     } catch (err) {
-      setImportError(`导入失败: ${err instanceof Error ? err.message : String(err)}`);
+      setImportError(
+        t('dialogs.settings.importFailed', {
+          message: err instanceof Error ? err.message : String(err),
+        })
+      );
     }
   };
 
@@ -269,9 +274,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       case 'appearance':
         return (
           <div className="space-y-4">
-            <SectionTitle title="外观" />
+            <SectionTitle title={t('dialogs.settings.appearance')} />
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-2">主题</label>
+              <label className="block text-xs font-medium text-text-secondary mb-2">
+                {t('dialogs.settings.theme')}
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 {themes.map((theme: Theme) => (
                   <button
@@ -290,7 +297,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                       />
                       <span className="text-sm font-medium">{theme.name}</span>
                       <span className="text-[10px] text-text-secondary">
-                        {theme.type === 'dark' ? '深色' : '浅色'}
+                        {theme.type === 'dark'
+                          ? t('dialogs.settings.dark')
+                          : t('dialogs.settings.light')}
                       </span>
                     </div>
                     <div className="flex gap-1">
@@ -311,20 +320,26 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               </div>
             </div>
             <Select
-              label="UI 字体"
+              label={t('dialogs.settings.uiFont')}
               value={uiFontFamily}
               onChange={setUiFontFamily}
               options={[
                 {
                   value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                  label: '系统默认（推荐）',
+                  label: t('dialogs.settings.systemDefault'),
                 },
-                { value: '"Microsoft YaHei", "PingFang SC", sans-serif', label: '微软雅黑 / 苹方' },
-                { value: '"Source Han Sans CN", "Noto Sans SC", sans-serif', label: '思源黑体' },
+                {
+                  value: '"Microsoft YaHei", "PingFang SC", sans-serif',
+                  label: t('dialogs.settings.msYahei'),
+                },
+                {
+                  value: '"Source Han Sans CN", "Noto Sans SC", sans-serif',
+                  label: t('dialogs.settings.sourceHan'),
+                },
               ]}
             />
             <Select
-              label="语言"
+              label={t('dialogs.settings.language')}
               value={language}
               onChange={setLanguage}
               options={[
@@ -338,17 +353,21 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       case 'behavior':
         return (
           <div className="space-y-4">
-            <SectionTitle title="应用行为" />
-            <Toggle label="自动更新" checked={autoUpdate} onChange={setAutoUpdate} />
+            <SectionTitle title={t('dialogs.settings.behavior')} />
             <Toggle
-              label="最小化到托盘"
-              hint="关闭窗口时隐藏到系统托盘而非退出"
+              label={t('dialogs.settings.autoUpdate')}
+              checked={autoUpdate}
+              onChange={setAutoUpdate}
+            />
+            <Toggle
+              label={t('dialogs.settings.minimizeToTray')}
+              hint={t('dialogs.settings.minimizeHint')}
               checked={minimizeToTray}
               onChange={setMinimizeToTray}
             />
             <Toggle
-              label="关闭到托盘"
-              hint="点击关闭按钮时隐藏到托盘"
+              label={t('dialogs.settings.closeToTray')}
+              hint={t('dialogs.settings.closeHint')}
               checked={closeToTray}
               onChange={setCloseToTray}
             />
@@ -358,10 +377,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       case 'terminal':
         return (
           <div className="space-y-4">
-            <SectionTitle title="终端" />
+            <SectionTitle title={t('dialogs.settings.terminal')} />
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                字体大小: {fontSize}px
+                {t('dialogs.settings.fontSizeLabel', { size: fontSize })}
               </label>
               <input
                 type="range"
@@ -373,58 +392,69 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               />
             </div>
             <Select
-              label="字体"
+              label={t('dialogs.settings.font')}
               value={fontFamily}
               onChange={setFontFamily}
               options={[
-                { value: 'JetBrains Mono, Consolas, monospace', label: 'JetBrains Mono（推荐）' },
+                {
+                  value: 'JetBrains Mono, Consolas, monospace',
+                  label: t('dialogs.settings.jetbrainsMono'),
+                },
                 { value: 'Consolas, monospace', label: 'Consolas' },
                 { value: 'Monaco, monospace', label: 'Monaco' },
                 { value: 'Source Code Pro, monospace', label: 'Source Code Pro' },
-                { value: 'Fira Code, monospace', label: 'Fira Code（连字符）' },
+                { value: 'Fira Code, monospace', label: t('dialogs.settings.firaCode') },
               ]}
             />
             <NumberInput
-              label="回滚行数"
+              label={t('dialogs.settings.scrollback')}
               value={scrollback}
               onChange={setScrollback}
               min={100}
               max={100000}
             />
-            <Toggle label="选中即复制" checked={copyOnSelect} onChange={setCopyOnSelect} />
-            <Toggle label="右键粘贴" checked={rightClickPaste} onChange={setRightClickPaste} />
             <Toggle
-              label="启用链接检测"
-              hint="自动识别终端中的 URL 和文件路径"
+              label={t('dialogs.settings.copyOnSelect')}
+              checked={copyOnSelect}
+              onChange={setCopyOnSelect}
+            />
+            <Toggle
+              label={t('dialogs.settings.rightClickPaste')}
+              checked={rightClickPaste}
+              onChange={setRightClickPaste}
+            />
+            <Toggle
+              label={t('dialogs.settings.enableLinks')}
+              hint={t('dialogs.settings.linksHint')}
               checked={enableWebLinks}
               onChange={setEnableWebLinks}
             />
             <Select
-              label="铃声"
+              label={t('dialogs.settings.bell')}
               value={bellStyle}
               onChange={setBellStyle}
               options={[
-                { value: 'none', label: '无' },
-                { value: 'sound', label: '声音' },
-                { value: 'visual', label: '闪烁' },
+                { value: 'none', label: t('dialogs.settings.bellNone') },
+                { value: 'sound', label: t('dialogs.settings.bellSound') },
+                { value: 'visual', label: t('dialogs.settings.bellVisual') },
               ]}
             />
             <Toggle
-              label="自动重连"
-              hint="断开后自动尝试重新连接"
+              label={t('dialogs.settings.autoReconnect')}
+              hint={t('dialogs.settings.reconnectHint')}
               checked={autoReconnect}
               onChange={setAutoReconnect}
             />
             <div className="grid grid-cols-2 gap-3">
               <NumberInput
-                label="重连间隔 (ms)"
+                label={t('dialogs.settings.reconnectInterval')}
                 value={reconnectInterval}
                 onChange={setReconnectInterval}
                 min={1000}
                 max={30000}
               />
               <NumberInput
-                label="最大重连次数"
+                label={t('dialogs.settings.maxReconnect')}
                 value={reconnectAttempts}
                 onChange={setReconnectAttempts}
                 min={1}
@@ -437,7 +467,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       case 'manage':
         return (
           <div className="space-y-4">
-            <SectionTitle title="配置管理" />
+            <SectionTitle title={t('dialogs.settings.manage')} />
             <div className="flex gap-2">
               <button
                 onClick={handleExport}
@@ -456,7 +486,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                   <polyline points="17 8 12 3 7 8" />
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
-                导出配置
+                {t('dialogs.settings.exportConfig')}
               </button>
               <button
                 onClick={handleImport}
@@ -475,7 +505,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                导入配置
+                {t('dialogs.settings.importConfig')}
               </button>
             </div>
             {exportSuccess && (
@@ -489,7 +519,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                 >
                   <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm3.03 5.03a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-1.5-1.5a.75.75 0 011.06-1.06L6 7.94l2.97-2.97a.75.75 0 011.06 0z" />
                 </svg>
-                配置已导出
+                {t('dialogs.settings.exported')}
               </div>
             )}
             {importError && (
@@ -506,9 +536,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                 {importError}
               </div>
             )}
-            <p className="text-xs text-text-secondary/70">
-              导出包含：全部配置、主题、会话列表、快捷按钮、TFTP / NFS / FTP 服务配置
-            </p>
+            <p className="text-xs text-text-secondary/70">{t('dialogs.settings.exportIncludes')}</p>
           </div>
         );
 
@@ -523,7 +551,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
         {/* 左侧导航 */}
         <div className="w-[130px] flex-shrink-0 border-r border-border bg-background/30 flex flex-col">
           <div className="px-3.5 pt-3.5 pb-2.5 border-b border-border/50">
-            <h2 className="text-sm font-semibold">设置</h2>
+            <h2 className="text-sm font-semibold">{t('dialogs.settings.title')}</h2>
           </div>
           <div className="flex-1 overflow-y-auto py-1.5">
             {SECTIONS.map((section) => (
@@ -536,7 +564,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                     : 'text-text-secondary hover:bg-hover hover:text-text'
                 }`}
               >
-                {section.label}
+                {t(`dialogs.settings.${section.id}`)}
               </button>
             ))}
           </div>
@@ -545,9 +573,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
         {/* 右侧内容 */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center justify-between px-5 py-3 border-b border-border flex-shrink-0 bg-surface">
-            <h3 className="text-sm font-medium">
-              {SECTIONS.find((s) => s.id === activeSection)?.label}
-            </h3>
+            <h3 className="text-sm font-medium">{t(`dialogs.settings.${activeSection}`)}</h3>
             <button
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text hover:bg-hover transition-colors"
@@ -570,10 +596,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
           {/* 底部按钮 */}
           <div className="flex justify-end gap-2.5 px-5 py-3.5 border-t border-border bg-background/30 flex-shrink-0">
             <button onClick={onClose} className="dialog-btn dialog-btn-secondary text-sm px-4">
-              取消
+              {t('dialogs.settings.cancel')}
             </button>
             <button onClick={handleSave} className="dialog-btn dialog-btn-primary text-sm px-4">
-              保存
+              {t('dialogs.settings.save')}
             </button>
           </div>
         </div>

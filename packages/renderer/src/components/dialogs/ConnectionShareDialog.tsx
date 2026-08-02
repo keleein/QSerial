@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTerminalStore } from '@/stores/terminal';
 import { useConfigStore } from '@/stores/config';
 import { ConnectionType, ConnectionState } from '@qserial/shared';
@@ -32,20 +33,20 @@ interface SessionInfo {
   host?: string;
 }
 
-const CONNECTION_TYPE_LABELS: Record<ConnectionType, string> = {
-  [ConnectionType.SERIAL]: '串口',
-  [ConnectionType.SSH]: 'SSH',
-  [ConnectionType.TELNET]: 'Telnet',
-  [ConnectionType.PTY]: '本地终端',
-  [ConnectionType.SERIAL_SERVER]: '串口共享',
-  [ConnectionType.CONNECTION_SERVER]: '连接共享',
-};
-
 export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
   isOpen,
   onClose,
   defaultSessionId,
 }) => {
+  const { t } = useTranslation();
+  const CONNECTION_TYPE_LABELS: Record<ConnectionType, string> = {
+    [ConnectionType.SERIAL]: t('dialogs.share.typeSerial'),
+    [ConnectionType.SSH]: 'SSH',
+    [ConnectionType.TELNET]: 'Telnet',
+    [ConnectionType.PTY]: t('dialogs.share.typeLocalTerminal'),
+    [ConnectionType.SERIAL_SERVER]: t('dialogs.share.typeSerialShare'),
+    [ConnectionType.CONNECTION_SERVER]: t('dialogs.share.typeConnectionShare'),
+  };
   const terminalState = useTerminalStore();
   const sessions = terminalState?.sessions || {};
   const { config, updateConfig } = useConfigStore();
@@ -89,7 +90,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
         let description = '';
         switch (session.connectionType) {
           case ConnectionType.SERIAL:
-            description = session.serialPath || '串口';
+            description = session.serialPath || t('dialogs.share.typeSerial');
             break;
           case ConnectionType.SSH:
             description = session.host || 'SSH';
@@ -98,10 +99,11 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
             description = session.host || 'Telnet';
             break;
           case ConnectionType.PTY:
-            description = '本地终端';
+            description = t('dialogs.share.typeLocalTerminal');
             break;
           default:
-            description = CONNECTION_TYPE_LABELS[session.connectionType] || '未知';
+            description =
+              CONNECTION_TYPE_LABELS[session.connectionType] || t('dialogs.share.typeUnknown');
         }
 
         active.push({
@@ -182,14 +184,14 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
     setIsStarting(true);
 
     if (!selectedSessionId) {
-      setError('请选择一个活跃连接');
+      setError(t('dialogs.share.selectActive'));
       setIsStarting(false);
       return;
     }
 
     const session = activeSessions.find((s) => s.sessionId === selectedSessionId);
     if (!session) {
-      setError('所选会话不存在');
+      setError(t('dialogs.share.sessionNotFound'));
       setIsStarting(false);
       return;
     }
@@ -254,7 +256,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
-            <h3 className="text-base font-semibold">连接共享</h3>
+            <h3 className="text-base font-semibold">{t('dialogs.share.title')}</h3>
           </div>
           <button
             onClick={onClose}
@@ -277,7 +279,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
           {/* 数据源选择 */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              选择活跃连接
+              {t('dialogs.share.selectActive')}
             </label>
             <select
               value={selectedSessionId}
@@ -285,7 +287,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               disabled={isRunning}
               className="dialog-select"
             >
-              <option value="">选择连接...</option>
+              <option value="">{t('dialogs.share.selectPlaceholder')}</option>
               {activeSessions.map((s) => (
                 <option key={s.sessionId} value={s.sessionId}>
                   [{CONNECTION_TYPE_LABELS[s.connectionType]}] {s.description} - {s.name}
@@ -294,16 +296,14 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
             </select>
 
             {activeSessions.length === 0 && (
-              <p className="text-xs text-yellow-500 mt-1.5">
-                没有活跃连接。请先连接一个串口、SSH 或 Telnet 会话。
-              </p>
+              <p className="text-xs text-yellow-500 mt-1.5">{t('dialogs.share.noActive')}</p>
             )}
 
             {selectedSessionId && (
               <div className="mt-2 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500" />
                 <span className="text-xs text-text-secondary">
-                  已选择活跃连接，将共享该连接的数据流
+                  {t('dialogs.share.selectedInfo')}
                 </span>
               </div>
             )}
@@ -312,7 +312,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
           {/* 本地监听端口 */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              本地监听端口
+              {t('dialogs.share.localListenPort')}
             </label>
             <input
               type="number"
@@ -327,26 +327,28 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
 
           {/* 监听地址 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">监听地址</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              {t('dialogs.share.listenAddress')}
+            </label>
             <select
               value={listenAddress}
               onChange={(e) => setListenAddress(e.target.value)}
               disabled={isRunning}
               className="dialog-select"
             >
-              <option value="0.0.0.0">0.0.0.0 (所有接口 - 局域网可访问)</option>
-              <option value="127.0.0.1">127.0.0.1 (仅本机)</option>
+              <option value="0.0.0.0">0.0.0.0 ({t('dialogs.share.allInterfaces')})</option>
+              <option value="127.0.0.1">127.0.0.1 ({t('dialogs.share.localOnly')})</option>
             </select>
-            <p className="text-xs text-text-secondary/50 mt-1">
-              选择 0.0.0.0 允许局域网内其他设备连接；选择 127.0.0.1 仅限本机访问
-            </p>
+            <p className="text-xs text-text-secondary/50 mt-1">{t('dialogs.share.listenHint')}</p>
           </div>
 
           {/* 访问密码 */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              访问密码{' '}
-              <span className="text-text-secondary/50 font-normal">(可选，留空则无需认证)</span>
+              {t('dialogs.share.accessPassword')}{' '}
+              <span className="text-text-secondary/50 font-normal">
+                ({t('dialogs.share.passwordOptionalHint')})
+              </span>
             </label>
             <input
               type="password"
@@ -354,11 +356,9 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               onChange={(e) => setAccessPassword(e.target.value)}
               disabled={isRunning}
               className="dialog-input"
-              placeholder="留空则任何人可连接"
+              placeholder={t('dialogs.share.passwordPlaceholder')}
             />
-            <p className="text-xs text-text-secondary/50 mt-1">
-              设置密码后，客户端连接时需输入密码进行认证
-            </p>
+            <p className="text-xs text-text-secondary/50 mt-1">{t('dialogs.share.passwordHint')}</p>
           </div>
 
           {/* 状态 */}
@@ -369,14 +369,19 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               />
               <span className="text-sm">
                 {isRunning
-                  ? `运行中 - ${status?.sourceDescription || ''} -> ${status?.listenAddress || '0.0.0.0'}:${localPortValue}${status?.hasPassword ? ' [已设密码]' : ''}`
-                  : '已停止'}
+                  ? t('dialogs.share.runningStatus', {
+                      source: status?.sourceDescription || '',
+                      address: status?.listenAddress || '0.0.0.0',
+                      port: localPortValue,
+                      password: status?.hasPassword ? t('dialogs.share.hasPassword') : '',
+                    })
+                  : t('dialogs.share.stoppedStatus')}
               </span>
             </div>
             {isRunning && status && status.clients.length > 0 && (
               <div className="ml-5 text-xs text-text-secondary space-y-0.5">
                 <p className="font-medium text-text-secondary/80">
-                  TELNET 客户端 ({status.clientCount})：
+                  {t('dialogs.share.telnetClients', { count: status.clientCount })}：
                 </p>
                 {status.clients.map((addr) => (
                   <p key={addr} className="ml-2 font-mono">
@@ -386,9 +391,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               </div>
             )}
             {isRunning && status && status.clientCount > 1 && (
-              <p className="ml-5 text-xs text-yellow-500">
-                多客户端同时操作时，设备回显双方可见。同时发送指令可能导致数据混乱
-              </p>
+              <p className="ml-5 text-xs text-yellow-500">{t('dialogs.share.multiClientHint')}</p>
             )}
           </div>
 
@@ -415,7 +418,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
                 onClick={handleStop}
                 className="dialog-btn flex-1 bg-error text-white hover:bg-error/80 rounded-md"
               >
-                停止共享
+                {t('dialogs.share.stopShare')}
               </button>
             ) : (
               <button
@@ -423,28 +426,24 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
                 disabled={!selectedSessionId || isStarting || activeSessions.length === 0}
                 className="dialog-btn dialog-btn-primary flex-1 disabled:opacity-50"
               >
-                {isStarting ? '启动中...' : '启动共享'}
+                {isStarting ? t('dialogs.share.starting') : t('dialogs.share.startShare')}
               </button>
             )}
           </div>
 
           {/* 使用说明 */}
           <div className="text-xs text-text-secondary bg-background/50 rounded-lg p-3 space-y-1">
-            <p className="font-medium text-text-secondary/80">使用方式：</p>
-            <p>1. 选择任意活跃连接（串口、SSH、Telnet等），点击启动共享</p>
-            <p>
-              2. 远程设备执行: telnet {'<IP>'} {'{端口}'} 即可操作
-            </p>
-            <p>
-              3. Windows需先启用Telnet客户端: dism /online /Enable-Feature /FeatureName:TelnetClient
-            </p>
+            <p className="font-medium text-text-secondary/80">{t('dialogs.share.usageTitle')}</p>
+            <p>{t('dialogs.share.usage1')}</p>
+            <p>{t('dialogs.share.usage2')}</p>
+            <p>{t('dialogs.share.usage3')}</p>
           </div>
         </div>
 
         {/* 关闭按钮 */}
         <div className="flex justify-end px-5 py-4 border-t border-border bg-background/30 flex-shrink-0">
           <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
-            关闭
+            {t('dialogs.share.close')}
           </button>
         </div>
       </div>
@@ -464,33 +463,38 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               >
                 <path d="M20 6L9 17l-5-5" />
               </svg>
-              连接共享已启动
+              {t('dialogs.share.startedTitle')}
             </h3>
 
             <div className="space-y-4 flex-1 overflow-y-auto">
               <div className="bg-background/50 rounded p-3">
-                <p className="text-sm text-text-secondary mb-2">连接信息：</p>
+                <p className="text-sm text-text-secondary mb-2">
+                  {t('dialogs.share.connectionInfo')}
+                </p>
                 <div className="space-y-1 text-sm">
                   <p>
-                    <span className="text-text-secondary">数据源：</span>
-                    {status?.sourceDescription || '未知'}
+                    <span className="text-text-secondary">{t('dialogs.share.source')}</span>
+                    {status?.sourceDescription || t('dialogs.share.typeUnknown')}
                   </p>
                   <p>
-                    <span className="text-text-secondary">TELNET 端口：</span>
+                    <span className="text-text-secondary">{t('dialogs.share.telnetPort')}</span>
                     {listenAddress}:{localPortValue}
                   </p>
                   {accessPassword && (
                     <p>
-                      <span className="text-text-secondary">访问密码：</span>已设置
+                      <span className="text-text-secondary">
+                        {t('dialogs.share.accessPasswordLabel')}
+                      </span>
+                      {t('dialogs.share.passwordSet')}
                     </p>
                   )}
                 </div>
               </div>
 
               <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
-                <p className="text-sm font-medium mb-2">人类终端 — 局域网设备执行：</p>
+                <p className="text-sm font-medium mb-2">{t('dialogs.share.humanTerminal')}</p>
                 <div className="bg-background rounded-md p-2 font-mono text-sm">
-                  telnet {'<本机IP>'} {localPortValue}
+                  telnet {t('dialogs.share.localIpPlaceholder')} {localPortValue}
                 </div>
                 <button
                   onClick={async () => {
@@ -498,15 +502,17 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
                       const ip = await window.qserial.getLocalIp();
                       await navigator.clipboard.writeText(`telnet ${ip} ${localPortValue}`);
                     } catch {
-                      await navigator.clipboard.writeText(`telnet <本机IP> ${localPortValue}`);
+                      await navigator.clipboard.writeText(
+                        `telnet ${t('dialogs.share.localIpPlaceholder')} ${localPortValue}`
+                      );
                     }
                   }}
                   className="mt-2 px-3 py-1.5 text-sm bg-primary/20 hover:bg-primary/30 rounded-md transition-colors"
                 >
-                  复制 TELNET 命令
+                  {t('dialogs.share.copyTelnetCmd')}
                 </button>
                 {accessPassword && (
-                  <p className="text-xs text-yellow-500 mt-2">连接后直接输入密码回车即可认证</p>
+                  <p className="text-xs text-yellow-500 mt-2">{t('dialogs.share.authHint')}</p>
                 )}
               </div>
             </div>
@@ -516,7 +522,7 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
                 onClick={() => setShowSuccessDialog(false)}
                 className="dialog-btn dialog-btn-primary"
               >
-                知道了
+                {t('dialogs.share.gotIt')}
               </button>
             </div>
           </div>
