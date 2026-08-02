@@ -68,9 +68,12 @@ function sendTransferEvent(event: TftpTransferEvent): void {
  * 启动 TFTP 服务器
  */
 export function startTftpServer(port: number, rootDir: string): void {
-  // 如果已经在运行，先停止
+  // 如果已在运行或正在启动，直接返回。
+  // 不能在这里 stop 再重建：listen() 内部是异步 fs.stat -> bind，
+  // 立即关闭旧 server 会让其 pending 的 bind 在已关闭的 socket 上抛
+  // ERR_SOCKET_DGRAM_NOT_RUNNING（uncaught），导致主进程崩溃。
   if (server) {
-    stopTftpServer();
+    return;
   }
 
   // eslint-disable-next-line no-useless-catch
@@ -88,6 +91,7 @@ export function startTftpServer(port: number, rootDir: string): void {
     });
 
     server.on('error', (error: Error) => {
+      server = null;
       currentStatus.running = false;
       sendStatusEvent({ running: false, error: error.message });
     });

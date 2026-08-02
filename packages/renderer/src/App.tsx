@@ -15,6 +15,9 @@ import { initMcpListeners } from './stores/mcp';
 import { useMcpStore } from './stores/mcp';
 import i18n from './i18n';
 
+// StrictMode 在 dev 下会双执行 effect，避免自动启动服务被触发两次
+let autoStartServicesRan = false;
+
 export const App: React.FC = () => {
   const { initialize: initConfig, config } = useConfigStore();
   const { currentTheme } = useThemeStore();
@@ -27,6 +30,9 @@ export const App: React.FC = () => {
 
     // 自启服务：autoStart = true 的服务在应用启动时自动运行
     const autoStartServices = async () => {
+      if (autoStartServicesRan) return;
+      autoStartServicesRan = true;
+
       const tftpCfg = useTftpStore.getState().config;
       if (tftpCfg.autoStart && tftpCfg.rootDir) {
         useTftpStore
