@@ -32,7 +32,15 @@ if (process.platform === 'win32') {
   }
 
   // Copy win-unpacked to qserial-portable
-  execSync(`robocopy "${UNPACKED_DIR}" "${portableSubdir}" /E /NFL /NDL /NJH /NJS /nc /ns /np`, { stdio: 'pipe' });
+  // robocopy exit codes 0-7 are success (1 = files copied); only >=8 is a real failure
+  try {
+    execSync(`robocopy "${UNPACKED_DIR}" "${portableSubdir}" /E /NFL /NDL /NJH /NJS /nc /ns /np`, {
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    const status = error && typeof error === 'object' && 'status' in error ? error.status : -1;
+    if (status >= 8) throw error;
+  }
 
   // Move NSIS installer out
   const installerDir = path.join(RELEASE_DIR, 'installer');
