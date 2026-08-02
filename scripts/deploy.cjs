@@ -53,8 +53,8 @@ function targetRelease() {
   console.log('  → 创建子目录...');
   execSync(mkdir, { stdio: 'inherit' });
 
-  const installerExe = path.join(releaseDir, 'QSerial-1.0.0-x64-win.exe');
-  const portableExe = path.join(releaseDir, 'QSerial-1.0.0-x64-win-portable.exe');
+  const installerExe = path.join(releaseDir, 'QSerial-1.1.0-x64-win.exe');
+  const portableExe = path.join(releaseDir, 'QSerial-1.1.0-x64-win-portable.exe');
 
   if (!fs.existsSync(installerExe) || !fs.existsSync(portableExe)) {
     console.log('⚠️  release/ 目录缺少安装包，请先 pnpm run package:win:ci\n');
@@ -62,8 +62,8 @@ function targetRelease() {
   }
 
   console.log('\n📦 部署安装包...');
-  scp(installerExe, `${WEB_ROOT}/download/installer/QSerial-1.0.0-x64-win.exe`);
-  scp(portableExe, `${WEB_ROOT}/download/portable/QSerial-1.0.0-x64-win-portable.exe`);
+  scp(installerExe, `${WEB_ROOT}/download/installer/QSerial-1.1.0-x64-win.exe`);
+  scp(portableExe, `${WEB_ROOT}/download/portable/QSerial-1.1.0-x64-win-portable.exe`);
   console.log('✅ 安装包部署完成\n');
 }
 

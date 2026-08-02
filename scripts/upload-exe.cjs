@@ -32,12 +32,12 @@ if (!HOST || !PASS) {
 
 const FILES = {
   installer: {
-    local: path.join(ROOT, 'release', 'QSerial-1.0.0-x64-win.exe'),
-    remote: `${WEB_ROOT}/download/installer/QSerial-1.0.0-x64-win.exe`,
+    local: path.join(ROOT, 'release', 'QSerial-1.1.0-x64-win.exe'),
+    remote: `${WEB_ROOT}/download/installer/QSerial-1.1.0-x64-win.exe`,
   },
   portable: {
-    local: path.join(ROOT, 'release', 'QSerial-1.0.0-x64-win-portable.exe'),
-    remote: `${WEB_ROOT}/download/portable/QSerial-1.0.0-x64-win-portable.exe`,
+    local: path.join(ROOT, 'release', 'QSerial-1.1.0-x64-win-portable.exe'),
+    remote: `${WEB_ROOT}/download/portable/QSerial-1.1.0-x64-win-portable.exe`,
   },
 }
 

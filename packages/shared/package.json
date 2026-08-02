@@ -1,6 +1,6 @@
 {
   "name": "@qserial/shared",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Shared types and utilities for QSerial",
   "type": "module",
   "main": "./dist/index.js",
