@@ -88,6 +88,7 @@ module.exports = {
     icon: 'build/icon.ico',
   },
   nsis: {
+    artifactName: '${productName}-${version}-${arch}-${os}.${ext}',
     oneClick: false,
     allowToChangeInstallationDirectory: true,
     createDesktopShortcut: true,
