@@ -112,7 +112,85 @@
       "resources": "Resources",
       "notifications": "Notifications",
       "port": "Port",
-      "authEnabled": "Auth Enabled"
+      "authEnabled": "Auth Enabled",
+      "serverHeader": "MCP AI Server",
+      "headerInfo": "{{address}}:{{port}} · {{tools}} tools · {{resources}} resources · {{prompts}} prompts · SSE notifications",
+      "listenAddress": "Listen address",
+      "localOnly": "Local only",
+      "remoteAccess": "Remote accessible",
+      "authLabel": "Bearer Token auth",
+      "optional": "(optional)",
+      "authPlaceholder": "Leave empty to disable auth",
+      "corsLabel": "CORS allowed origins",
+      "corsOptional": "(optional, comma-separated)",
+      "corsPlaceholder": "Leave empty to allow all origins",
+      "remoteSuffix": " (remote)",
+      "localSuffix": " (local)",
+      "authenticated": "authenticated",
+      "starting": "Starting...",
+      "stopping": "Stopping...",
+      "copy": "Copy",
+      "tokenNotice": "Non-local listen address, Token auto-generated (use it when configuring MCP clients)",
+      "availableDevices": "Available devices",
+      "connectionCount": "{{count}} connections",
+      "noConnections": "No active connections",
+      "noConnectionsHint": "Connections will appear here after you create a terminal session",
+      "configExample": "MCP Config",
+      "toolsTitle": "Tool capabilities",
+      "prompts": "Prompts",
+      "parameters": "Parameters",
+      "sampling": "Sampling",
+      "samplingLogin": "Login with unknown prompt → AI decides",
+      "samplingScript": "Script step failed → AI decides (retry/skip/abort)",
+      "samplingEndpoint": "Generic sampling/response endpoint",
+      "cat": {
+        "conn": "Connection",
+        "data": "Data I/O",
+        "hw": "Hardware",
+        "script": "Scripting",
+        "watch": "Pattern watch",
+        "analyze": "Analysis",
+        "file": "File transfer",
+        "discover": "Discovery",
+        "session": "Sessions",
+        "record": "Screen record",
+        "sftp": "SFTP",
+        "app": "App tools"
+      },
+      "client": {
+        "codebuddy": {
+          "description": "Tencent AI coding",
+          "configFile": "IDE settings panel"
+        },
+        "claude-code": {
+          "description": "Anthropic CLI",
+          "configFile": ".mcp.json or ~/.claude.json"
+        },
+        "claude-desktop": {
+          "description": "Anthropic desktop",
+          "configFile": "claude_desktop_config.json"
+        },
+        "codex": {
+          "description": "OpenAI Codex CLI",
+          "configFile": ".codex/mcp.json"
+        },
+        "gemini": {
+          "description": "Google Gemini CLI",
+          "configFile": ".gemini/mcp.json"
+        },
+        "opencode": {
+          "description": "OpenCode CLI",
+          "configFile": ".opencode/mcp.json"
+        },
+        "openclaw": {
+          "description": "OpenClaw CLI",
+          "configFile": ".openclaw/mcp.json"
+        },
+        "hermes": {
+          "description": "Hermes CLI",
+          "configFile": ".hermes/mcp.json"
+        }
+      }
     },
     "share": {
       "title": "Connection Share",

@@ -112,7 +112,85 @@
       "resources": "资源",
       "notifications": "通知",
       "port": "端口",
-      "authEnabled": "认证已启用"
+      "authEnabled": "认证已启用",
+      "serverHeader": "MCP AI 服务器",
+      "headerInfo": "{{address}}:{{port}} · {{tools}} 个工具 · {{resources}} 个资源 · {{prompts}} 个提示模板 · SSE 通知",
+      "listenAddress": "监听地址",
+      "localOnly": "仅本机",
+      "remoteAccess": "可远程访问",
+      "authLabel": "Bearer Token 认证",
+      "optional": "（可选）",
+      "authPlaceholder": "留空则不启用认证",
+      "corsLabel": "CORS 允许域名",
+      "corsOptional": "（可选，逗号分隔）",
+      "corsPlaceholder": "留空则允许所有来源",
+      "remoteSuffix": "（可远程）",
+      "localSuffix": "（仅本机）",
+      "authenticated": "已认证",
+      "starting": "启动中...",
+      "stopping": "停止中...",
+      "copy": "复制",
+      "tokenNotice": "监听地址非本机，已自动生成 Token（请在 MCP 客户端配置时使用）",
+      "availableDevices": "可用设备",
+      "connectionCount": "{{count}} 个连接",
+      "noConnections": "暂无可用连接",
+      "noConnectionsHint": "创建终端连接后会显示在此处",
+      "configExample": "MCP 配置",
+      "toolsTitle": "工具能力",
+      "prompts": "提示模板",
+      "parameters": "参数",
+      "sampling": "Sampling",
+      "samplingLogin": "连接登录 未知提示符 → AI 决策",
+      "samplingScript": "脚本步骤失败 → AI 决策（重试/跳过/终止）",
+      "samplingEndpoint": "通用 sampling/response 端点",
+      "cat": {
+        "conn": "连接管理",
+        "data": "数据交互",
+        "hw": "硬件控制",
+        "script": "脚本自动化",
+        "watch": "模式监控",
+        "analyze": "连接分析",
+        "file": "文件传输",
+        "discover": "设备发现",
+        "session": "会话管理",
+        "record": "终端录制",
+        "sftp": "SFTP 文件",
+        "app": "应用工具"
+      },
+      "client": {
+        "codebuddy": {
+          "description": "腾讯 AI 编程",
+          "configFile": "IDE 设置面板"
+        },
+        "claude-code": {
+          "description": "Anthropic CLI",
+          "configFile": ".mcp.json 或 ~/.claude.json"
+        },
+        "claude-desktop": {
+          "description": "Anthropic 桌面版",
+          "configFile": "claude_desktop_config.json"
+        },
+        "codex": {
+          "description": "OpenAI Codex CLI",
+          "configFile": ".codex/mcp.json"
+        },
+        "gemini": {
+          "description": "Google Gemini CLI",
+          "configFile": ".gemini/mcp.json"
+        },
+        "opencode": {
+          "description": "OpenCode CLI",
+          "configFile": ".opencode/mcp.json"
+        },
+        "openclaw": {
+          "description": "OpenClaw CLI",
+          "configFile": ".openclaw/mcp.json"
+        },
+        "hermes": {
+          "description": "Hermes CLI",
+          "configFile": ".hermes/mcp.json"
+        }
+      }
     },
     "share": {
       "title": "连接共享",

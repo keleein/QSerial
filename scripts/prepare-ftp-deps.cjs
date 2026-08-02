@@ -32,6 +32,21 @@ const pkgJson = {
 
 fs.writeFileSync(path.join(FTP_DIR, 'package.json'), JSON.stringify(pkgJson, null, 2));
 
+// npm 会从 cwd 向上查找 .npmrc；根目录的 .npmrc 含 pnpm 专用配置（node-linker），
+// 会让每次 npm install 报 "Unknown config" 警告。这里写入独立的 .npmrc 屏蔽根目录配置。
+const rootNpmrcPath = path.join(ROOT, '.npmrc');
+let ftpRegistry = 'registry=https://registry.npmmirror.com\n';
+if (fs.existsSync(rootNpmrcPath)) {
+  const regLine = fs
+    .readFileSync(rootNpmrcPath, 'utf-8')
+    .split('\n')
+    .find((line) => line.startsWith('registry='));
+  if (regLine) {
+    ftpRegistry = regLine.trim() + '\n';
+  }
+}
+fs.writeFileSync(path.join(FTP_DIR, '.npmrc'), ftpRegistry);
+
 console.log('Installing ftp-srv dependencies (flat)...');
 try {
   const output = execSync('npm install --omit=dev --no-package-lock --ignore-scripts --no-audit --no-fund 2>&1', {

@@ -69,19 +69,19 @@ const ALL_TOOLS = [
   { name: "app.record.list", cat: "app", desc: "List active screen recordings", inputs: "(none)" },
 ];
 
-const CATEGORIES: Record<string, { label: string; icon: string }> = {
-  conn: { label: "连接管理", icon: "🔌" },
-  data: { label: "数据交互", icon: "📡" },
-  hw: { label: "硬件控制", icon: "⚙️" },
-  script: { label: "脚本自动化", icon: "⚡" },
-  watch: { label: "模式监控", icon: "👁️" },
-  analyze: { label: "连接分析", icon: "🔍" },
-  file: { label: "文件传输", icon: "📁" },
-  discover: { label: "设备发现", icon: "📋" },
-  session: { label: "会话管理", icon: "💾" },
-  record: { label: "Terminal Record", icon: "rec" },
-  sftp: { label: "SFTP Files", icon: "sftp" },
-    app: { label: "应用工具", icon: "🖥️" },
+const CATEGORIES: Record<string, { icon: string }> = {
+  conn: { icon: "🔌" },
+  data: { icon: "📡" },
+  hw: { icon: "⚙️" },
+  script: { icon: "⚡" },
+  watch: { icon: "👁️" },
+  analyze: { icon: "🔍" },
+  file: { icon: "📁" },
+  discover: { icon: "📋" },
+  session: { icon: "💾" },
+  record: { icon: "rec" },
+  sftp: { icon: "sftp" },
+  app: { icon: "🖥️" },
 };
 
 const CAT_ORDER = ["conn", "data", "hw", "script", "watch", "analyze", "file", "discover", "session", "record", "sftp", "app"];
@@ -116,22 +116,20 @@ const NOTIFICATIONS_INFO = [
 interface ClientTemplate {
   id: string;
   name: string;
-  description: string;
-  configFile: string;
   type: "streamable-http" | "sse";
   configKey: string;
   extraField?: string;
 }
 
 const CLIENT_TEMPLATES: ClientTemplate[] = [
-  { id: "codebuddy", name: "CodeBuddy", description: "腾讯 AI 编程", configFile: "IDE 设置面板", type: "sse", configKey: "mcpServers" },
-  { id: "claude-code", name: "Claude Code", description: "Anthropic CLI", configFile: ".mcp.json 或 ~/.claude.json", type: "streamable-http", configKey: "mcpServers" },
-  { id: "claude-desktop", name: "Claude Desktop", description: "Anthropic 桌面版", configFile: "claude_desktop_config.json", type: "streamable-http", configKey: "mcpServers" },
-  { id: "codex", name: "Codex", description: "OpenAI Codex CLI", configFile: ".codex/mcp.json", type: "streamable-http", configKey: "mcpServers" },
-  { id: "gemini", name: "Gemini", description: "Google Gemini CLI", configFile: ".gemini/mcp.json", type: "streamable-http", configKey: "mcpServers" },
-  { id: "opencode", name: "OpenCode", description: "OpenCode CLI", configFile: ".opencode/mcp.json", type: "streamable-http", configKey: "mcpServers" },
-  { id: "openclaw", name: "OpenClaw", description: "OpenClaw CLI", configFile: ".openclaw/mcp.json", type: "streamable-http", configKey: "mcpServers" },
-  { id: "hermes", name: "Hermes", description: "Hermes CLI", configFile: ".hermes/mcp.json", type: "streamable-http", configKey: "mcpServers" },
+  { id: "codebuddy", name: "CodeBuddy", type: "sse", configKey: "mcpServers" },
+  { id: "claude-code", name: "Claude Code", type: "streamable-http", configKey: "mcpServers" },
+  { id: "claude-desktop", name: "Claude Desktop", type: "streamable-http", configKey: "mcpServers" },
+  { id: "codex", name: "Codex", type: "streamable-http", configKey: "mcpServers" },
+  { id: "gemini", name: "Gemini", type: "streamable-http", configKey: "mcpServers" },
+  { id: "opencode", name: "OpenCode", type: "streamable-http", configKey: "mcpServers" },
+  { id: "openclaw", name: "OpenClaw", type: "streamable-http", configKey: "mcpServers" },
+  { id: "hermes", name: "Hermes", type: "streamable-http", configKey: "mcpServers" },
 ];
 
 function generateClientConfig(client: ClientTemplate, ip: string, port: number, authPassword: string, pretty: boolean = false): string {
@@ -154,7 +152,7 @@ function generateClientConfig(client: ClientTemplate, ip: string, port: number, 
 interface McpDialogProps { isOpen: boolean; onClose: () => void; }
 
 export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
-  useTranslation();
+  const { t } = useTranslation();
   const {
     config,
     running,
@@ -249,9 +247,15 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="px-5 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
           <div>
-            <h2 className="text-lg font-semibold">MCP AI 服务器</h2>
+            <h2 className="text-lg font-semibold">{t('dialogs.mcp.serverHeader')}</h2>
             <p className="text-xs text-text-secondary/60 mt-0.5">
-              {config.listenAddress}:{config.port} · {ALL_TOOLS.length} 工具 · 7 资源 · 6 提示模板 · SSE 通知
+              {t('dialogs.mcp.headerInfo', {
+                address: config.listenAddress,
+                port: config.port,
+                tools: ALL_TOOLS.length,
+                resources: RESOURCES_INFO.length,
+                prompts: PROMPTS_INFO.length,
+              })}
             </p>
           </div>
           <button
@@ -272,7 +276,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
             {/* 端口 */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">端口</label>
+                <label className="block text-xs font-medium text-text-secondary mb-1">{t('dialogs.mcp.port')}</label>
                 <input
                   type="number"
                   value={localPort}
@@ -285,43 +289,43 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
               </div>
               {/* 监听地址 */}
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">监听地址</label>
+                <label className="block text-xs font-medium text-text-secondary mb-1">{t('dialogs.mcp.listenAddress')}</label>
                 <select
                   value={localListenAddress}
                   onChange={(e) => handleListenAddressChange(e.target.value)}
                   disabled={running}
                   className="dialog-input"
                 >
-                  <option value="127.0.0.1">127.0.0.1 (仅本机)</option>
-                  <option value="0.0.0.0">0.0.0.0 (可远程访问)</option>
+                  <option value="127.0.0.1">127.0.0.1 ({t('dialogs.mcp.localOnly')})</option>
+                  <option value="0.0.0.0">0.0.0.0 ({t('dialogs.mcp.remoteAccess')})</option>
                 </select>
               </div>
             </div>
             {/* 认证密码 */}
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1">
-                Bearer Token 认证 <span className="text-text-secondary/50 font-normal">(可选)</span>
+                {t('dialogs.mcp.authLabel')} <span className="text-text-secondary/50 font-normal">({t('dialogs.mcp.optional')})</span>
               </label>
               <input
                 type="password"
                 value={localAuthPassword}
                 onChange={(e) => handleAuthPasswordChange(e.target.value)}
                 disabled={running}
-                placeholder="留空则不启用认证"
+                placeholder={t('dialogs.mcp.authPlaceholder')}
                 className="dialog-input"
               />
             </div>
             {/* CORS 域名 */}
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1">
-                CORS 允许域名 <span className="text-text-secondary/50 font-normal">(可选，逗号分隔)</span>
+                {t('dialogs.mcp.corsLabel')} <span className="text-text-secondary/50 font-normal">({t('dialogs.mcp.corsOptional')})</span>
               </label>
               <input
                 type="text"
                 value={localCorsOrigins}
                 onChange={(e) => handleCorsOriginsChange(e.target.value)}
                 disabled={running}
-                placeholder="留空则允许所有来源"
+                placeholder={t('dialogs.mcp.corsPlaceholder')}
                 className="dialog-input"
               />
             </div>
@@ -333,8 +337,8 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                 />
                 <span className="text-sm font-medium">
                   {running
-                    ? `运行中 — ${config.listenAddress}:${config.port}${config.listenAddress === "0.0.0.0" ? " (可远程)" : " (仅本机)"}${activeToken ? " · 已认证" : ""}`
-                    : starting ? "启动中..." : stopping ? "停止中..." : "已停止"}
+                    ? `${t('dialogs.mcp.running')} — ${config.listenAddress}:${config.port}${config.listenAddress === "0.0.0.0" ? t('dialogs.mcp.remoteSuffix') : t('dialogs.mcp.localSuffix')}${activeToken ? ` · ${t('dialogs.mcp.authenticated')}` : ""}`
+                    : starting ? t('dialogs.mcp.starting') : stopping ? t('dialogs.mcp.stopping') : t('dialogs.mcp.stopped')}
                 </span>
               </div>
               <div className="flex gap-2">
@@ -344,7 +348,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                     disabled={stopping}
                     className="bg-error text-white hover:bg-error/80 rounded-md text-xs px-3.5 py-1.5 font-medium disabled:opacity-50 transition-colors"
                   >
-                    {stopping ? "停止中..." : "停止"}
+                    {stopping ? t('dialogs.mcp.stopping') : t('dialogs.mcp.stop')}
                   </button>
                 ) : (
                   <button
@@ -353,7 +357,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                     className="dialog-btn dialog-btn-primary text-xs disabled:opacity-50"
                     style={{ padding: "6px 14px" }}
                   >
-                    {starting ? "启动中..." : "启动"}
+                    {starting ? t('dialogs.mcp.starting') : t('dialogs.mcp.start')}
                   </button>
                 )}
               </div>
@@ -365,14 +369,14 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                   <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z"/>
                 </svg>
                 <span className="text-yellow-700 dark:text-yellow-300">
-                  监听地址非本机，已自动生成 Token（请在 MCP 客户端配置时使用）
+                  {t('dialogs.mcp.tokenNotice')}
                 </span>
                 <code className="text-[11px] font-mono bg-yellow-500/20 px-1.5 py-0.5 rounded">{activeToken}</code>
                 <button
                   onClick={() => navigator.clipboard.writeText(activeToken).catch(() => {})}
                   className="text-xs text-primary hover:text-primary/80 flex-shrink-0"
                 >
-                  复制
+                  {t('dialogs.mcp.copy')}
                 </button>
               </div>
             )}
@@ -391,14 +395,14 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
           {running && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">可用设备</h4>
-                <span className="text-xs text-text-secondary">{connections.length} 个连接</span>
+                <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{t('dialogs.mcp.availableDevices')}</h4>
+                <span className="text-xs text-text-secondary">{t('dialogs.mcp.connectionCount', { count: connections.length })}</span>
               </div>
               <div className="border border-border/50 rounded-lg bg-background/50 max-h-36 overflow-y-auto">
                 {connections.length === 0 ? (
                   <div className="text-sm text-text-secondary/50 p-3 text-center">
-                    暂无可用连接
-                    <p className="text-xs mt-1">创建终端连接后会显示在此处</p>
+                    {t('dialogs.mcp.noConnections')}
+                    <p className="text-xs mt-1">{t('dialogs.mcp.noConnectionsHint')}</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-border/50">
@@ -427,7 +431,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
           {/* MCP 配置示例 */}
           {running && (
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">MCP 配置</h4>
+              <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{t('dialogs.mcp.configExample')}</h4>
               <div className="border border-border/50 rounded-lg overflow-hidden">
                 <div className="flex bg-background/50 border-b border-border/50 overflow-x-auto">
                   {CLIENT_TEMPLATES.map((client) => (
@@ -439,7 +443,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                           ? "bg-surface text-primary font-medium border-b-2 border-primary -mb-[1px]"
                           : "text-text-secondary hover:text-text hover:bg-hover/50"
                       }`}
-                      title={client.description}
+                      title={t(`dialogs.mcp.client.${client.id}.description`)}
                     >
                       {client.name}
                     </button>
@@ -449,10 +453,10 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-text-secondary">
-                        {CLIENT_TEMPLATES.find(c => c.id === selectedClient)?.configFile || '.mcp.json'}
+                        {t(`dialogs.mcp.client.${(CLIENT_TEMPLATES.find(c => c.id === selectedClient) || CLIENT_TEMPLATES[0]).id}.configFile`)}
                       </span>
                       <span className="text-[10px] text-text-secondary/40">
-                        {CLIENT_TEMPLATES.find(c => c.id === selectedClient)?.description || ''}
+                        {t(`dialogs.mcp.client.${(CLIENT_TEMPLATES.find(c => c.id === selectedClient) || CLIENT_TEMPLATES[0]).id}.description`)}
                       </span>
                     </div>
                     <button
@@ -464,7 +468,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                       }}
                       className="text-xs text-primary hover:text-primary/80 transition-colors"
                     >
-                      复制
+                      {t('dialogs.mcp.copy')}
                     </button>
                   </div>
                   <pre className="text-[11px] font-mono text-text bg-background/60 rounded p-3 overflow-x-auto whitespace-pre-wrap">
@@ -485,7 +489,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
           {/* Tools */}
           <div>
             <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-              工具能力 ({ALL_TOOLS.length})
+              {t('dialogs.mcp.toolsTitle')} ({ALL_TOOLS.length})
             </h4>
             <div className="flex gap-1 flex-wrap mb-2">
               {CAT_ORDER.map((cat) => {
@@ -496,7 +500,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                     className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${
                       isActive ? "bg-primary/10 text-primary border border-primary/20" : "bg-background/50 text-text-secondary border border-border/50 hover:bg-hover/50"}`}>
                     <span>{CATEGORIES[cat].icon}</span>
-                    <span>{CATEGORIES[cat].label}</span>
+                    <span>{t(`dialogs.mcp.cat.${cat}`)}</span>
                     <span className="text-[10px] opacity-60">{count}</span>
                   </button>
                 );
@@ -519,7 +523,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
                   </div>
                   {expandedParams.has(tool.name) && (
                     <div className="mt-1 ml-[170px]">
-                      <span className="text-[10px] text-text-secondary/60">参数: {tool.inputs}</span>
+                      <span className="text-[10px] text-text-secondary/60">{t('dialogs.mcp.parameters')}: {tool.inputs}</span>
                     </div>
                   )}
                 </div>
@@ -530,7 +534,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
           {/* Resources */}
           <div>
             <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-              资源 ({RESOURCES_INFO.length})
+              {t('dialogs.mcp.resources')} ({RESOURCES_INFO.length})
             </h4>
             <div className="border border-border/50 rounded-lg divide-y divide-border/50">
               {RESOURCES_INFO.map((r) => (
@@ -545,7 +549,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
           {/* Prompts */}
           <div>
             <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-              提示模板 ({PROMPTS_INFO.length})
+              {t('dialogs.mcp.prompts')} ({PROMPTS_INFO.length})
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {PROMPTS_INFO.map((p) => (
@@ -558,7 +562,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                通知 ({NOTIFICATIONS_INFO.length})
+                {t('dialogs.mcp.notifications')} ({NOTIFICATIONS_INFO.length})
               </h4>
               <div className="space-y-1">
                 {NOTIFICATIONS_INFO.map((n) => (
@@ -568,12 +572,12 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
             </div>
             <div>
               <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                Sampling
+                {t('dialogs.mcp.sampling')}
               </h4>
               <div className="text-[11px] text-text-secondary/80 space-y-1">
-                <div>连接登录 未知提示符 → AI 决策</div>
-                <div>脚本步骤失败 → AI 决策 (重试/跳过/终止)</div>
-                <div>通用 sampling/response 端点</div>
+                <div>{t('dialogs.mcp.samplingLogin')}</div>
+                <div>{t('dialogs.mcp.samplingScript')}</div>
+                <div>{t('dialogs.mcp.samplingEndpoint')}</div>
               </div>
             </div>
           </div>
@@ -582,7 +586,7 @@ export const McpDialog: React.FC<McpDialogProps> = ({ isOpen, onClose }) => {
 
         {/* Footer */}
         <div className="flex justify-end px-5 py-3 border-t border-border bg-background/30 flex-shrink-0">
-          <button onClick={onClose} className="dialog-btn dialog-btn-secondary">关闭</button>
+          <button onClick={onClose} className="dialog-btn dialog-btn-secondary">{t('common.close')}</button>
         </div>
       </div>
     </div>
