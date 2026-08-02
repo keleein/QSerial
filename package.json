@@ -12,7 +12,7 @@
                          "@qserial/shared":  "workspace:*"
                      },
     "engines":  {
-                    "node":  "\u003e=18.0.0"
+                    "node":  "\u003e=20.0.0"
                 },
     "scripts":  {
                     "postinstall":  "node scripts/postinstall.js",
@@ -32,6 +32,7 @@
                     "lint":  "eslint packages/main/src packages/renderer/src packages/shared/src --ext .ts,.tsx",
                     "lint:fix":  "eslint packages/main/src packages/renderer/src packages/shared/src --ext .ts,.tsx --fix",
                     "format":  "prettier --write \"packages/**/*.{ts,tsx,css,json}\"",
+                    "format:check":  "prettier --check \"packages/**/*.{ts,tsx,css,json}\"",
                     "test":  "vitest run",
                     "test:watch":  "vitest",
                     "test:coverage":  "vitest run --coverage",
