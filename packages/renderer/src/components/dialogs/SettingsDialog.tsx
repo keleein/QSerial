@@ -556,15 +556,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
           <div className="flex-1 overflow-y-auto py-1.5">
             {SECTIONS.map((section) => (
               <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
+                key={section}
+                onClick={() => setActiveSection(section)}
                 className={`w-full text-left px-3.5 py-1.5 text-xs transition-all ${
-                  activeSection === section.id
+                  activeSection === section
                     ? 'bg-primary/10 text-primary border-r-[2.5px] border-primary font-medium'
                     : 'text-text-secondary hover:bg-hover hover:text-text'
                 }`}
               >
-                {t(`dialogs.settings.${section.id}`)}
+                {t(`dialogs.settings.${section}`)}
               </button>
             ))}
           </div>
