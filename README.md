@@ -12,7 +12,7 @@ sequenceDiagram
     participant HW as Hardware Device
 
     AI->>MCP: tools/list (discover 47 tools)
-    MCP-->>AI: 9 namespaces: conn, sftp, device, etc.
+    MCP-->>AI: 5 namespaces: conn, device, session, sftp, app
 
     AI->>MCP: conn.create (serial COM3, 115200)
     MCP->>IPC: open serial port

@@ -82,3 +82,6 @@ electron-builder.config.deps.cjs
 website/*.bak.*
 
 video/
+
+# Codex desktop app local cache (thread titles etc.)
+.reasonix/

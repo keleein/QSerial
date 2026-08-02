@@ -84,7 +84,7 @@ const CATEGORIES: Record<string, { label: string; icon: string }> = {
     app: { label: "应用工具", icon: "🖥️" },
 };
 
-const CAT_ORDER = ["conn", "data", "hw", "script", "watch", "analyze", "file", "discover", "session", "app"];
+const CAT_ORDER = ["conn", "data", "hw", "script", "watch", "analyze", "file", "discover", "session", "record", "sftp", "app"];
 
 const RESOURCES_INFO = [
   { uri: "qserial://connections/active", desc: "Active connections with status" },
