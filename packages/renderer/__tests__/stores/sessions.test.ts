@@ -111,7 +111,9 @@ describe('useSavedSessionsStore', () => {
         lastUsedAt: new Date(),
       });
       store.updateSession(id, { name: 'New Name' });
-      const updated = useSavedSessionsStore.getState().sessions.find((s: SavedSession) => s.id === id);
+      const updated = useSavedSessionsStore
+        .getState()
+        .sessions.find((s: SavedSession) => s.id === id);
       expect(updated?.name).toBe('New Name');
     });
   });

@@ -167,13 +167,21 @@ export interface IpcRequestMap {
   };
   [IPC_CHANNELS.CONNECTION_SERVER_STOP]: { id: string };
   [IPC_CHANNELS.CONNECTION_SERVER_STATUS]: { id: string };
-  [IPC_CHANNELS.MCP_START]: { port: number; listenAddress?: string; authPassword?: string; autoStart?: boolean; corsOrigins?: string[] };
+  [IPC_CHANNELS.MCP_START]: {
+    port: number;
+    listenAddress?: string;
+    authPassword?: string;
+    autoStart?: boolean;
+    corsOrigins?: string[];
+  };
   [IPC_CHANNELS.MCP_STOP]: { autoStart?: boolean };
   [IPC_CHANNELS.MCP_GET_STATUS]: void;
   [IPC_CHANNELS.GET_LOCAL_IP]: void;
   [IPC_CHANNELS.READ_FILE]: { path: string };
   [IPC_CHANNELS.DIALOG_PICK_DIR]: { title: string };
-  [IPC_CHANNELS.SFTP_CREATE]: { connectionId: string } | { host: string; port?: number; username: string; password?: string; privateKey?: string };
+  [IPC_CHANNELS.SFTP_CREATE]:
+    | { connectionId: string }
+    | { host: string; port?: number; username: string; password?: string; privateKey?: string };
   [IPC_CHANNELS.SFTP_DESTROY]: { sftpId: string };
   [IPC_CHANNELS.SFTP_LIST]: { sftpId: string; path: string };
   [IPC_CHANNELS.SFTP_DOWNLOAD]: { sftpId: string; remotePath: string; localPath: string };
@@ -232,7 +240,13 @@ export interface IpcResponseMap {
   [IPC_CHANNELS.MCP_START]: void;
   [IPC_CHANNELS.MCP_STOP]: void;
   [IPC_CHANNELS.MCP_GET_STATUS]: McpServerStatus;
-  [IPC_CHANNELS.MCP_SHARE_CHANGED]: { shareId: string; running: boolean; sourceId?: string; localPort?: number; listenAddress?: string; };
+  [IPC_CHANNELS.MCP_SHARE_CHANGED]: {
+    shareId: string;
+    running: boolean;
+    sourceId?: string;
+    localPort?: number;
+    listenAddress?: string;
+  };
   [IPC_CHANNELS.GET_LOCAL_IP]: string;
   [IPC_CHANNELS.READ_FILE]: string;
   [IPC_CHANNELS.DIALOG_PICK_DIR]: string | null;

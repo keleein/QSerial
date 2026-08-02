@@ -32,7 +32,11 @@ class ConfigManagerImpl {
     const tmpPath = this.configPath + '.tmp';
 
     // 清理上次崩溃可能残留的临时文件
-    try { if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath); } catch { /* ignore */ }
+    try {
+      if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+    } catch {
+      /* ignore */
+    }
 
     const loaded = this.tryLoad(this.configPath) || this.tryLoad(bakPath);
 
@@ -46,7 +50,9 @@ class ConfigManagerImpl {
         const dir = path.dirname(bakPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(bakPath, JSON.stringify(this.config, null, 2), 'utf-8');
-      } catch { /* 备份写入失败不影响正常运行 */ }
+      } catch {
+        /* 备份写入失败不影响正常运行 */
+      }
     }
 
     this.initialized = true;
@@ -60,14 +66,19 @@ class ConfigManagerImpl {
           return JSON.parse(data);
         }
       }
-    } catch { /* 损坏 → 尝试下一个来源 */ }
+    } catch {
+      /* 损坏 → 尝试下一个来源 */
+    }
     return null;
   }
 
   /**
    * 深度合并配置
    */
-  private mergeConfig(defaults: Record<string, unknown>, user: Record<string, unknown>): Record<string, unknown> {
+  private mergeConfig(
+    defaults: Record<string, unknown>,
+    user: Record<string, unknown>
+  ): Record<string, unknown> {
     const result = { ...defaults };
 
     for (const key in user) {
@@ -83,7 +94,10 @@ class ConfigManagerImpl {
           !Array.isArray(defaultValue) &&
           defaultValue !== null
         ) {
-          result[key] = this.mergeConfig(defaultValue as Record<string, unknown>, userValue as Record<string, unknown>);
+          result[key] = this.mergeConfig(
+            defaultValue as Record<string, unknown>,
+            userValue as Record<string, unknown>
+          );
         } else {
           result[key] = userValue;
         }
@@ -112,7 +126,11 @@ class ConfigManagerImpl {
 
       // 2. 如果已有旧配置，先备份
       if (fs.existsSync(this.configPath)) {
-        try { fs.copyFileSync(this.configPath, bakPath); } catch { /* 备份失败不阻塞保存 */ }
+        try {
+          fs.copyFileSync(this.configPath, bakPath);
+        } catch {
+          /* 备份失败不阻塞保存 */
+        }
       }
 
       // 3. 原子 rename（同文件系统上 rename 是原子的）
@@ -170,7 +188,10 @@ class ConfigManagerImpl {
    */
   delete(key: string): void {
     const keys = key.split('.');
-    let current: Record<string, unknown> | undefined = this.config as unknown as Record<string, unknown>;
+    let current: Record<string, unknown> | undefined = this.config as unknown as Record<
+      string,
+      unknown
+    >;
 
     for (let i = 0; i < keys.length - 1; i++) {
       current = current[keys[i]] as Record<string, unknown> | undefined;

@@ -76,7 +76,6 @@ function getSshClient(connectionId: string): Client | null {
  * 创建 SFTP 会话
  */
 
-
 /**
  * Create standalone SFTP session (independent of SSH terminal connection)
  */
@@ -87,32 +86,55 @@ export async function createStandaloneSftp(options: {
   password?: string;
   privateKey?: string;
 }): Promise<string> {
-  const sftpId = `sftp-standalone-${"{Date.now()}-${Math.random().toString(36).slice(2, 8)}"}`;
+  const sftpId = `sftp-standalone-${'{Date.now()}-${Math.random().toString(36).slice(2, 8)}'}`;
   const client = new Client();
   const cfg: Record<string, unknown> = {
-    host: options.host, port: options.port || 22, username: options.username,
-    readyTimeout: 20000, keepaliveInterval: 30000,
+    host: options.host,
+    port: options.port || 22,
+    username: options.username,
+    readyTimeout: 20000,
+    keepaliveInterval: 30000,
   };
   if (options.privateKey) {
-    try { cfg.privateKey = fs.readFileSync(options.privateKey.replace(/^~/, os.homedir())); } catch { /* 私钥文件读取失败，跳过 */ }
+    try {
+      cfg.privateKey = fs.readFileSync(options.privateKey.replace(/^~/, os.homedir()));
+    } catch {
+      /* 私钥文件读取失败，跳过 */
+    }
   }
-  if (options.password) { cfg.password = options.password; }
+  if (options.password) {
+    cfg.password = options.password;
+  }
   if (!options.privateKey && !options.password) {
-    for (const kn of ['id_ed25519','id_rsa','id_ecdsa','id_dsa']) {
+    for (const kn of ['id_ed25519', 'id_rsa', 'id_ecdsa', 'id_dsa']) {
       const kp = path.join(os.homedir(), '.ssh', kn);
-      try { if (fs.existsSync(kp)) { cfg.privateKey = fs.readFileSync(kp); break; } } catch { continue; }
+      try {
+        if (fs.existsSync(kp)) {
+          cfg.privateKey = fs.readFileSync(kp);
+          break;
+        }
+      } catch {
+        continue;
+      }
     }
   }
   return new Promise<string>((resolve, reject) => {
     client.on('ready', () => {
       client.sftp((err, sftp) => {
-        if (err) { client.end(); reject(err); return; }
+        if (err) {
+          client.end();
+          reject(err);
+          return;
+        }
         standaloneClients.set(sftpId, client);
         sftpInstances.set(sftpId, { id: sftpId, connectionId: sftpId, sftp });
         resolve(sftpId);
       });
     });
-    client.on('error', (err) => { standaloneClients.delete(sftpId); reject(err); });
+    client.on('error', (err) => {
+      standaloneClients.delete(sftpId);
+      reject(err);
+    });
     client.connect(cfg);
   });
 }
@@ -146,22 +168,25 @@ export async function createSftp(connectionId: string): Promise<string> {
     });
   }
 
-  return withTimeout(new Promise((resolve, reject) => {
-    client.sftp((err, sftp) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+  return withTimeout(
+    new Promise((resolve, reject) => {
+      client.sftp((err, sftp) => {
+        if (err) {
+          reject(err);
+          return;
+        }
 
-      sftpInstances.set(sftpId, {
-        id: sftpId,
-        connectionId,
-        sftp,
+        sftpInstances.set(sftpId, {
+          id: sftpId,
+          connectionId,
+          sftp,
+        });
+
+        resolve(sftpId);
       });
-
-      resolve(sftpId);
-    });
-  }), 'createSftp');
+    }),
+    'createSftp'
+  );
 }
 
 /**
@@ -179,7 +204,11 @@ export async function destroySftp(sftpId: string): Promise<void> {
   // ???? SFTP ???
   const standaloneClient = standaloneClients.get(sftpId);
   if (standaloneClient) {
-    try { standaloneClient.end(); } catch { /* ignore */ }
+    try {
+      standaloneClient.end();
+    } catch {
+      /* ignore */
+    }
     standaloneClients.delete(sftpId);
   }
 
@@ -267,9 +296,9 @@ export async function listDirectory(sftpId: string, remotePath: string): Promise
  */
 function modeToString(mode: number): string {
   let str = '';
-  str += (mode & 4) ? 'r' : '-';
-  str += (mode & 2) ? 'w' : '-';
-  str += (mode & 1) ? 'x' : '-';
+  str += mode & 4 ? 'r' : '-';
+  str += mode & 2 ? 'w' : '-';
+  str += mode & 1 ? 'x' : '-';
   return str;
 }
 
@@ -415,11 +444,7 @@ export async function rm(sftpId: string, remotePath: string): Promise<void> {
 /**
  * 重命名文件/目录
  */
-export async function rename(
-  sftpId: string,
-  oldPath: string,
-  newPath: string
-): Promise<void> {
+export async function rename(sftpId: string, oldPath: string, newPath: string): Promise<void> {
   const sftp = getSftp(sftpId) as {
     rename: (old: string, newP: string, callback: (err: Error | null) => void) => void;
   };
@@ -489,11 +514,7 @@ export async function readlink(sftpId: string, remotePath: string): Promise<stri
 /**
  * 创建符号链接
  */
-export async function symlink(
-  sftpId: string,
-  target: string,
-  remotePath: string
-): Promise<void> {
+export async function symlink(sftpId: string, target: string, remotePath: string): Promise<void> {
   const sftp = getSftp(sftpId) as {
     symlink: (target: string, path: string, callback: (err: Error | null) => void) => void;
   };

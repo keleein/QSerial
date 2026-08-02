@@ -54,7 +54,14 @@ function getFtpSrvEntryPath(): string {
   }
   // 生产环境：从 extraResources 加载（尝试多种路径结构）
   const candidates = [
-    path.join(process.resourcesPath, 'resources', 'ftp-node-modules', 'node_modules', 'ftp-srv', 'ftp-srv.js'),
+    path.join(
+      process.resourcesPath,
+      'resources',
+      'ftp-node-modules',
+      'node_modules',
+      'ftp-srv',
+      'ftp-srv.js'
+    ),
     path.join(process.resourcesPath, 'ftp-node-modules', 'node_modules', 'ftp-srv', 'ftp-srv.js'),
   ];
   for (const candidate of candidates) {
@@ -82,7 +89,8 @@ function loadFtpSrv(): void {
   ];
   for (const ftpNodeModules of ftpNodeModulesCandidates) {
     if (fs.existsSync(ftpNodeModules) && !process.env.NODE_PATH?.includes(ftpNodeModules)) {
-      process.env.NODE_PATH = ftpNodeModules + (process.env.NODE_PATH ? path.delimiter + process.env.NODE_PATH : '');
+      process.env.NODE_PATH =
+        ftpNodeModules + (process.env.NODE_PATH ? path.delimiter + process.env.NODE_PATH : '');
       nodeRequire('module')._initPaths();
       break;
     }
@@ -95,11 +103,13 @@ function loadFtpSrv(): void {
     const mod = localRequire(ftpSrvEntryPath) as Record<string, unknown>;
     // ftp-srv 导出: module.exports = FtpSrv (构造函数)
     // 同时有 module.exports.FtpSrv = FtpSrv
-    FtpSrv = (typeof mod === 'function' ? mod : mod.FtpSrv || mod.default) as (new (config: Record<string, unknown>) => FtpServerInstance) | null;
+    FtpSrv = (typeof mod === 'function' ? mod : mod.FtpSrv || mod.default) as
+      | (new (config: Record<string, unknown>) => FtpServerInstance)
+      | null;
     if (typeof FtpSrv !== 'function') {
       throw new Error(`模块导出类型异常: ${typeof mod}, keys: ${Object.keys(mod).join(',')}`);
     }
-  // eslint-disable-next-line no-useless-catch
+    // eslint-disable-next-line no-useless-catch
   } catch (err) {
     console.error('[FTP] Failed to load ftp-srv:', err);
     throw new Error(`加载 ftp-srv 失败: ${(err as Error).message}`);
@@ -157,7 +167,12 @@ function sendClientEvent(event: FtpClientEvent): void {
 /**
  * 启动 FTP 服务器
  */
-export async function startFtpServer(port: number, rootDir: string, username: string, password: string): Promise<void> {
+export async function startFtpServer(
+  port: number,
+  rootDir: string,
+  username: string,
+  password: string
+): Promise<void> {
   // 防止并发调用导致服务器实例泄漏
   if (startingPromise) {
     await startingPromise;
@@ -177,114 +192,114 @@ export async function startFtpServer(port: number, rootDir: string, username: st
         return;
       }
 
-  // 动态加载 ftp-srv
-  try {
-    loadFtpSrv();
-  } catch (err) {
-    throw new Error(`加载 FTP 服务模块失败: ${(err as Error).message}`);
-  }
-
-  if (!FtpSrv) {
-    throw new Error('FTP 服务模块加载失败');
-  }
-
-  const localIp = getLocalIp();
-    server = new FtpSrv({
-      url: `ftp://0.0.0.0:${port}`,
-      anonymous: username === 'anonymous',
-      pasv_url: localIp,
-    });
-
-    // 处理登录
-    server.on('login', (data: unknown, resolve: unknown, reject: unknown) => {
-      const rejectFn = reject as (err: Error) => void;
+      // 动态加载 ftp-srv
       try {
-        const loginData = data as FtpLoginData;
-        const connection = loginData?.connection;
-        const user = loginData?.username;
-        const pass = loginData?.password;
-        const resolveFn = resolve as (opts: { root: string }) => void;
-
-        // 记录客户端连接
-        const clientIp = connection?.ip || 'unknown';
-        const clientKey = connection?.id || String(Date.now());
-        connectedClients.set(clientKey, {
-          address: clientIp,
-          userName: user,
-        });
-        sendClientEvent({
-          address: clientIp,
-          userName: user,
-          action: 'connected',
-        });
-
-        // 验证用户名密码
-        if (username !== 'anonymous') {
-          if (user !== username) {
-            rejectFn(new Error('用户名错误'));
-            return;
-          }
-          if (!password || pass !== password) {
-            rejectFn(new Error('密码错误'));
-            return;
-          }
-        }
-
-        // 设置根目录
-        resolveFn({ root: rootDir });
+        loadFtpSrv();
       } catch (err) {
-        console.error('[FTP] Login handler error:', err);
-        rejectFn(new Error('内部错误'));
+        throw new Error(`加载 FTP 服务模块失败: ${(err as Error).message}`);
       }
-    });
 
-    // 监听客户端断开
-    server.on('disconnect', (data: unknown) => {
-      const { connection } = data as { connection?: { id?: string } };
-      try {
-        const clientKey = connection?.id;
-        if (clientKey) {
-          const info = connectedClients.get(clientKey);
-          connectedClients.delete(clientKey);
-          if (info) {
-            sendClientEvent({
-              address: info.address,
-              userName: info.userName,
-              action: 'disconnected',
-            });
+      if (!FtpSrv) {
+        throw new Error('FTP 服务模块加载失败');
+      }
+
+      const localIp = getLocalIp();
+      server = new FtpSrv({
+        url: `ftp://0.0.0.0:${port}`,
+        anonymous: username === 'anonymous',
+        pasv_url: localIp,
+      });
+
+      // 处理登录
+      server.on('login', (data: unknown, resolve: unknown, reject: unknown) => {
+        const rejectFn = reject as (err: Error) => void;
+        try {
+          const loginData = data as FtpLoginData;
+          const connection = loginData?.connection;
+          const user = loginData?.username;
+          const pass = loginData?.password;
+          const resolveFn = resolve as (opts: { root: string }) => void;
+
+          // 记录客户端连接
+          const clientIp = connection?.ip || 'unknown';
+          const clientKey = connection?.id || String(Date.now());
+          connectedClients.set(clientKey, {
+            address: clientIp,
+            userName: user,
+          });
+          sendClientEvent({
+            address: clientIp,
+            userName: user,
+            action: 'connected',
+          });
+
+          // 验证用户名密码
+          if (username !== 'anonymous') {
+            if (user !== username) {
+              rejectFn(new Error('用户名错误'));
+              return;
+            }
+            if (!password || pass !== password) {
+              rejectFn(new Error('密码错误'));
+              return;
+            }
           }
+
+          // 设置根目录
+          resolveFn({ root: rootDir });
+        } catch (err) {
+          console.error('[FTP] Login handler error:', err);
+          rejectFn(new Error('内部错误'));
         }
-      } catch (err) {
-        console.error('[FTP] Disconnect handler error:', err);
-      }
-    });
+      });
 
-    // 监听客户端错误
-    server.on('client-error', (data: unknown) => {
-      const { error } = data as { error?: Error };
-      console.error('[FTP] Client error:', error?.message || error);
-    });
+      // 监听客户端断开
+      server.on('disconnect', (data: unknown) => {
+        const { connection } = data as { connection?: { id?: string } };
+        try {
+          const clientKey = connection?.id;
+          if (clientKey) {
+            const info = connectedClients.get(clientKey);
+            connectedClients.delete(clientKey);
+            if (info) {
+              sendClientEvent({
+                address: info.address,
+                userName: info.userName,
+                action: 'disconnected',
+              });
+            }
+          }
+        } catch (err) {
+          console.error('[FTP] Disconnect handler error:', err);
+        }
+      });
 
-    // 启动服务器
-    await server.listen();
+      // 监听客户端错误
+      server.on('client-error', (data: unknown) => {
+        const { error } = data as { error?: Error };
+        console.error('[FTP] Client error:', error?.message || error);
+      });
 
-    serverRunning = true;
-    currentStatus = {
-      running: true,
-      port,
-      rootDir,
-      username,
-      hasPassword: !!password,
-    };
+      // 启动服务器
+      await server.listen();
 
-    sendStatusEvent({ running: true });
-  } catch (error) {
-    server = null;
-    serverRunning = false;
-    throw new Error(`FTP 服务器启动失败: ${(error as Error).message}`);
-  } finally {
-    startingPromise = null;
-  }
+      serverRunning = true;
+      currentStatus = {
+        running: true,
+        port,
+        rootDir,
+        username,
+        hasPassword: !!password,
+      };
+
+      sendStatusEvent({ running: true });
+    } catch (error) {
+      server = null;
+      serverRunning = false;
+      throw new Error(`FTP 服务器启动失败: ${(error as Error).message}`);
+    } finally {
+      startingPromise = null;
+    }
   })();
 
   await startingPromise;

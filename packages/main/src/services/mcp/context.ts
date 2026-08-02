@@ -14,8 +14,21 @@ export let mcpCorsOrigins: string[] = [];
 
 export const sharePool = new Map<string, { sourceId: string; serverId: string }>();
 export const watches = new Map<string, () => void>();
-export const watchResults = new Map<string, Array<{ ts: number; pattern: string; level: string; context: string }>>();
-export const recordings = new Map<string, { id: string; connectionId: string; startedAt: number; duration_ms: number; frames: Array<{ ts: number; data: string }>; unsub: () => void }>();
+export const watchResults = new Map<
+  string,
+  Array<{ ts: number; pattern: string; level: string; context: string }>
+>();
+export const recordings = new Map<
+  string,
+  {
+    id: string;
+    connectionId: string;
+    startedAt: number;
+    duration_ms: number;
+    frames: Array<{ ts: number; data: string }>;
+    unsub: () => void;
+  }
+>();
 export const buffers = new Map<string, Buffer[]>();
 export const bufferSubscriptions = new Map<string, () => void>();
 
@@ -102,14 +115,19 @@ const writeLocks = new Map<string, Promise<void>>();
 export async function acquireWriteLock(id: string): Promise<void> {
   const prev = writeLocks.get(id) || Promise.resolve();
   let release: () => void;
-  const next = new Promise<void>(r => { release = r; });
-  writeLocks.set(id, prev.then(() => next));
+  const next = new Promise<void>((r) => {
+    release = r;
+  });
+  writeLocks.set(
+    id,
+    prev.then(() => next)
+  );
   await prev;
   (next as Promise<void> & { _release?: () => void })._release = release!;
 }
 
 export function releaseWriteLock(id: string): void {
-  const lock = writeLocks.get(id) as Promise<void> & { _release?: () => void } | undefined;
+  const lock = writeLocks.get(id) as (Promise<void> & { _release?: () => void }) | undefined;
   if (lock?._release) {
     lock._release();
   }
@@ -128,7 +146,7 @@ export function resolveId(args: Record<string, unknown>): string {
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 export function matchPattern(text: string, pattern: string, isRegex: boolean): boolean {
@@ -143,7 +161,10 @@ export function matchPattern(text: string, pattern: string, isRegex: boolean): b
 }
 
 export async function waitPattern(
-  id: string, pattern: string, timeout: number, isRegex = false,
+  id: string,
+  pattern: string,
+  timeout: number,
+  isRegex = false
 ): Promise<{ matched: boolean; output: string }> {
   const deadline = Date.now() + timeout * 1000;
   let allOutput = '';
@@ -158,7 +179,10 @@ export async function waitPattern(
   }
 
   const cleanup = () => {
-    if (unsub) { unsub(); unsub = null; }
+    if (unsub) {
+      unsub();
+      unsub = null;
+    }
   };
 
   try {
@@ -174,7 +198,9 @@ export async function waitPattern(
       const remaining = deadline - Date.now();
       if (remaining <= 0) break;
       await Promise.race([
-        new Promise<void>(r => { wakeup = r; }),
+        new Promise<void>((r) => {
+          wakeup = r;
+        }),
         sleep(Math.min(remaining, 200)),
       ]);
     }
@@ -189,7 +215,7 @@ export async function waitPattern(
 export async function waitForAnyPattern(
   id: string,
   patterns: { pattern: string; isRegex: boolean }[],
-  timeout: number,
+  timeout: number
 ): Promise<{ matched: boolean; index: number; output: string }> {
   const deadline = Date.now() + timeout * 1000;
   let allOutput = '';
@@ -204,7 +230,10 @@ export async function waitForAnyPattern(
   }
 
   const cleanup = () => {
-    if (unsub) { unsub(); unsub = null; }
+    if (unsub) {
+      unsub();
+      unsub = null;
+    }
   };
 
   try {
@@ -222,7 +251,9 @@ export async function waitForAnyPattern(
       const remaining = deadline - Date.now();
       if (remaining <= 0) break;
       await Promise.race([
-        new Promise<void>(r => { wakeup = r; }),
+        new Promise<void>((r) => {
+          wakeup = r;
+        }),
         sleep(Math.min(remaining, 200)),
       ]);
     }
@@ -247,7 +278,9 @@ export async function waitForData(id: string, timeoutMs: number): Promise<void> 
 
   try {
     await Promise.race([
-      new Promise<void>(r => { wakeup = r; }),
+      new Promise<void>((r) => {
+        wakeup = r;
+      }),
       sleep(timeoutMs),
     ]);
   } finally {
@@ -258,7 +291,14 @@ export async function waitForData(id: string, timeoutMs: number): Promise<void> 
 // ==================== 状态分析 ====================
 
 export interface TerminalState {
-  state: 'login_prompt' | 'password_prompt' | 'shell' | 'program_running' | 'idle' | 'booting' | 'unknown';
+  state:
+    | 'login_prompt'
+    | 'password_prompt'
+    | 'shell'
+    | 'program_running'
+    | 'idle'
+    | 'booting'
+    | 'unknown';
   shell_type?: string;
   detected_prompts: string[];
   details: string;
@@ -284,7 +324,12 @@ export function analyzeState(output: string, connectionState: string): TerminalS
     detected.push('login_prompt');
   }
 
-  const lastLine = (output.split('\n').filter(l => l.trim()).pop() || '').trim();
+  const lastLine = (
+    output
+      .split('\n')
+      .filter((l) => l.trim())
+      .pop() || ''
+  ).trim();
   let shellType = '';
   if (lastLine.endsWith('# ') || lastLine.match(/#\s*$/)) {
     shellType = 'root';
@@ -297,21 +342,49 @@ export function analyzeState(output: string, connectionState: string): TerminalS
     detected.push('shell_prompt');
   }
 
-  const bootIndicators = ['booting', 'kernel', 'u-boot', 'uboot', 'starting kernel', 'bios', 'grub', 'systemd'];
-  const hasBootMsg = bootIndicators.some(k => tail.includes(k));
+  const bootIndicators = [
+    'booting',
+    'kernel',
+    'u-boot',
+    'uboot',
+    'starting kernel',
+    'bios',
+    'grub',
+    'systemd',
+  ];
+  const hasBootMsg = bootIndicators.some((k) => tail.includes(k));
 
   if (detected.includes('password_prompt')) {
-    return { state: 'password_prompt', shell_type: shellType || undefined, detected_prompts: detected, details: '等待输入密码' };
+    return {
+      state: 'password_prompt',
+      shell_type: shellType || undefined,
+      detected_prompts: detected,
+      details: '等待输入密码',
+    };
   }
   if (detected.includes('login_prompt')) {
-    return { state: 'login_prompt', shell_type: shellType || undefined, detected_prompts: detected, details: '等待输入用户名' };
+    return {
+      state: 'login_prompt',
+      shell_type: shellType || undefined,
+      detected_prompts: detected,
+      details: '等待输入用户名',
+    };
   }
   if (shellType) {
-    return { state: 'shell', shell_type: shellType, detected_prompts: detected, details: `Shell 就绪 (${shellType})` };
+    return {
+      state: 'shell',
+      shell_type: shellType,
+      detected_prompts: detected,
+      details: `Shell 就绪 (${shellType})`,
+    };
   }
   if (hasBootMsg) {
     return { state: 'booting', detected_prompts: detected, details: '设备正在启动中' };
   }
 
-  return { state: 'program_running', detected_prompts: detected, details: '设备有数据输出，未检测到 Shell 提示符或登录提示' };
+  return {
+    state: 'program_running',
+    detected_prompts: detected,
+    details: '设备有数据输出，未检测到 Shell 提示符或登录提示',
+  };
 }

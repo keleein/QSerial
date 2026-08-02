@@ -29,8 +29,7 @@ describe('ConnectionType', () => {
   });
 
   it('should detect remote type', () => {
-    const isRemote = (t: ConnectionType) =>
-      [ConnectionType.SSH, ConnectionType.TELNET].includes(t);
+    const isRemote = (t: ConnectionType) => [ConnectionType.SSH, ConnectionType.TELNET].includes(t);
     expect(isRemote(ConnectionType.SSH)).toBe(true);
     expect(isRemote(ConnectionType.TELNET)).toBe(true);
     expect(isRemote(ConnectionType.PTY)).toBe(false);

@@ -143,18 +143,21 @@ export const TabBar: React.FC = () => {
                 key={tab.id}
                 className={`
                   flex-shrink-0 flex items-center gap-1.5 px-3 h-[30px] cursor-pointer rounded-md text-xs
-                  ${isActive
-                    ? 'bg-primary/[0.08] border border-primary/20 text-primary'
-                    : 'hover:bg-hover text-text-secondary'
+                  ${
+                    isActive
+                      ? 'bg-primary/[0.08] border border-primary/20 text-primary'
+                      : 'hover:bg-hover text-text-secondary'
                   }
                 `}
                 onClick={() => setActiveTab(tab.id)}
                 onContextMenu={(e) => handleContextMenu(e, tab.id, tab.name)}
               >
                 {/* 连接状态指示点 */}
-                <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0 ${
-                  isConnected ? 'bg-success' : 'bg-text-secondary/40'
-                }`} />
+                <span
+                  className={`w-[7px] h-[7px] rounded-full flex-shrink-0 ${
+                    isConnected ? 'bg-success' : 'bg-text-secondary/40'
+                  }`}
+                />
                 <span className="truncate max-w-[100px]">{tab.name}</span>
                 <button
                   onClick={(e) => {

@@ -125,7 +125,7 @@ describe('linux-serial-permissions', () => {
       expect(spawn).toHaveBeenCalledWith(
         'pkexec',
         expect.arrayContaining(['bash', '-c', expect.stringContaining('99-qserial.rules')]),
-        expect.any(Object),
+        expect.any(Object)
       );
     });
 
@@ -170,7 +170,7 @@ describe('linux-serial-permissions', () => {
       expect(spawn).toHaveBeenCalledWith(
         'pkexec',
         ['chmod', '666', '/dev/ttyACM0'],
-        expect.any(Object),
+        expect.any(Object)
       );
     });
 

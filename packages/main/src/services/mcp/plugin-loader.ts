@@ -1,7 +1,7 @@
 ﻿/**
  * MCP Plugin Loader
  * Scans plugin directories and merges their contributions into MCP.
- * 
+ *
  * Plugin structure:
  *   plugins/my-plugin/
  *     .codex-plugin/
@@ -10,9 +10,9 @@
  *     prompts/           -> {name}.md files registered as prompt templates
  */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { app } from "electron";
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { app } from 'electron';
 
 export interface PluginManifest {
   name: string;
@@ -32,7 +32,14 @@ export interface LoadedPlugin {
   manifest: PluginManifest;
   dir: string;
   resources: Map<string, { mimeType: string; content: string }>;
-  prompts: Map<string, { description: string; content: string; args?: Array<{ name: string; description: string; required?: boolean }> }>;
+  prompts: Map<
+    string,
+    {
+      description: string;
+      content: string;
+      args?: Array<{ name: string; description: string; required?: boolean }>;
+    }
+  >;
 }
 
 // NOTE: 惰性初始化。esbuild 打包后模块顶层初始化被包进 __esm 延迟执行器，
@@ -50,16 +57,18 @@ function getPluginPaths(): string[] {
   const paths: string[] = [];
   // 1. Built-in plugins directory (relative to app)
   try {
-    const builtin = path.resolve(__dirname, "../../../plugins");
+    const builtin = path.resolve(__dirname, '../../../plugins');
     if (fs.existsSync(builtin)) paths.push(builtin);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // 2. User plugins directory
   try {
-    const userPlugins = path.join(app.getPath("userData"), "plugins");
+    const userPlugins = path.join(app.getPath('userData'), 'plugins');
     if (fs.existsSync(userPlugins)) paths.push(userPlugins);
   } catch {
     // Fallback: try process.cwd()
-    const cwdPlugins = path.join(process.cwd(), "plugins");
+    const cwdPlugins = path.join(process.cwd(), 'plugins');
     if (fs.existsSync(cwdPlugins)) paths.push(cwdPlugins);
   }
   return paths;
@@ -74,11 +83,11 @@ export function loadPlugins(): void {
     for (const entry of fs.readdirSync(pluginsDir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
       const pluginDir = path.join(pluginsDir, entry.name);
-      const manifestPath = path.join(pluginDir, ".codex-plugin", "plugin.json");
+      const manifestPath = path.join(pluginDir, '.codex-plugin', 'plugin.json');
       if (!fs.existsSync(manifestPath)) continue;
 
       try {
-        const manifest: PluginManifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+        const manifest: PluginManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
         const plugin: LoadedPlugin = {
           manifest,
           dir: pluginDir,
@@ -87,25 +96,25 @@ export function loadPlugins(): void {
         };
 
         // Load resource files
-        const resDir = path.join(pluginDir, "resources");
+        const resDir = path.join(pluginDir, 'resources');
         if (fs.existsSync(resDir)) {
           for (const f of fs.readdirSync(resDir)) {
-            if (f.endsWith(".md") || f.endsWith(".json")) {
-              const name = f.replace(/\.(md|json)$/, "");
-              const content = fs.readFileSync(path.join(resDir, f), "utf-8");
-              const mimeType = f.endsWith(".json") ? "application/json" : "text/markdown";
+            if (f.endsWith('.md') || f.endsWith('.json')) {
+              const name = f.replace(/\.(md|json)$/, '');
+              const content = fs.readFileSync(path.join(resDir, f), 'utf-8');
+              const mimeType = f.endsWith('.json') ? 'application/json' : 'text/markdown';
               plugin.resources.set(name, { mimeType, content });
             }
           }
         }
 
         // Load prompt files
-        const promptsDir = path.join(pluginDir, "prompts");
+        const promptsDir = path.join(pluginDir, 'prompts');
         if (fs.existsSync(promptsDir)) {
           for (const f of fs.readdirSync(promptsDir)) {
-            if (f.endsWith(".md")) {
-              const name = f.replace(/\.md$/, "");
-              const content = fs.readFileSync(path.join(promptsDir, f), "utf-8");
+            if (f.endsWith('.md')) {
+              const name = f.replace(/\.md$/, '');
+              const content = fs.readFileSync(path.join(promptsDir, f), 'utf-8');
               plugin.prompts.set(name, { description: `Plugin prompt: ${name}`, content });
             }
           }
@@ -126,13 +135,18 @@ export function getLoadedPlugins(): LoadedPlugin[] {
 }
 
 /** Get plugin-contributed resources (merged) */
-export function getPluginResources(): Array<{ uri: string; name: string; description: string; mimeType: string }> {
+export function getPluginResources(): Array<{
+  uri: string;
+  name: string;
+  description: string;
+  mimeType: string;
+}> {
   const result: Array<{ uri: string; name: string; description: string; mimeType: string }> = [];
   for (const plugin of ensurePlugins().values()) {
     // Manifest-declared resources
     if (plugin.manifest.contributes.resources) {
       for (const r of plugin.manifest.contributes.resources) {
-        result.push({ ...r, mimeType: r.mimeType || "text/markdown" });
+        result.push({ ...r, mimeType: r.mimeType || 'text/markdown' });
       }
     }
     // File-based resources

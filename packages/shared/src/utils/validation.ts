@@ -14,7 +14,9 @@ export function validateSerialOptions(options: SerialConnectionOptions): string[
     errors.push('串口路径不能为空');
   }
 
-  const validBaudRates = [300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
+  const validBaudRates = [
+    300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 230400, 460800, 921600,
+  ];
   if (!validBaudRates.includes(options.baudRate)) {
     errors.push(`无效的波特率: ${options.baudRate}`);
   }

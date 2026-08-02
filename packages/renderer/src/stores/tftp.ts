@@ -126,7 +126,12 @@ export const useTftpStore = create<TftpState & TftpActions>()(
               transferred: event.transferred ?? existing.transferred,
               percent: event.percent ?? existing.percent,
               error: event.error,
-              endTime: event.status === 'completed' || event.status === 'error' || event.status === 'aborted' ? now : undefined,
+              endTime:
+                event.status === 'completed' ||
+                event.status === 'error' ||
+                event.status === 'aborted'
+                  ? now
+                  : undefined,
             };
             return { transfers: updated };
           } else {

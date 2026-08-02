@@ -28,14 +28,18 @@ export const appHandlers: Record<string, ToolHandler> = {
             var body = doc.querySelector('body');
             if (!body) return '错误: body 不存在';
             body.querySelectorAll('script').forEach(function(s){ s.remove(); });
-            ${compact ? `
+            ${
+              compact
+                ? `
             doc.querySelectorAll('style[data-vite-dev-id]').forEach(function(s){ s.remove(); });
             body.querySelectorAll('*').forEach(function(el){
               ['data-vite-dev-id','data-vite-hmr'].forEach(function(a){ el.removeAttribute(a); });
               var attrs = el.getAttributeNames().filter(function(a){ return a.startsWith('data-v-'); });
               attrs.forEach(function(a){ el.removeAttribute(a); });
             });
-            ` : ''}
+            `
+                : ''
+            }
             return '<!DOCTYPE html>\\n' + doc.outerHTML;
           })()
         `);
@@ -43,7 +47,9 @@ export const appHandlers: Record<string, ToolHandler> = {
           fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
           const file = path.join(SCREENSHOT_DIR, `window-snapshot-${Date.now()}.html`);
           fs.writeFileSync(file, html, 'utf-8');
-        } catch (_) { /* 保存失败不影响返回 */ }
+        } catch (_) {
+          /* 保存失败不影响返回 */
+        }
         return html;
       }
 
@@ -87,7 +93,9 @@ export const appHandlers: Record<string, ToolHandler> = {
         fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
         const file = path.join(SCREENSHOT_DIR, `screenshot-${ts}.svg`);
         fs.writeFileSync(file, svg, 'utf-8');
-      } catch (_) { /* 保存失败不影响返回 */ }
+      } catch (_) {
+        /* 保存失败不影响返回 */
+      }
       return svg;
     } catch (err) {
       return `错误: 截图失败 — ${(err as Error).message}`;
@@ -95,21 +103,32 @@ export const appHandlers: Record<string, ToolHandler> = {
   },
 
   'app.macro.list': async (_args, ctx) => {
-    if (!ctx.mainWindow || ctx.mainWindow.isDestroyed()) return formatError('INTERNAL', 'No window');
+    if (!ctx.mainWindow || ctx.mainWindow.isDestroyed())
+      return formatError('INTERNAL', 'No window');
     try {
       const raw = await ctx.mainWindow.webContents.executeJavaScript(
         "JSON.parse(localStorage.getItem('qserial-terminal-macros') || '{}')?.state?.savedMacros || []"
       );
-      const list = (raw || []).map((m: { name?: string; id?: string; steps?: unknown[]; createdAt?: string }) => ({ name: m.name, id: m.id, steps: m.steps?.length || 0, created: new Date(m.createdAt ?? 0).toISOString() }));
+      const list = (raw || []).map(
+        (m: { name?: string; id?: string; steps?: unknown[]; createdAt?: string }) => ({
+          name: m.name,
+          id: m.id,
+          steps: m.steps?.length || 0,
+          created: new Date(m.createdAt ?? 0).toISOString(),
+        })
+      );
       return formatOk({ macros: list, total: list.length });
-    } catch (e: unknown) { return formatError('INTERNAL', (e as Error).message || String(e)); }
+    } catch (e: unknown) {
+      return formatError('INTERNAL', (e as Error).message || String(e));
+    }
   },
 
   'app.macro.run': async (args, ctx) => {
     const connId = (args.id || args.connectionId) as string | undefined;
     const macroName = args.name as string;
     if (!macroName) return formatError('INVALID_PARAM', 'name is required');
-    if (!ctx.mainWindow || ctx.mainWindow.isDestroyed()) return formatError('INTERNAL', 'No window');
+    if (!ctx.mainWindow || ctx.mainWindow.isDestroyed())
+      return formatError('INTERNAL', 'No window');
     try {
       const raw = await ctx.mainWindow.webContents.executeJavaScript(
         "JSON.parse(localStorage.getItem('qserial-terminal-macros') || '{}')?.state?.savedMacros || []"
@@ -124,7 +143,8 @@ export const appHandlers: Record<string, ToolHandler> = {
       const results: string[] = [];
 
       // ????
-      const substituteVars = (text: string) => text.replace(/\{\{(.+?)\}\}/g, (_, key) => vars[key.trim()] || '');
+      const substituteVars = (text: string) =>
+        text.replace(/\{\{(.+?)\}\}/g, (_, key) => vars[key.trim()] || '');
 
       // ?????????????
       const expectPattern = (pattern: string, timeout: number): Promise<string> => {
@@ -147,8 +167,24 @@ export const appHandlers: Record<string, ToolHandler> = {
       };
 
       // ??????
-      type MacroStep = { type?: string; data?: string; delay?: number; ms?: number; pattern?: string; timeout?: number; count?: number; steps?: MacroStep[]; condition?: string; elseSteps?: MacroStep[]; variable?: string; value?: string };
-      const execSteps = async (steps: MacroStep[], parentVars?: Record<string, string>): Promise<void> => {
+      type MacroStep = {
+        type?: string;
+        data?: string;
+        delay?: number;
+        ms?: number;
+        pattern?: string;
+        timeout?: number;
+        count?: number;
+        steps?: MacroStep[];
+        condition?: string;
+        elseSteps?: MacroStep[];
+        variable?: string;
+        value?: string;
+      };
+      const execSteps = async (
+        steps: MacroStep[],
+        parentVars?: Record<string, string>
+      ): Promise<void> => {
         const scopeVars = parentVars || vars;
         for (const raw of steps) {
           // ??????? {data, delay} ??
@@ -159,11 +195,11 @@ export const appHandlers: Record<string, ToolHandler> = {
               const text = substituteVars(step.data!);
               conn.write(text);
               results.push(text.replace(/\r?\n/g, '\\n'));
-              if (step.delay! > 0) await new Promise(r => setTimeout(r, step.delay));
+              if (step.delay! > 0) await new Promise((r) => setTimeout(r, step.delay));
               break;
             }
             case 'wait':
-              await new Promise(r => setTimeout(r, step.ms));
+              await new Promise((r) => setTimeout(r, step.ms));
               results.push('(wait ' + step.ms + 'ms)');
               break;
             case 'expect': {
@@ -193,12 +229,24 @@ export const appHandlers: Record<string, ToolHandler> = {
                 const left = parseInt(scopeVars[key.trim()], 10) || 0;
                 const right = parseInt(rawVal.trim(), 10) || 0;
                 switch (op) {
-                  case '==': result = left === right; break;
-                  case '!=': result = left !== right; break;
-                  case '<': result = left < right; break;
-                  case '>': result = left > right; break;
-                  case '<=': result = left <= right; break;
-                  case '>=': result = left >= right; break;
+                  case '==':
+                    result = left === right;
+                    break;
+                  case '!=':
+                    result = left !== right;
+                    break;
+                  case '<':
+                    result = left < right;
+                    break;
+                  case '>':
+                    result = left > right;
+                    break;
+                  case '<=':
+                    result = left <= right;
+                    break;
+                  case '>=':
+                    result = left >= right;
+                    break;
                 }
               }
               if (result) {
@@ -220,9 +268,11 @@ export const appHandlers: Record<string, ToolHandler> = {
         macro: macroName,
         steps_executed: results.length,
         variables: vars,
-        commands: results
+        commands: results,
       });
-    } catch (e: unknown) { return formatError('INTERNAL', (e as Error).message || String(e)); }
+    } catch (e: unknown) {
+      return formatError('INTERNAL', (e as Error).message || String(e));
+    }
   },
 
   'app.record.start': async (args, ctx) => {
@@ -233,8 +283,15 @@ export const appHandlers: Record<string, ToolHandler> = {
       const fps = (args.fps as number) || 10;
       const format = (args.format === 'webm' ? 'webm' : 'mp4') as 'mp4' | 'webm';
       const id = await startRecording(ctx.mainWindow, fps, format);
-      return formatOk({ recording_id: id, fps, format, message: 'Recording started. Use app.record.stop to finish.' });
-    } catch (e) { return formatError('INTERNAL', (e as Error).message); }
+      return formatOk({
+        recording_id: id,
+        fps,
+        format,
+        message: 'Recording started. Use app.record.stop to finish.',
+      });
+    } catch (e) {
+      return formatError('INTERNAL', (e as Error).message);
+    }
   },
 
   'app.record.stop': async (args) => {
@@ -248,13 +305,15 @@ export const appHandlers: Record<string, ToolHandler> = {
         file: result.file,
         format: result.format,
         size_bytes: result.size,
-        size_mb: Math.round(result.size / 1024 / 1024 * 100) / 100,
+        size_mb: Math.round((result.size / 1024 / 1024) * 100) / 100,
         duration_ms: result.duration_ms,
         duration_sec: Math.round(result.duration_ms / 100) / 10,
         frames: result.frames,
         fps: result.fps,
       });
-    } catch (e) { return formatError('INTERNAL', (e as Error).message); }
+    } catch (e) {
+      return formatError('INTERNAL', (e as Error).message);
+    }
   },
 
   'app.record.list': async () => {

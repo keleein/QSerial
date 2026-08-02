@@ -6,7 +6,16 @@
 import * as fs from 'node:fs';
 import { ConnectionFactory } from '../../connection/factory.js';
 import { ConnectionState, ConnectionType } from '@qserial/shared';
-import { formatOk, formatError, appendHistory, historyLog, extractPrompt, stripEcho, stripPrompt, parseAtResponse } from '../ai-helpers.js';
+import {
+  formatOk,
+  formatError,
+  appendHistory,
+  historyLog,
+  extractPrompt,
+  stripEcho,
+  stripPrompt,
+  parseAtResponse,
+} from '../ai-helpers.js';
 import { xmodemSend } from '../xmodem.js';
 import * as ctx from '../context.js';
 import type { ToolHandler } from '../types';
@@ -24,28 +33,28 @@ export const connIOHandlers: Record<string, ToolHandler> = {
     }
     await ctx.acquireWriteLock(id);
     try {
-    ctx.ensureBuffer(id);
+      ctx.ensureBuffer(id);
 
-    if (args.wait_before) {
-      const wbPattern = args.wait_before as string;
-      const wbResult = await ctx.waitPattern(id, wbPattern, 10, false);
-      if (!wbResult.matched) {
-        return `错误: 等待 "${wbPattern}" 超时 (10s)。最后输出:\n${wbResult.output.slice(-500)}`;
+      if (args.wait_before) {
+        const wbPattern = args.wait_before as string;
+        const wbResult = await ctx.waitPattern(id, wbPattern, 10, false);
+        if (!wbResult.matched) {
+          return `错误: 等待 "${wbPattern}" 超时 (10s)。最后输出:\n${wbResult.output.slice(-500)}`;
+        }
       }
-    }
 
-    if (args.delay_ms) {
-      await ctx.sleep(args.delay_ms as number);
-    }
+      if (args.delay_ms) {
+        await ctx.sleep(args.delay_ms as number);
+      }
 
-    conn.write(Buffer.from(data, 'utf-8'));
-    const responseTimeout = (args.response_timeout_ms as number) || 2000;
-    await ctx.waitForData(id, responseTimeout);
-    const output = ctx.consumeBuffer(id).toString('utf-8');
-    const meta = `sent=${data.length}B, replied=${output.length}B, ts=${Date.now()}`;
-    return output
-      ? `${output}\n\n[${meta}]`
-      : `已发送 (${data.length} 字符)，无立即回显 [${meta}]`;
+      conn.write(Buffer.from(data, 'utf-8'));
+      const responseTimeout = (args.response_timeout_ms as number) || 2000;
+      await ctx.waitForData(id, responseTimeout);
+      const output = ctx.consumeBuffer(id).toString('utf-8');
+      const meta = `sent=${data.length}B, replied=${output.length}B, ts=${Date.now()}`;
+      return output
+        ? `${output}\n\n[${meta}]`
+        : `已发送 (${data.length} 字符)，无立即回显 [${meta}]`;
     } finally {
       ctx.releaseWriteLock(id);
     }
@@ -91,15 +100,11 @@ export const connIOHandlers: Record<string, ToolHandler> = {
       }
       const output = ctx.consumeBuffer(id).toString('utf-8');
       const meta = `bytes=${output.length}, total_before_read=${totalBefore}, ts=${Date.now()}`;
-      return output
-        ? `${output}\n[${meta}]`
-        : `(无新输出) [${meta}]`;
+      return output ? `${output}\n[${meta}]` : `(无新输出) [${meta}]`;
     } else {
       const output = ctx.peekBuffer(id, maxBytes).toString('utf-8');
       const meta = `shown=${output.length}, buffer_total=${totalBefore}, ts=${Date.now()}`;
-      return output
-        ? `${output}\n[${meta}]`
-        : `(缓冲区为空) [${meta}]`;
+      return output ? `${output}\n[${meta}]` : `(缓冲区为空) [${meta}]`;
     }
   },
 
@@ -142,62 +147,66 @@ export const connIOHandlers: Record<string, ToolHandler> = {
     if (!command) return formatError('MISSING_PARAM', 'missing command');
     const conn = ConnectionFactory.get(id);
     if (!conn) return formatError('CONN_NOT_FOUND', 'connection not found: ' + id);
-    if (conn.state !== ConnectionState.CONNECTED) return formatError('CONN_NOT_CONNECTED', 'not connected');
+    if (conn.state !== ConnectionState.CONNECTED)
+      return formatError('CONN_NOT_CONNECTED', 'not connected');
 
     await ctx.acquireWriteLock(id);
     try {
-    ctx.ensureBuffer(id); ctx.clearBuffer(id);
+      ctx.ensureBuffer(id);
+      ctx.clearBuffer(id);
 
-    const timeoutMs = (args.timeout_ms as number) || 5000;
-    const cmdForDisplay = command.endsWith('\n') ? command.slice(0, -1) : command;
+      const timeoutMs = (args.timeout_ms as number) || 5000;
+      const cmdForDisplay = command.endsWith('\n') ? command.slice(0, -1) : command;
 
-    // 长命令分片发送（>512 字节），每片 ≤256B，间隔 50ms
-    const MAX_CHUNK = 256;
-    if (cmdForDisplay.length > 512) {
-      const chunks: string[] = [];
-      for (let i = 0; i < cmdForDisplay.length; i += MAX_CHUNK) {
-        chunks.push(cmdForDisplay.slice(i, i + MAX_CHUNK));
+      // 长命令分片发送（>512 字节），每片 ≤256B，间隔 50ms
+      const MAX_CHUNK = 256;
+      if (cmdForDisplay.length > 512) {
+        const chunks: string[] = [];
+        for (let i = 0; i < cmdForDisplay.length; i += MAX_CHUNK) {
+          chunks.push(cmdForDisplay.slice(i, i + MAX_CHUNK));
+        }
+        for (let i = 0; i < chunks.length; i++) {
+          conn.write(Buffer.from(chunks[i], 'utf-8'));
+          if (i < chunks.length - 1) await ctx.sleep(50);
+        }
+        conn.write(Buffer.from('\n', 'utf-8'));
+      } else {
+        conn.write(Buffer.from(cmdForDisplay + '\n', 'utf-8'));
       }
-      for (let i = 0; i < chunks.length; i++) {
-        conn.write(Buffer.from(chunks[i], 'utf-8'));
-        if (i < chunks.length - 1) await ctx.sleep(50);
-      }
-      conn.write(Buffer.from('\n', 'utf-8'));
-    } else {
-      conn.write(Buffer.from(cmdForDisplay + '\n', 'utf-8'));
-    }
-    appendHistory(id, 'send', cmdForDisplay + '\n');
-    const t0 = Date.now();
+      appendHistory(id, 'send', cmdForDisplay + '\n');
+      const t0 = Date.now();
 
-    const promptPattern = { pattern: '[#$>]\\s', isRegex: true };
+      const promptPattern = { pattern: '[#$>]\\s', isRegex: true };
 
-    // Phase 1: Wait for command echo — use longer timeout for long commands
-    const echoTimeout = Math.max(1500, Math.floor(timeoutMs / 3));
-    await ctx.waitForData(id, echoTimeout);
-    const echoData = ctx.consumeBuffer(id).toString('utf-8');
+      // Phase 1: Wait for command echo — use longer timeout for long commands
+      const echoTimeout = Math.max(1500, Math.floor(timeoutMs / 3));
+      await ctx.waitForData(id, echoTimeout);
+      const echoData = ctx.consumeBuffer(id).toString('utf-8');
 
-    // Phase 2: Wait for the REAL prompt that appears AFTER command output
-    const result = await ctx.waitForAnyPattern(id, [promptPattern], Math.ceil(timeoutMs / 1000));
-    const cmdOutput = result.output;
+      // Phase 2: Wait for the REAL prompt that appears AFTER command output
+      const result = await ctx.waitForAnyPattern(id, [promptPattern], Math.ceil(timeoutMs / 1000));
+      const cmdOutput = result.output;
 
-    // Combine echo + output
-    const rawOutput = echoData + cmdOutput;
-    if (rawOutput) appendHistory(id, 'recv', rawOutput);
+      // Combine echo + output
+      const rawOutput = echoData + cmdOutput;
+      if (rawOutput) appendHistory(id, 'recv', rawOutput);
 
-    let cleanOutput = rawOutput;
-    if (args.strip_echo !== false) cleanOutput = stripEcho(cleanOutput, cmdForDisplay);
-    const prompt = extractPrompt(rawOutput);
-    if (args.strip_prompt !== false && prompt) cleanOutput = stripPrompt(cleanOutput, prompt);
-    const atParsed = parseAtResponse(rawOutput);
+      let cleanOutput = rawOutput;
+      if (args.strip_echo !== false) cleanOutput = stripEcho(cleanOutput, cmdForDisplay);
+      const prompt = extractPrompt(rawOutput);
+      if (args.strip_prompt !== false && prompt) cleanOutput = stripPrompt(cleanOutput, prompt);
+      const atParsed = parseAtResponse(rawOutput);
 
-    return formatOk({
-      command: cmdForDisplay,
-      output: cleanOutput,
-      raw_output: rawOutput.slice(0, 1000),
-      prompt: prompt || undefined,
-      duration_ms: Date.now() - t0,
-      ...(atParsed.result !== 'unknown' || atParsed.fields.length ? { parsed: { at_result: atParsed.result, at_fields: atParsed.fields } } : {}),
-    });
+      return formatOk({
+        command: cmdForDisplay,
+        output: cleanOutput,
+        raw_output: rawOutput.slice(0, 1000),
+        prompt: prompt || undefined,
+        duration_ms: Date.now() - t0,
+        ...(atParsed.result !== 'unknown' || atParsed.fields.length
+          ? { parsed: { at_result: atParsed.result, at_fields: atParsed.fields } }
+          : {}),
+      });
     } finally {
       ctx.releaseWriteLock(id);
     }
@@ -209,9 +218,18 @@ export const connIOHandlers: Record<string, ToolHandler> = {
     const maxEntries = (args.max_entries as number) || 20;
     const log = historyLog.get(hid) || [];
     const entries = log.slice(-maxEntries);
-    const totalSend = entries.filter(e => e.dir === 'send').reduce((s, e) => s + e.data.length, 0);
-    const totalRecv = entries.filter(e => e.dir === 'recv').reduce((s, e) => s + e.data.length, 0);
-    return formatOk({ entries, count: entries.length, total_send_bytes: totalSend, total_recv_bytes: totalRecv });
+    const totalSend = entries
+      .filter((e) => e.dir === 'send')
+      .reduce((s, e) => s + e.data.length, 0);
+    const totalRecv = entries
+      .filter((e) => e.dir === 'recv')
+      .reduce((s, e) => s + e.data.length, 0);
+    return formatOk({
+      entries,
+      count: entries.length,
+      total_send_bytes: totalSend,
+      total_recv_bytes: totalRecv,
+    });
   },
 
   'conn.hw.dtr_rts': async (args) => {
@@ -309,7 +327,7 @@ export const connIOHandlers: Record<string, ToolHandler> = {
           readByte,
           fileData,
           protocol as 'xmodem' | 'ymodem',
-          { timeout, retries },
+          { timeout, retries }
         );
       } finally {
         ctx.releaseWriteLock(id);
@@ -328,7 +346,8 @@ export const connIOHandlers: Record<string, ToolHandler> = {
     if (!localPath) return formatError('MISSING_PARAM', 'missing localPath');
     const conn = ConnectionFactory.get(id);
     if (!conn) return formatError('CONN_NOT_FOUND', 'connection not found: ' + id);
-    if (conn.state !== ConnectionState.CONNECTED) return formatError('CONN_NOT_CONNECTED', 'not connected');
+    if (conn.state !== ConnectionState.CONNECTED)
+      return formatError('CONN_NOT_CONNECTED', 'not connected');
 
     let fileData: Buffer;
     try {
@@ -342,8 +361,8 @@ export const connIOHandlers: Record<string, ToolHandler> = {
     const lines = content.split('\n');
     const chunkSize = (args.chunk_size as number) || 256;
     const delayMs = (args.delay_ms as number) || 30;
-    const remotePath = args.remote_path as string || undefined;
-    const writeCmd = args.write_cmd as string || 'echo';
+    const remotePath = (args.remote_path as string) || undefined;
+    const writeCmd = (args.write_cmd as string) || 'echo';
 
     await ctx.acquireWriteLock(id);
     try {

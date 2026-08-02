@@ -34,7 +34,9 @@ function crashLog(msg: string): void {
   const line = `[${new Date().toISOString()}] ${msg}\n`;
   try {
     fs.appendFileSync(crashLogPath, line);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   console.log(line.trimEnd());
 }
 let crashLogPath: string;
@@ -83,7 +85,11 @@ function createWindow(): void {
       if (fs.existsSync(png)) return nativeImage.createFromPath(png);
       if (fs.existsSync(ico)) return nativeImage.createFromPath(ico);
       // fallback: read from exe embedded icon
-      try { return nativeImage.createFromPath(process.execPath); } catch { return undefined; }
+      try {
+        return nativeImage.createFromPath(process.execPath);
+      } catch {
+        return undefined;
+      }
     })(),
     width: config.width,
     height: config.height,
@@ -106,7 +112,9 @@ function createWindow(): void {
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     const isDev = process.env.NODE_ENV === 'development';
-    const csp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;" + (isDev ? " connect-src 'self' ws://localhost:5173 wss://localhost:5173" : "");
+    const csp =
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;" +
+      (isDev ? " connect-src 'self' ws://localhost:5173 wss://localhost:5173" : '');
     callback({
       responseHeaders: {
         ...details.responseHeaders,
@@ -179,106 +187,139 @@ function createWindow(): void {
 }
 
 // 初始化：窗口显示后再执行重量级初始化
-app.whenReady().then(async () => {
-  console.log('App ready');
+app
+  .whenReady()
+  .then(async () => {
+    console.log('App ready');
 
-  // 第一步：加载配置（读取小 JSON 文件，很快）
-  await ConfigManager.initialize();
-  console.log('Config initialized');
+    // 第一步：加载配置（读取小 JSON 文件，很快）
+    await ConfigManager.initialize();
+    console.log('Config initialized');
 
-  // 第二步：立即创建并显示窗口（用户看到窗口）
-  createWindow();
+    // 第二步：立即创建并显示窗口（用户看到窗口）
+    createWindow();
 
-  // 第三步：后台初始化其余模块（不阻塞 UI）
-  initBackgroundServices();
+    // 第三步：后台初始化其余模块（不阻塞 UI）
+    initBackgroundServices();
 
-  function buildAppMenu(lang: string) {
-    const t = (zh: string, en: string) => lang === 'en-US' ? en : zh;
-    Menu.setApplicationMenu(Menu.buildFromTemplate([
-      {
-        label: t('文件(F)', '&File'),
-        submenu: [
-          { label: t('新建连接', 'New Connection'), accelerator: 'CmdOrCtrl+N', click: () => mainWindow?.webContents.send('menu:new-connection') },
-          { type: 'separator' },
-          { label: t('设置', 'Settings'), accelerator: 'CmdOrCtrl+,', click: () => mainWindow?.webContents.send('menu:open-settings') },
-          { type: 'separator' },
-          { role: 'quit', label: t('退出', 'Quit') },
-        ],
-      },
-      {
-        label: t('编辑(E)', '&Edit'),
-        submenu: [
-          { role: 'undo' },
-          { role: 'redo' },
-          { type: 'separator' },
-          { role: 'cut' },
-          { role: 'copy' },
-          { role: 'paste' },
-          { role: 'selectAll' },
-        ],
-      },
-      {
-        label: t('视图(V)', '&View'),
-        submenu: [
-          { role: 'reload', label: t('重新加载', 'Reload') },
-          { role: 'forceReload' },
-          { role: 'toggleDevTools', accelerator: 'F12' },
-          { type: 'separator' },
-          { role: 'resetZoom' },
-          { role: 'zoomIn' },
-          { role: 'zoomOut' },
-          { type: 'separator' },
-          { role: 'togglefullscreen' },
-        ],
-      },
-      {
-        label: t('连接(C)', '&Connection'),
-        submenu: [
-          { label: t('串口...', 'Serial...'), click: () => mainWindow?.webContents.send('menu:open-serial') },
-          { label: t('SSH...', 'SSH...'), click: () => mainWindow?.webContents.send('menu:open-ssh') },
-          { label: t('Telnet...', 'Telnet...'), click: () => mainWindow?.webContents.send('menu:open-telnet') },
-          { label: t('本地终端...', 'Local Terminal...'), click: () => mainWindow?.webContents.send('menu:open-pty') },
-          { type: 'separator' },
-          { label: t('断开连接', 'Disconnect'), accelerator: 'CmdOrCtrl+D', click: () => mainWindow?.webContents.send('menu:disconnect') },
-        ],
-      },
-      {
-        label: t('工具(T)', '&Tools'),
-        submenu: [
-          { label: 'TFTP', click: () => mainWindow?.webContents.send('menu:open-tftp') },
-          { label: 'NFS', click: () => mainWindow?.webContents.send('menu:open-nfs') },
-          { label: 'FTP', click: () => mainWindow?.webContents.send('menu:open-ftp') },
-          { label: 'MCP', click: () => mainWindow?.webContents.send('menu:open-mcp') },
-          { type: 'separator' },
-          { label: t('连接共享...', 'Connection Share...'), click: () => mainWindow?.webContents.send('menu:open-share') },
-        ],
-      },
-      {
-        label: t('帮助(H)', '&Help'),
-        submenu: [
-          { label: t('关于 QSerial', 'About QSerial'), click: () => mainWindow?.webContents.send('menu:about') },
-        ],
-      },
-    ]));
-  }
-
-  const lang = ConfigManager.get('app').language || 'zh-CN';
-  buildAppMenu(lang);
-  ConfigManager.onChange((key: string) => {
-    if (key === 'app.language') {
-      const newLang = ConfigManager.get('app').language || 'zh-CN';
-      buildAppMenu(newLang);
+    function buildAppMenu(lang: string) {
+      const t = (zh: string, en: string) => (lang === 'en-US' ? en : zh);
+      Menu.setApplicationMenu(
+        Menu.buildFromTemplate([
+          {
+            label: t('文件(F)', '&File'),
+            submenu: [
+              {
+                label: t('新建连接', 'New Connection'),
+                accelerator: 'CmdOrCtrl+N',
+                click: () => mainWindow?.webContents.send('menu:new-connection'),
+              },
+              { type: 'separator' },
+              {
+                label: t('设置', 'Settings'),
+                accelerator: 'CmdOrCtrl+,',
+                click: () => mainWindow?.webContents.send('menu:open-settings'),
+              },
+              { type: 'separator' },
+              { role: 'quit', label: t('退出', 'Quit') },
+            ],
+          },
+          {
+            label: t('编辑(E)', '&Edit'),
+            submenu: [
+              { role: 'undo' },
+              { role: 'redo' },
+              { type: 'separator' },
+              { role: 'cut' },
+              { role: 'copy' },
+              { role: 'paste' },
+              { role: 'selectAll' },
+            ],
+          },
+          {
+            label: t('视图(V)', '&View'),
+            submenu: [
+              { role: 'reload', label: t('重新加载', 'Reload') },
+              { role: 'forceReload' },
+              { role: 'toggleDevTools', accelerator: 'F12' },
+              { type: 'separator' },
+              { role: 'resetZoom' },
+              { role: 'zoomIn' },
+              { role: 'zoomOut' },
+              { type: 'separator' },
+              { role: 'togglefullscreen' },
+            ],
+          },
+          {
+            label: t('连接(C)', '&Connection'),
+            submenu: [
+              {
+                label: t('串口...', 'Serial...'),
+                click: () => mainWindow?.webContents.send('menu:open-serial'),
+              },
+              {
+                label: t('SSH...', 'SSH...'),
+                click: () => mainWindow?.webContents.send('menu:open-ssh'),
+              },
+              {
+                label: t('Telnet...', 'Telnet...'),
+                click: () => mainWindow?.webContents.send('menu:open-telnet'),
+              },
+              {
+                label: t('本地终端...', 'Local Terminal...'),
+                click: () => mainWindow?.webContents.send('menu:open-pty'),
+              },
+              { type: 'separator' },
+              {
+                label: t('断开连接', 'Disconnect'),
+                accelerator: 'CmdOrCtrl+D',
+                click: () => mainWindow?.webContents.send('menu:disconnect'),
+              },
+            ],
+          },
+          {
+            label: t('工具(T)', '&Tools'),
+            submenu: [
+              { label: 'TFTP', click: () => mainWindow?.webContents.send('menu:open-tftp') },
+              { label: 'NFS', click: () => mainWindow?.webContents.send('menu:open-nfs') },
+              { label: 'FTP', click: () => mainWindow?.webContents.send('menu:open-ftp') },
+              { label: 'MCP', click: () => mainWindow?.webContents.send('menu:open-mcp') },
+              { type: 'separator' },
+              {
+                label: t('连接共享...', 'Connection Share...'),
+                click: () => mainWindow?.webContents.send('menu:open-share'),
+              },
+            ],
+          },
+          {
+            label: t('帮助(H)', '&Help'),
+            submenu: [
+              {
+                label: t('关于 QSerial', 'About QSerial'),
+                click: () => mainWindow?.webContents.send('menu:about'),
+              },
+            ],
+          },
+        ])
+      );
     }
-  });
 
+    const lang = ConfigManager.get('app').language || 'zh-CN';
+    buildAppMenu(lang);
+    ConfigManager.onChange((key: string) => {
+      if (key === 'app.language') {
+        const newLang = ConfigManager.get('app').language || 'zh-CN';
+        buildAppMenu(newLang);
+      }
+    });
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-}).catch((_err) => {
-});
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  })
+  .catch((_err) => {});
 
 // 后台初始化重量级服务
 async function initBackgroundServices(): Promise<void> {
@@ -290,8 +331,8 @@ async function initBackgroundServices(): Promise<void> {
     if (process.platform === 'linux') {
       setTimeout(() => {
         import('./utils/linux-serial-permissions.js')
-          .then(m => m.ensureUdevRules())
-          .then(installed => {
+          .then((m) => m.ensureUdevRules())
+          .then((installed) => {
             if (installed) {
               console.log('[init] udev rules check complete - serial devices accessible');
             }
@@ -315,25 +356,35 @@ async function initBackgroundServices(): Promise<void> {
     initNfsManager();
     console.log('NFS manager initialized');
     // MCP 延迟启动（窗口显示2秒后再启动，避免阻塞UI）
-    const mcpConfig2 = ConfigManager.get("mcp");
+    const mcpConfig2 = ConfigManager.get('mcp');
     if (mcpConfig2?.enabled) {
       const port2 = mcpConfig2.port || 9800;
-      const listenAddress2 = mcpConfig2.listenAddress || "127.0.0.1";
-      const authPassword2 = mcpConfig2.authPassword || "";
+      const listenAddress2 = mcpConfig2.listenAddress || '127.0.0.1';
+      const authPassword2 = mcpConfig2.authPassword || '';
       setTimeout(async () => {
         try {
-          const { startMcpServer } = await import("./services/mcp/manager.js");
+          const { startMcpServer } = await import('./services/mcp/manager.js');
           await startMcpServer(port2, listenAddress2, authPassword2);
-          ConfigManager.set("mcp", { enabled: true, port: port2, listenAddress: listenAddress2, authPassword: authPassword2 });
-          console.log("MCP server started on port", port2, "(delayed)");
+          ConfigManager.set('mcp', {
+            enabled: true,
+            port: port2,
+            listenAddress: listenAddress2,
+            authPassword: authPassword2,
+          });
+          console.log('MCP server started on port', port2, '(delayed)');
         } catch (err2) {
-          console.error("MCP auto-start failed:", err2);
+          console.error('MCP auto-start failed:', err2);
         }
       }, 2000);
     }
     console.log('Background services initialized');
   } catch (err) {
-    crashLog('[FATAL] init failed: ' + (err instanceof Error ? err.message : String(err)) + '\n' + (err instanceof Error ? err.stack || '' : ''));
+    crashLog(
+      '[FATAL] init failed: ' +
+        (err instanceof Error ? err.message : String(err)) +
+        '\n' +
+        (err instanceof Error ? err.stack || '' : '')
+    );
     process.exit(3);
   }
 }
@@ -348,15 +399,15 @@ app.on('window-all-closed', () => {
 // 应用退出前清理 - 使用动态 import 避免启动时加载
 app.on('before-quit', () => {
   // NFS 清理（同步，确保 WinNFSd 进程终止）
-  import('./services/nfs/manager.js').then(m => m.destroyNfsManager()).catch(() => {});
+  import('./services/nfs/manager.js').then((m) => m.destroyNfsManager()).catch(() => {});
   // TFTP 清理
-  import('./services/tftp/manager.js').then(m => m.destroyTftpManager()).catch(() => {});
+  import('./services/tftp/manager.js').then((m) => m.destroyTftpManager()).catch(() => {});
   // FTP 清理
-  import('./services/ftp/manager.js').then(m => m.destroyFtpManager()).catch(() => {});
+  import('./services/ftp/manager.js').then((m) => m.destroyFtpManager()).catch(() => {});
 });
 
 app.on('before-quit', async () => {
-  await import('./services/mcp/manager.js').then(m => m.destroyMcpManager()).catch(() => {});
+  await import('./services/mcp/manager.js').then((m) => m.destroyMcpManager()).catch(() => {});
 });
 
 app.on('before-quit', async () => {

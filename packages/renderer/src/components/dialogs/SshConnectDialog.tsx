@@ -91,20 +91,37 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <path d="M8 21h8M12 17v4"/>
-              <path d="M7 9l3 3-3 3" strokeOpacity="0.6"/>
-              <line x1="13" y1="15" x2="17" y2="15" strokeOpacity="0.6"/>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-primary"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <path d="M8 21h8M12 17v4" />
+              <path d="M7 9l3 3-3 3" strokeOpacity="0.6" />
+              <line x1="13" y1="15" x2="17" y2="15" strokeOpacity="0.6" />
             </svg>
-            <h2 className="text-base font-semibold">{editSession ? '编辑 SSH 配置' : 'SSH 连接'}</h2>
+            <h2 className="text-base font-semibold">
+              {editSession ? '编辑 SSH 配置' : 'SSH 连接'}
+            </h2>
           </div>
           <button
             onClick={onClose}
             className="dialog-close w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M1 1l12 12M13 1L1 13"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M1 1l12 12M13 1L1 13" />
             </svg>
           </button>
         </div>
@@ -215,8 +232,14 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
           {/* 错误提示 */}
           {error && (
             <div className="flex items-center gap-2 text-sm text-error bg-error/10 border-l-2 border-error px-3 py-2.5 rounded-r-lg">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" className="flex-shrink-0">
-                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="currentColor"
+                className="flex-shrink-0"
+              >
+                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z" />
               </svg>
               {error}
             </div>
@@ -225,16 +248,10 @@ export const SshConnectDialog: React.FC<SshConnectDialogProps> = ({
 
         {/* 底部按钮 */}
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
-          <button
-            onClick={onClose}
-            className="dialog-btn dialog-btn-secondary"
-          >
+          <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
             取消
           </button>
-          <button
-            onClick={handleConnect}
-            className="dialog-btn dialog-btn-primary"
-          >
+          <button onClick={handleConnect} className="dialog-btn dialog-btn-primary">
             {editSession ? '保存' : '连接'}
           </button>
         </div>

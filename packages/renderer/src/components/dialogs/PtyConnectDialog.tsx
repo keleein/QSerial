@@ -78,18 +78,35 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-              <polyline points="4 17 10 11 4 5"/>
-              <line x1="12" y1="19" x2="20" y2="19"/>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-primary"
+            >
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
             </svg>
-            <h2 className="text-base font-semibold">{editSession ? '编辑本地终端配置' : '本地终端'}</h2>
+            <h2 className="text-base font-semibold">
+              {editSession ? '编辑本地终端配置' : '本地终端'}
+            </h2>
           </div>
           <button
             onClick={onClose}
             className="dialog-close w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M1 1l12 12M13 1L1 13"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M1 1l12 12M13 1L1 13" />
             </svg>
           </button>
         </div>
@@ -125,10 +142,7 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
                 placeholder="留空则使用默认目录"
                 className="dialog-input flex-1"
               />
-              <button
-                onClick={handlePickDir}
-                className="dialog-btn dialog-btn-secondary px-3"
-              >
+              <button onClick={handlePickDir} className="dialog-btn dialog-btn-secondary px-3">
                 浏览
               </button>
             </div>
@@ -159,8 +173,14 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
           {/* 错误提示 */}
           {error && (
             <div className="flex items-center gap-2 text-sm text-error bg-error/10 border-l-2 border-error px-3 py-2.5 rounded-r-lg">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" className="flex-shrink-0">
-                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="currentColor"
+                className="flex-shrink-0"
+              >
+                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z" />
               </svg>
               {error}
             </div>
@@ -169,16 +189,10 @@ export const PtyConnectDialog: React.FC<PtyConnectDialogProps> = ({
 
         {/* 底部按钮 */}
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
-          <button
-            onClick={onClose}
-            className="dialog-btn dialog-btn-secondary"
-          >
+          <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
             取消
           </button>
-          <button
-            onClick={handleConnect}
-            className="dialog-btn dialog-btn-primary"
-          >
+          <button onClick={handleConnect} className="dialog-btn dialog-btn-primary">
             {editSession ? '保存' : '连接'}
           </button>
         </div>

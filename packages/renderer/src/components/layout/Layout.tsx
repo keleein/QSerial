@@ -24,7 +24,6 @@ export const Layout: React.FC = () => {
   const isVertical = quickButtonsState?.direction === 'vertical';
   const { errorMessage, dismiss } = useGlobalError();
 
-
   useGlobalShortcuts();
 
   useEffect(() => {
@@ -42,11 +41,16 @@ export const Layout: React.FC = () => {
     const unsubTransfer = window.qserial.tftp.onTransfer((event) => {
       useTftpStore.getState().handleTransferEvent(event as TftpTransferEvent);
     });
-    return () => { unsubStatus(); unsubTransfer(); };
+    return () => {
+      unsubStatus();
+      unsubTransfer();
+    };
   }, []);
 
   return (
-    <div className={`h-screen flex flex-col bg-background overflow-hidden ${hasTexture ? 'has-texture' : ''}`}>
+    <div
+      className={`h-screen flex flex-col bg-background overflow-hidden ${hasTexture ? 'has-texture' : ''}`}
+    >
       <TitleBar />
 
       {/* 主内容区：Sidebar + MainContent + 垂直快捷按钮 */}
@@ -67,7 +71,10 @@ export const Layout: React.FC = () => {
 
         {/* 垂直模式的快捷按钮面板 */}
         {isVertical && (
-          <div className="flex flex-col border-l border-border bg-surface flex-shrink-0" style={{ width: 'var(--buttonbar-width, 140px)' }}>
+          <div
+            className="flex flex-col border-l border-border bg-surface flex-shrink-0"
+            style={{ width: 'var(--buttonbar-width, 140px)' }}
+          >
             <QuickButtonBar direction="vertical" />
           </div>
         )}

@@ -6,9 +6,16 @@ const CACHE_TTL = 30000; // 30 秒
 
 // 已知的虚拟网卡关键词（不向外部设备暴露这些 IP）
 const VIRTUAL_KEYWORDS = [
-  'vEthernet', 'VMware', 'VMnet', 'VirtualBox',
-  'Bluetooth', 'Meta', 'Loopback', 'docker',
-  'Hyper-V', 'Default Switch',
+  'vEthernet',
+  'VMware',
+  'VMnet',
+  'VirtualBox',
+  'Bluetooth',
+  'Meta',
+  'Loopback',
+  'docker',
+  'Hyper-V',
+  'Default Switch',
 ];
 
 function isVirtualInterface(name: string): boolean {

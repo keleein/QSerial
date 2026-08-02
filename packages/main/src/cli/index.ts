@@ -4,43 +4,43 @@
  * Usage: qserial-test --script <test.json> [--device COM3] [--format junit|json]
  */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { runTestCase, type TestCase, type TestResult } from "./test-runner.js";
-import { toJUnitXml, toJsonReport } from "./reporter.js";
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { runTestCase, type TestCase, type TestResult } from './test-runner.js';
+import { toJUnitXml, toJsonReport } from './reporter.js';
 
 interface CliArgs {
   script: string;
   device?: string;
-  format: "junit" | "json";
+  format: 'junit' | 'json';
   output?: string;
   help: boolean;
 }
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
-  const result: CliArgs = { script: "", format: "junit", help: false };
+  const result: CliArgs = { script: '', format: 'junit', help: false };
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case "--script":
-      case "-s":
-        result.script = args[++i] || "";
+      case '--script':
+      case '-s':
+        result.script = args[++i] || '';
         break;
-      case "--device":
-      case "-d":
-        result.device = args[++i] || "";
+      case '--device':
+      case '-d':
+        result.device = args[++i] || '';
         break;
-      case "--format":
-      case "-f":
-        result.format = (args[++i] === "json" ? "json" : "junit");
+      case '--format':
+      case '-f':
+        result.format = args[++i] === 'json' ? 'json' : 'junit';
         break;
-      case "--output":
-      case "-o":
-        result.output = args[++i] || "";
+      case '--output':
+      case '-o':
+        result.output = args[++i] || '';
         break;
-      case "--help":
-      case "-h":
+      case '--help':
+      case '-h':
         result.help = true;
         break;
     }
@@ -98,7 +98,7 @@ async function main(): Promise<void> {
 
   let script: { tests: TestCase[] };
   try {
-    script = JSON.parse(fs.readFileSync(scriptPath, "utf-8"));
+    script = JSON.parse(fs.readFileSync(scriptPath, 'utf-8'));
   } catch (err) {
     console.error(`Error: Invalid JSON in test script: ${(err as Error).message}`);
     process.exit(1);
@@ -112,7 +112,7 @@ async function main(): Promise<void> {
   // Override device port if specified
   if (cli.device) {
     for (const tc of script.tests) {
-      if (tc.connection.type === "serial") {
+      if (tc.connection.type === 'serial') {
         tc.connection.port = cli.device;
       }
     }
@@ -125,16 +125,18 @@ async function main(): Promise<void> {
     console.error(`  [${tc.name}] Starting...`);
     const result = await runTestCase(tc);
     results.push(result);
-    const status = result.passed ? "PASS" : "FAIL";
-    console.error(`  [${tc.name}] ${status} (${result.passed_count}/${result.total} steps, ${result.duration_ms}ms)`);
+    const status = result.passed ? 'PASS' : 'FAIL';
+    console.error(
+      `  [${tc.name}] ${status} (${result.passed_count}/${result.total} steps, ${result.duration_ms}ms)`
+    );
     if (result.error) console.error(`    Error: ${result.error}`);
   }
 
   // Generate report
-  const report = cli.format === "json" ? toJsonReport(results) : toJUnitXml(results);
+  const report = cli.format === 'json' ? toJsonReport(results) : toJUnitXml(results);
 
   if (cli.output) {
-    fs.writeFileSync(path.resolve(cli.output), report, "utf-8");
+    fs.writeFileSync(path.resolve(cli.output), report, 'utf-8');
     console.error(`Report written to: ${cli.output}`);
   } else {
     console.log(report);
@@ -146,6 +148,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error("Fatal:", err.message);
+  console.error('Fatal:', err.message);
   process.exit(2);
 });

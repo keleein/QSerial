@@ -17,13 +17,17 @@ export const connectionHandlers: Record<string, ToolHandler> = {
       const conn = ConnectionFactory.get(id);
       if (!conn) return `错误: 找不到连接 ${id}`;
       const opts = conn.options as ConnectionOptions;
-      return JSON.stringify({
-        id: conn.id,
-        type: conn.type,
-        state: conn.state,
-        name: (opts as { name?: string }).name || '',
-        options: opts,
-      }, null, 2);
+      return JSON.stringify(
+        {
+          id: conn.id,
+          type: conn.type,
+          state: conn.state,
+          name: (opts as { name?: string }).name || '',
+          options: opts,
+        },
+        null,
+        2
+      );
     }
     const all = ConnectionFactory.getAll();
     return JSON.stringify(
@@ -33,7 +37,8 @@ export const connectionHandlers: Record<string, ToolHandler> = {
         name: (c.options as { name?: string }).name || '',
         state: c.state,
       })),
-      null, 2,
+      null,
+      2
     );
   },
 
@@ -44,7 +49,9 @@ export const connectionHandlers: Record<string, ToolHandler> = {
     }
 
     const id = crypto.randomUUID();
-    const name = (args.name as string) || `${ctype.toUpperCase()} ${((args.host || args.path) as string) || ''}`;
+    const name =
+      (args.name as string) ||
+      `${ctype.toUpperCase()} ${((args.host || args.path) as string) || ''}`;
 
     const options: Record<string, unknown> = {
       id,
@@ -60,7 +67,8 @@ export const connectionHandlers: Record<string, ToolHandler> = {
       options.dataBits = (args.dataBits as number) || 8;
       options.stopBits = (args.stopBits as number) || 1;
       options.parity = (args.parity as string) || 'none';
-      if (args.flowControl) options.flowControl = args.flowControl as 'none' | 'hardware' | 'software';
+      if (args.flowControl)
+        options.flowControl = args.flowControl as 'none' | 'hardware' | 'software';
     } else if (ctype === 'ssh') {
       if (!args.host) return '错误: ssh 类型需要 host 参数';
       if (!args.username) return '错误: ssh 类型需要 username 参数';
@@ -70,19 +78,30 @@ export const connectionHandlers: Record<string, ToolHandler> = {
       if (args.password) options.password = args.password as string;
       if (args.privateKey) options.privateKey = args.privateKey as string;
       if (args.passphrase) options.passphrase = args.passphrase as string;
-      if (args.jumpHost) options.jumpHost = args.jumpHost as { host: string; port?: number; username: string; password?: string; privateKey?: string };
+      if (args.jumpHost)
+        options.jumpHost = args.jumpHost as {
+          host: string;
+          port?: number;
+          username: string;
+          password?: string;
+          privateKey?: string;
+        };
     } else if (ctype === 'telnet') {
       if (!args.host) return '错误: telnet 类型需要 host 参数';
       options.host = args.host as string;
       options.port = (args.port as number) || 23;
     } else if (ctype === 'pty') {
-      options.shell = (args.shell as string) || (process.platform === 'win32' ? 'powershell.exe' : process.env.SHELL || '/bin/bash');
+      options.shell =
+        (args.shell as string) ||
+        (process.platform === 'win32' ? 'powershell.exe' : process.env.SHELL || '/bin/bash');
       options.cols = 80;
       options.rows = 24;
     }
 
     try {
-      const conn = await ConnectionFactory.create(options as unknown as import('@qserial/shared').ConnectionOptions);
+      const conn = await ConnectionFactory.create(
+        options as unknown as import('@qserial/shared').ConnectionOptions
+      );
       await conn.open();
       ctx.ensureBuffer(id);
       sendMCPNotification('connection/connected', { id, type: ctype, name });
@@ -102,7 +121,10 @@ export const connectionHandlers: Record<string, ToolHandler> = {
       });
       conn.onError((error: Error) => {
         if (toolCtx.mainWindow && !toolCtx.mainWindow.isDestroyed()) {
-          toolCtx.mainWindow.webContents.send(IPC_CHANNELS.CONNECTION_ERROR, { id, error: error.message });
+          toolCtx.mainWindow.webContents.send(IPC_CHANNELS.CONNECTION_ERROR, {
+            id,
+            error: error.message,
+          });
         }
       });
 
@@ -116,7 +138,11 @@ export const connectionHandlers: Record<string, ToolHandler> = {
           savedSessionId: (args.savedSessionId as string) || undefined,
         });
       }
-      return JSON.stringify({ id, type: ctype, state: conn.state, message: '连接已创建并就绪' }, null, 2);
+      return JSON.stringify(
+        { id, type: ctype, state: conn.state, message: '连接已创建并就绪' },
+        null,
+        2
+      );
     } catch (err) {
       return `错误: 创建连接失败 — ${(err as Error).message}`;
     }

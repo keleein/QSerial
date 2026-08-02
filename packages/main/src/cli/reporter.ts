@@ -3,15 +3,15 @@
  * Converts TestResult[] to JUnit XML format for CI integration.
  */
 
-import type { TestResult } from "./test-runner.js";
+import type { TestResult } from './test-runner.js';
 
 function escapeXml(s: string): string {
   return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export function toJUnitXml(results: TestResult[]): string {
@@ -31,26 +31,26 @@ export function toJUnitXml(results: TestResult[]): string {
       const stepTime = step.duration_ms / 1000;
       xml += `    <testcase name="${escapeXml(step.description)}" time="${stepTime.toFixed(3)}"`;
       if (!step.passed) {
-        xml += ">\n";
-        xml += `      <failure message="${escapeXml(step.error || "Assertion failed")}">\n`;
+        xml += '>\n';
+        xml += `      <failure message="${escapeXml(step.error || 'Assertion failed')}">\n`;
         xml += `        Expected output to match but got:\n${escapeXml(step.output.slice(0, 1000))}\n`;
-        xml += "      </failure>\n";
-        xml += "    </testcase>\n";
+        xml += '      </failure>\n';
+        xml += '    </testcase>\n';
       } else {
-        xml += " />\n";
+        xml += ' />\n';
       }
     }
 
     if (result.error) {
       xml += `    <testcase name="connection-error" time="0">\n`;
       xml += `      <error message="${escapeXml(result.error)}">${escapeXml(result.error)}</error>\n`;
-      xml += "    </testcase>\n";
+      xml += '    </testcase>\n';
     }
 
-    xml += "  </testsuite>\n";
+    xml += '  </testsuite>\n';
   }
 
-  xml += "</testsuites>\n";
+  xml += '</testsuites>\n';
   return xml;
 }
 

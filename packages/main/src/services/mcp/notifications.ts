@@ -15,7 +15,11 @@ const pendingNotifications: Array<{ method: string; params: Record<string, unkno
 export function sendMCPNotification(method: string, params: Record<string, unknown>): void {
   const msg = JSON.stringify({ jsonrpc: '2.0', method, params });
   for (const client of sseClients) {
-    try { client.write('data: ' + msg + '\n\n'); } catch { sseClients.delete(client); }
+    try {
+      client.write('data: ' + msg + '\n\n');
+    } catch {
+      sseClients.delete(client);
+    }
   }
   pendingNotifications.push({ method, params });
   if (pendingNotifications.length > 50) pendingNotifications.shift();

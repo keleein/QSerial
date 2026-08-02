@@ -332,9 +332,7 @@ export const useSftpStore = create<SftpState>()(
       set((state) => {
         const task = state.transfers.find(
           (t) =>
-            t.sftpId === event.sftpId &&
-            t.remotePath === event.remotePath &&
-            t.status === 'running'
+            t.sftpId === event.sftpId && t.remotePath === event.remotePath && t.status === 'running'
         );
         if (task) {
           task.total = event.total;

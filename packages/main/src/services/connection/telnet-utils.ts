@@ -76,7 +76,7 @@ export function handleTelnetCommand(socket: net.Socket, cmd: number, opt: number
 /** 处理 NAWS 子协商，提取终端窗口大小 */
 export function handleNawsSubnegotiation(
   clientInfo: { terminalCols: number; terminalRows: number },
-  subData: Buffer,
+  subData: Buffer
 ): void {
   if (subData.length >= 4) {
     clientInfo.terminalCols = (subData[0] << 8) | subData[1];
@@ -93,15 +93,19 @@ export function processTelnetData(
   data: Buffer,
   clientInfo: TelnetClientState,
   onSubnegotiation?: (opt: number, subData: Buffer) => void,
-  isReentry = false,
+  isReentry = false
 ): Buffer {
   const userData: number[] = [];
   let i = 0;
 
   while (i < data.length) {
     if (data[i] !== IAC) {
-      if (data[i] === 0x0D && i + 1 < data.length && (data[i + 1] === 0x0A || data[i + 1] === 0x00)) {
-        userData.push(0x0D);
+      if (
+        data[i] === 0x0d &&
+        i + 1 < data.length &&
+        (data[i + 1] === 0x0a || data[i + 1] === 0x00)
+      ) {
+        userData.push(0x0d);
         i += 2;
         continue;
       }
@@ -181,7 +185,7 @@ export function processPasswordAuth(
   },
   socket: net.Socket,
   accessPassword: string,
-  onRemoveClient: () => void,
+  onRemoveClient: () => void
 ): void {
   const resetAuthTimer = () => {
     if (clientInfo.authTimer) clearTimeout(clientInfo.authTimer);
@@ -195,7 +199,7 @@ export function processPasswordAuth(
   };
 
   for (const byte of userData) {
-    if (byte === 0x0D || byte === 0x0A) {
+    if (byte === 0x0d || byte === 0x0a) {
       const text = clientInfo.authBuffer.trim();
       clientInfo.authBuffer = '';
       if (!text) continue;
@@ -218,7 +222,7 @@ export function processPasswordAuth(
           socket.write('\r\nAUTH_FAILED, retry:\r\nPASSWORD: ');
         }
       }
-    } else if (byte === 0x7F || byte === 0x08) {
+    } else if (byte === 0x7f || byte === 0x08) {
       clientInfo.authBuffer = clientInfo.authBuffer.slice(0, -1);
       socket.write('\b \b');
     } else if (byte >= 32 && byte < 127) {

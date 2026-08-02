@@ -14,12 +14,12 @@ const api = {
     open: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_OPEN, { id }),
     close: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_CLOSE, { id }),
     destroy: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_DESTROY, { id }),
-    write: (id: string, data: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_WRITE, { id, data }),
+    write: (id: string, data: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_WRITE, { id, data }),
     resize: (id: string, cols: number, rows: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_RESIZE, { id, cols, rows }),
 
-    getState: (id: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_GET_STATE, { id }),
+    getState: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_GET_STATE, { id }),
 
     onData: (id: string, callback: (data: string) => void) => {
       const handler = (_: unknown, event: { id: string; data: string }) => {
@@ -56,7 +56,8 @@ const api = {
   // 配置
   config: {
     get: (key: string) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_GET, { key }),
-    set: (key: string, value: unknown) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_SET, { key, value }),
+    set: (key: string, value: unknown) =>
+      ipcRenderer.invoke(IPC_CHANNELS.CONFIG_SET, { key, value }),
     delete: (key: string) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_DELETE, { key }),
     getAll: () => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_GET_ALL),
   },
@@ -138,8 +139,7 @@ const api = {
   log: {
     start: (sessionId: string, filePath: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.LOG_START, { sessionId, filePath }),
-    stop: (sessionId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.LOG_STOP, { sessionId }),
+    stop: (sessionId: string) => ipcRenderer.invoke(IPC_CHANNELS.LOG_STOP, { sessionId }),
     write: (sessionId: string, data: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.LOG_WRITE, { sessionId, data }),
     pickFile: (defaultName?: string) =>
@@ -159,39 +159,84 @@ const api = {
     }) => {
       return ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_SERVER_START, options);
     },
-    stop: (id: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_SERVER_STOP, { id }),
-    getStatus: (id: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_SERVER_STATUS, { id }),
+    stop: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_SERVER_STOP, { id }),
+    getStatus: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.CONNECTION_SERVER_STATUS, { id }),
   },
 
-	  // MCP 服务器
-	  mcp: {
-	    start: (port: number, listenAddress?: string, authPassword?: string, autoStart?: boolean, corsOrigins?: string[]) =>
-	      ipcRenderer.invoke(IPC_CHANNELS.MCP_START, { port, listenAddress, authPassword, autoStart, corsOrigins }),
-	    stop: (autoStart?: boolean) => ipcRenderer.invoke(IPC_CHANNELS.MCP_STOP, { autoStart }),
-	    getStatus: () => ipcRenderer.invoke(IPC_CHANNELS.MCP_GET_STATUS),
-	    onStatusChange: (callback: (event: { running: boolean; port: number }) => void) => {
-	      const handler = (_: unknown, event: { running: boolean; port: number }) => callback(event);
-	      ipcRenderer.on(IPC_CHANNELS.MCP_STATUS_EVENT, handler);
-	      return () => ipcRenderer.off(IPC_CHANNELS.MCP_STATUS_EVENT, handler);
-	    },
-	    onConnectionCreated: (callback: (event: { connectionId: string; type: string; name: string; path?: string; host?: string; savedSessionId?: string }) => void) => {
-	      const handler = (_: unknown, event: { connectionId: string; type: string; name: string; path?: string; host?: string; savedSessionId?: string }) => callback(event);
-	      ipcRenderer.on(IPC_CHANNELS.MCP_CONNECTION_CREATED, handler);
-	      return () => ipcRenderer.off(IPC_CHANNELS.MCP_CONNECTION_CREATED, handler);
-	    },
-	    onShareChanged: (callback: (event: { shareId: string; running: boolean; sourceId?: string; localPort?: number; listenAddress?: string }) => void) => {
-	      const handler = (_: unknown, event: { shareId: string; running: boolean; sourceId?: string; localPort?: number; listenAddress?: string }) => callback(event);
-	      ipcRenderer.on(IPC_CHANNELS.MCP_SHARE_CHANGED, handler);
-	      return () => ipcRenderer.off(IPC_CHANNELS.MCP_SHARE_CHANGED, handler);
-	    },
-	  },
+  // MCP 服务器
+  mcp: {
+    start: (
+      port: number,
+      listenAddress?: string,
+      authPassword?: string,
+      autoStart?: boolean,
+      corsOrigins?: string[]
+    ) =>
+      ipcRenderer.invoke(IPC_CHANNELS.MCP_START, {
+        port,
+        listenAddress,
+        authPassword,
+        autoStart,
+        corsOrigins,
+      }),
+    stop: (autoStart?: boolean) => ipcRenderer.invoke(IPC_CHANNELS.MCP_STOP, { autoStart }),
+    getStatus: () => ipcRenderer.invoke(IPC_CHANNELS.MCP_GET_STATUS),
+    onStatusChange: (callback: (event: { running: boolean; port: number }) => void) => {
+      const handler = (_: unknown, event: { running: boolean; port: number }) => callback(event);
+      ipcRenderer.on(IPC_CHANNELS.MCP_STATUS_EVENT, handler);
+      return () => ipcRenderer.off(IPC_CHANNELS.MCP_STATUS_EVENT, handler);
+    },
+    onConnectionCreated: (
+      callback: (event: {
+        connectionId: string;
+        type: string;
+        name: string;
+        path?: string;
+        host?: string;
+        savedSessionId?: string;
+      }) => void
+    ) => {
+      const handler = (
+        _: unknown,
+        event: {
+          connectionId: string;
+          type: string;
+          name: string;
+          path?: string;
+          host?: string;
+          savedSessionId?: string;
+        }
+      ) => callback(event);
+      ipcRenderer.on(IPC_CHANNELS.MCP_CONNECTION_CREATED, handler);
+      return () => ipcRenderer.off(IPC_CHANNELS.MCP_CONNECTION_CREATED, handler);
+    },
+    onShareChanged: (
+      callback: (event: {
+        shareId: string;
+        running: boolean;
+        sourceId?: string;
+        localPort?: number;
+        listenAddress?: string;
+      }) => void
+    ) => {
+      const handler = (
+        _: unknown,
+        event: {
+          shareId: string;
+          running: boolean;
+          sourceId?: string;
+          localPort?: number;
+          listenAddress?: string;
+        }
+      ) => callback(event);
+      ipcRenderer.on(IPC_CHANNELS.MCP_SHARE_CHANGED, handler);
+      return () => ipcRenderer.off(IPC_CHANNELS.MCP_SHARE_CHANGED, handler);
+    },
+  },
 
   // 通用对话框
   dialog: {
-    pickDir: (title: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.DIALOG_PICK_DIR, { title }),
+    pickDir: (title: string) => ipcRenderer.invoke(IPC_CHANNELS.DIALOG_PICK_DIR, { title }),
   },
 
   // 网络
@@ -204,8 +249,7 @@ const api = {
   sftp: {
     create: (connectionId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_CREATE, { connectionId }),
-    destroy: (sftpId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.SFTP_DESTROY, { sftpId }),
+    destroy: (sftpId: string) => ipcRenderer.invoke(IPC_CHANNELS.SFTP_DESTROY, { sftpId }),
     list: (sftpId: string, path: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_LIST, { sftpId, path }),
     download: (sftpId: string, remotePath: string, localPath: string) =>
@@ -226,10 +270,8 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_READLINK, { sftpId, path }),
     symlink: (sftpId: string, target: string, path: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_SYMLINK, { sftpId, target, path }),
-    pickLocalFile: () =>
-      ipcRenderer.invoke(IPC_CHANNELS.SFTP_PICK_LOCAL),
-    pickLocalDir: () =>
-      ipcRenderer.invoke(IPC_CHANNELS.SFTP_PICK_LOCAL_DIR),
+    pickLocalFile: () => ipcRenderer.invoke(IPC_CHANNELS.SFTP_PICK_LOCAL),
+    pickLocalDir: () => ipcRenderer.invoke(IPC_CHANNELS.SFTP_PICK_LOCAL_DIR),
     realpath: (sftpId: string, path: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_REALPATH, { sftpId, path }),
     onProgress: (callback: (event: unknown) => void) => {

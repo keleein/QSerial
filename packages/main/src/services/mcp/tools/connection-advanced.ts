@@ -24,7 +24,11 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const totalBytes = ctx.bufferSize(id);
     const output = ctx.peekBuffer(id, 65536).toString('utf-8');
     const state = ctx.analyzeState(output, conn.state);
-    return JSON.stringify({ ...state, buffer_bytes: totalBytes, output_tail_bytes: output.length }, null, 2);
+    return JSON.stringify(
+      { ...state, buffer_bytes: totalBytes, output_tail_bytes: output.length },
+      null,
+      2
+    );
   },
 
   'conn.analyze.probe': async (args) => {
@@ -32,42 +36,106 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     if (!probeId) return formatError('MISSING_PARAM', 'missing id');
     const probeConn = ConnectionFactory.get(probeId);
     if (!probeConn) return formatError('CONN_NOT_FOUND', 'connection not found');
-    if (probeConn.state !== ConnectionState.CONNECTED) return formatError('CONN_NOT_CONNECTED', 'not connected');
+    if (probeConn.state !== ConnectionState.CONNECTED)
+      return formatError('CONN_NOT_CONNECTED', 'not connected');
 
     const knownDevices = [
-      { name: 'ESP32/ESP8266', patterns: ['ESP32', 'ESP8266', 'AT version', 'ready'], baud_hint: 115200 },
+      {
+        name: 'ESP32/ESP8266',
+        patterns: ['ESP32', 'ESP8266', 'AT version', 'ready'],
+        baud_hint: 115200,
+      },
       { name: 'STM32', patterns: ['STM32', 'STMicroelectronics', 'U-Boot SPL'], baud_hint: 115200 },
-      { name: 'Raspberry Pi', patterns: ['Raspberry Pi', 'raspberrypi', 'Debian', 'Raspbian'], baud_hint: 115200 },
-      { name: 'NXP i.MX', patterns: ['imx6ull', 'imx6', 'imx8', 'imx', 'NXP', 'Freescale', '100ask'], baud_hint: 115200 },
-      { name: 'TI AM335x', patterns: ['AM335', 'BeagleBone', 'beaglebone', 'TI Sitara'], baud_hint: 115200 },
-      { name: 'U-Boot', patterns: ['U-Boot', 'Hit any key', 'Loading from', 'Booting'], baud_hint: 115200 },
+      {
+        name: 'Raspberry Pi',
+        patterns: ['Raspberry Pi', 'raspberrypi', 'Debian', 'Raspbian'],
+        baud_hint: 115200,
+      },
+      {
+        name: 'NXP i.MX',
+        patterns: ['imx6ull', 'imx6', 'imx8', 'imx', 'NXP', 'Freescale', '100ask'],
+        baud_hint: 115200,
+      },
+      {
+        name: 'TI AM335x',
+        patterns: ['AM335', 'BeagleBone', 'beaglebone', 'TI Sitara'],
+        baud_hint: 115200,
+      },
+      {
+        name: 'U-Boot',
+        patterns: ['U-Boot', 'Hit any key', 'Loading from', 'Booting'],
+        baud_hint: 115200,
+      },
       { name: 'Buildroot', patterns: ['Buildroot', 'buildroot'], baud_hint: 115200 },
       { name: 'Yocto/Poky', patterns: ['Yocto', 'Poky', 'poky'], baud_hint: 115200 },
-      { name: 'OpenWrt', patterns: ['OpenWrt', 'openwrt', 'LuCI', 'Attitude Adjustment', 'Barrier Breaker', 'Chaos Calmer', 'LEDE'], baud_hint: 115200 },
-      { name: 'Linux', patterns: ['login:', 'Password:', 'Debian', 'Ubuntu', 'CentOS', 'kernel'], baud_hint: 115200 },
+      {
+        name: 'OpenWrt',
+        patterns: [
+          'OpenWrt',
+          'openwrt',
+          'LuCI',
+          'Attitude Adjustment',
+          'Barrier Breaker',
+          'Chaos Calmer',
+          'LEDE',
+        ],
+        baud_hint: 115200,
+      },
+      {
+        name: 'Linux',
+        patterns: ['login:', 'Password:', 'Debian', 'Ubuntu', 'CentOS', 'kernel'],
+        baud_hint: 115200,
+      },
       { name: 'BusyBox', patterns: ['BusyBox', '/ #', '# '], baud_hint: 115200 },
-      { name: 'Cisco IOS', patterns: ['Cisco IOS', 'Router>', 'Switch>', 'enable'], baud_hint: 9600 },
+      {
+        name: 'Cisco IOS',
+        patterns: ['Cisco IOS', 'Router>', 'Switch>', 'enable'],
+        baud_hint: 9600,
+      },
       { name: 'Juniper JunOS', patterns: ['JunOS', 'Juniper', 'junos'], baud_hint: 9600 },
-      { name: 'MikroTik RouterOS', patterns: ['MikroTik', 'RouterOS', 'mikrotik'], baud_hint: 115200 },
-      { name: 'EdgeOS (Ubiquiti)', patterns: ['EdgeOS', 'Ubiquiti', 'EdgeRouter', 'Vyatta'], baud_hint: 115200 },
+      {
+        name: 'MikroTik RouterOS',
+        patterns: ['MikroTik', 'RouterOS', 'mikrotik'],
+        baud_hint: 115200,
+      },
+      {
+        name: 'EdgeOS (Ubiquiti)',
+        patterns: ['EdgeOS', 'Ubiquiti', 'EdgeRouter', 'Vyatta'],
+        baud_hint: 115200,
+      },
       { name: 'Arduino', patterns: ['Arduino', 'avrdude'], baud_hint: 9600 },
       { name: 'FreeRTOS', patterns: ['FreeRTOS', 'freertos'], baud_hint: 115200 },
       { name: 'Zephyr', patterns: ['Zephyr', 'zephyr'], baud_hint: 115200 },
       { name: 'NuttX', patterns: ['NuttX', 'nuttx', 'NuttShell'], baud_hint: 115200 },
-      { name: 'Android', patterns: ['Android', 'android', 'bootloader', 'fastboot'], baud_hint: 115200 },
-      { name: 'BIOS/UEFI', patterns: ['BIOS', 'UEFI', 'American Megatrends', 'AMI', 'Insyde', 'Phoenix'], baud_hint: 115200 },
+      {
+        name: 'Android',
+        patterns: ['Android', 'android', 'bootloader', 'fastboot'],
+        baud_hint: 115200,
+      },
+      {
+        name: 'BIOS/UEFI',
+        patterns: ['BIOS', 'UEFI', 'American Megatrends', 'AMI', 'Insyde', 'Phoenix'],
+        baud_hint: 115200,
+      },
     ];
 
-    ctx.ensureBuffer(probeId); ctx.clearBuffer(probeId);
+    ctx.ensureBuffer(probeId);
+    ctx.clearBuffer(probeId);
     probeConn.write(Buffer.from('AT\n', 'utf-8'));
     appendHistory(probeId, 'send', 'AT\n');
     await ctx.sleep(3000);
     const probeOutput = ctx.consumeBuffer(probeId).toString('utf-8');
     if (probeOutput) appendHistory(probeId, 'recv', probeOutput);
-    const matches = knownDevices.filter(d => d.patterns.some(p => probeOutput.includes(p)))
-      .map(d => ({ device: d.name, confidence: d.patterns.filter(p => probeOutput.includes(p)).length / d.patterns.length, baud_hint: d.baud_hint }));
+    const matches = knownDevices
+      .filter((d) => d.patterns.some((p) => probeOutput.includes(p)))
+      .map((d) => ({
+        device: d.name,
+        confidence: d.patterns.filter((p) => probeOutput.includes(p)).length / d.patterns.length,
+        baud_hint: d.baud_hint,
+      }));
     matches.sort((a, b) => b.confidence - a.confidence);
-    return matches.length > 0 ? formatOk({ best_match: matches[0], all_matches: matches.slice(0, 3) })
+    return matches.length > 0
+      ? formatOk({ best_match: matches[0], all_matches: matches.slice(0, 3) })
       : formatOk({ device: 'unknown', confidence: 0, output_sample: probeOutput.slice(0, 300) });
   },
 
@@ -75,13 +143,20 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const sumId = ctx.resolveId(args);
     if (!sumId) return formatError('MISSING_PARAM', 'missing id');
     const log = historyLog.get(sumId) || [];
-    const sendEntries = log.filter(e => e.dir === 'send');
-    const recvEntries = log.filter(e => e.dir === 'recv');
+    const sendEntries = log.filter((e) => e.dir === 'send');
+    const recvEntries = log.filter((e) => e.dir === 'recv');
     const totalSend = sendEntries.reduce((s, e) => s + e.data.length, 0);
     const totalRecv = recvEntries.reduce((s, e) => s + e.data.length, 0);
     const tFirst = log.length > 0 ? log[0].ts : 0;
     const tLast = log.length > 0 ? log[log.length - 1].ts : 0;
-    return formatOk({ connection_id: sumId, duration_ms: tLast - tFirst, total_commands: sendEntries.length, total_bytes_sent: totalSend, total_bytes_received: totalRecv, history_entries: log.length });
+    return formatOk({
+      connection_id: sumId,
+      duration_ms: tLast - tFirst,
+      total_commands: sendEntries.length,
+      total_bytes_sent: totalSend,
+      total_bytes_received: totalRecv,
+      history_entries: log.length,
+    });
   },
 
   'conn.script.login': async (args) => {
@@ -105,7 +180,9 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     ctx.ensureBuffer(id);
 
     const steps: string[] = [];
-    const addStep = (s: string) => { if (debug) steps.push(s); };
+    const addStep = (s: string) => {
+      if (debug) steps.push(s);
+    };
 
     addStep(`[1/5] 等待登录提示 (regex: "${loginPrompt}", timeout=${timeout}s)...`);
 
@@ -116,11 +193,15 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
         const lchoice = await requestSampling(
           'Login prompt not matched on device',
           'Device output: ' + lctx2 + ' | Pattern: ' + loginPrompt,
-          ['retry', 'send_anyway', 'abort'], 15000
+          ['retry', 'send_anyway', 'abort'],
+          15000
         );
-        if (lchoice === 'retry') return formatError('SAMPLING_RETRY', 'AI suggests retry. Output: ' + lctx2);
+        if (lchoice === 'retry')
+          return formatError('SAMPLING_RETRY', 'AI suggests retry. Output: ' + lctx2);
         if (lchoice === 'abort') return formatError('SAMPLING_ABORT', 'AI aborted login');
-      } catch { /* sampling timeout */ }
+      } catch {
+        /* sampling timeout */
+      }
       if (debug) {
         return [
           ...steps,
@@ -138,7 +219,9 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     ctx.clearBuffer(id);
 
     if (noPassword) {
-      addStep(`[3/4] 跳过密码（no_password=true），等待 Shell 提示符 (regex: "${shellPrompt}", timeout=${timeout}s)...`);
+      addStep(
+        `[3/4] 跳过密码（no_password=true），等待 Shell 提示符 (regex: "${shellPrompt}", timeout=${timeout}s)...`
+      );
       const shellResult2 = await ctx.waitPattern(id, shellPrompt, timeout, true);
       const output2 = ctx.consumeBuffer(id).toString('utf-8');
       if (shellResult2.matched) {
@@ -150,11 +233,17 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
       return steps.join('\n') + `\n\n${output2.slice(-500)}`;
     }
 
-    addStep(`[3/5] 等待密码提示或 Shell 提示 (regex: "${passwordPrompt}" / "${shellPrompt}", timeout=${timeout}s)...`);
-    const postUserResult = await ctx.waitForAnyPattern(id, [
-      { pattern: passwordPrompt, isRegex: true },
-      { pattern: shellPrompt, isRegex: true },
-    ], timeout);
+    addStep(
+      `[3/5] 等待密码提示或 Shell 提示 (regex: "${passwordPrompt}" / "${shellPrompt}", timeout=${timeout}s)...`
+    );
+    const postUserResult = await ctx.waitForAnyPattern(
+      id,
+      [
+        { pattern: passwordPrompt, isRegex: true },
+        { pattern: shellPrompt, isRegex: true },
+      ],
+      timeout
+    );
 
     if (postUserResult.matched && postUserResult.index === 1) {
       const remaining = ctx.consumeBuffer(id).toString('utf-8');
@@ -200,17 +289,20 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const rsid = ctx.resolveId(args);
     if (!rsid) return formatError('MISSING_PARAM', 'missing id');
     const steps = args.steps as Array<Record<string, unknown>> | undefined;
-    if (!steps || !Array.isArray(steps) || steps.length === 0) return formatError('MISSING_PARAM', 'missing steps');
+    if (!steps || !Array.isArray(steps) || steps.length === 0)
+      return formatError('MISSING_PARAM', 'missing steps');
     const conn2 = ConnectionFactory.get(rsid);
     if (!conn2) return formatError('CONN_NOT_FOUND', 'connection not found');
-    if (conn2.state !== ConnectionState.CONNECTED) return formatError('CONN_NOT_CONNECTED', 'not connected');
+    if (conn2.state !== ConnectionState.CONNECTED)
+      return formatError('CONN_NOT_CONNECTED', 'not connected');
 
     const results: Array<Record<string, unknown>> = [];
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       const timeout2: number = typeof step.timeout_ms === 'number' ? step.timeout_ms : 15000;
       if (step.delay_ms) await ctx.sleep(step.delay_ms as number);
-      ctx.ensureBuffer(rsid); ctx.clearBuffer(rsid);
+      ctx.ensureBuffer(rsid);
+      ctx.clearBuffer(rsid);
       const t1 = Date.now();
       const sendStr: string = String(step.send || '');
       const data = sendStr.endsWith('\n') ? sendStr : sendStr + '\n';
@@ -220,7 +312,12 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
       await ctx.waitForAnyPattern(rsid, pats, Math.ceil(timeout2 / 1000));
       const output2 = ctx.consumeBuffer(rsid).toString('utf-8');
       if (output2) appendHistory(rsid, 'recv', output2);
-      sendMCPNotification('script/step_completed', { connection_id: rsid, step: i, total: steps.length, ok: true });
+      sendMCPNotification('script/step_completed', {
+        connection_id: rsid,
+        step: i,
+        total: steps.length,
+        ok: true,
+      });
       const xp: string = (step.expect as string) || '';
       const isOk = !xp || output2.includes(xp);
       if (!isOk && xp) {
@@ -228,15 +325,35 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
           const schoice = await requestSampling(
             'Script step ' + (i + 1) + ' failed: expected "' + xp + '" not found',
             'Command: ' + String(step.send || '') + ' | Output: ' + output2.slice(0, 400),
-            ['retry', 'skip', 'abort'], 15000
+            ['retry', 'skip', 'abort'],
+            15000
           );
-          if (schoice === 'retry') { i--; continue; }
-          if (schoice === 'abort') return formatError('SCRIPT_ABORTED', 'AI aborted at step ' + (i + 1));
-        } catch { /* sampling timeout */ }
-        results.push({ step: i, description: (step.description as string) || ('step ' + (i + 1)), ok: false, output: output2.slice(0, 2000), duration_ms: Date.now() - t1, error: 'expect not matched' });
+          if (schoice === 'retry') {
+            i--;
+            continue;
+          }
+          if (schoice === 'abort')
+            return formatError('SCRIPT_ABORTED', 'AI aborted at step ' + (i + 1));
+        } catch {
+          /* sampling timeout */
+        }
+        results.push({
+          step: i,
+          description: (step.description as string) || 'step ' + (i + 1),
+          ok: false,
+          output: output2.slice(0, 2000),
+          duration_ms: Date.now() - t1,
+          error: 'expect not matched',
+        });
         continue;
       }
-      results.push({ step: i, description: (step.description as string) || ('step ' + (i + 1)), ok: true, output: output2.slice(0, 2000), duration_ms: Date.now() - t1 });
+      results.push({
+        step: i,
+        description: (step.description as string) || 'step ' + (i + 1),
+        ok: true,
+        output: output2.slice(0, 2000),
+        duration_ms: Date.now() - t1,
+      });
     }
     return formatOk({ completed: results.length, total: steps.length, success: true, results });
   },
@@ -278,7 +395,11 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
         const serverConn = await ConnectionFactory.create(options);
         await serverConn.open();
         ctx.sharePool.set(serverId, { sourceId, serverId });
-        sendMCPNotification('share/started', { share_id: serverId, source_id: sourceId, local_port: localPort });
+        sendMCPNotification('share/started', {
+          share_id: serverId,
+          source_id: sourceId,
+          local_port: localPort,
+        });
 
         if (toolCtx.mainWindow && !toolCtx.mainWindow.isDestroyed()) {
           toolCtx.mainWindow.webContents.send(IPC_CHANNELS.MCP_SHARE_CHANGED, {
@@ -291,18 +412,24 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
         }
 
         const status = (serverConn as ConnectionServerConnection).getStatus();
-        return JSON.stringify({
-          share_id: serverId,
-          local_port: status.localPort,
-          listen_address: status.listenAddress,
-          source_id: sourceId,
-          source_type: sourceConn.type,
-          source_description: status.sourceDescription || `${sourceConn.type} - ${(sourceConn.options as { name?: string }).name || ''}`,
-          client_count: status.clientCount,
-          clients: status.clients,
-          has_password: !!options.accessPassword,
-          telnet_cmd: `telnet ${status.listenAddress} ${status.localPort}`,
-        }, null, 2);
+        return JSON.stringify(
+          {
+            share_id: serverId,
+            local_port: status.localPort,
+            listen_address: status.listenAddress,
+            source_id: sourceId,
+            source_type: sourceConn.type,
+            source_description:
+              status.sourceDescription ||
+              `${sourceConn.type} - ${(sourceConn.options as { name?: string }).name || ''}`,
+            client_count: status.clientCount,
+            clients: status.clients,
+            has_password: !!options.accessPassword,
+            telnet_cmd: `telnet ${status.listenAddress} ${status.localPort}`,
+          },
+          null,
+          2
+        );
       } catch (err) {
         return `错误: 启动共享失败 — ${(err as Error).message}`;
       }
@@ -348,7 +475,9 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
             clients: status.clients,
             has_password: status.hasPassword,
             running: status.running,
-            telnet_cmd: status.running ? `telnet ${status.listenAddress} ${status.localPort}` : null,
+            telnet_cmd: status.running
+              ? `telnet ${status.listenAddress} ${status.localPort}`
+              : null,
           });
         }
       }
@@ -364,12 +493,19 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const watchConn = ConnectionFactory.get(watchId);
     if (!watchConn) return formatError('CONN_NOT_FOUND', 'connection not found');
     const rules = (args.rules as Array<Record<string, unknown>>) || [];
-    if (!Array.isArray(rules) || rules.length === 0) return formatError('MISSING_PARAM', 'missing rules');
+    if (!Array.isArray(rules) || rules.length === 0)
+      return formatError('MISSING_PARAM', 'missing rules');
     const duration = (args.duration_ms as number) || 60000;
     const wid = 'watch_' + crypto.randomUUID().slice(0, 8);
-    const compiled = rules.map((r: Record<string, unknown>) => ({ pattern: r.pattern as string, isRegex: r.regex !== false, level: (r.level as string) || 'warning' }));
+    const compiled = rules.map((r: Record<string, unknown>) => ({
+      pattern: r.pattern as string,
+      isRegex: r.regex !== false,
+      level: (r.level as string) || 'warning',
+    }));
     let stopped = false;
-    ctx.watches.set(wid, () => { stopped = true; });
+    ctx.watches.set(wid, () => {
+      stopped = true;
+    });
     (async () => {
       const tStart = Date.now();
       while (!stopped) {
@@ -380,13 +516,26 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
           const data = Buffer.concat(ctx.buffers.get(watchId) || []).toString('utf-8');
           for (const r of compiled) {
             if (r.isRegex ? new RegExp(r.pattern, 'i').test(data) : data.includes(r.pattern)) {
-              const alertEntry = { ts: Date.now(), pattern: r.pattern, level: r.level, context: data.slice(-200) };
+              const alertEntry = {
+                ts: Date.now(),
+                pattern: r.pattern,
+                level: r.level,
+                context: data.slice(-200),
+              };
               if (!ctx.watchResults.has(wid)) ctx.watchResults.set(wid, []);
               ctx.watchResults.get(wid)!.push(alertEntry);
-              sendMCPNotification('connection/data_alert', { id: watchId, pattern: r.pattern, level: r.level, watch_id: wid, context: alertEntry.context });
+              sendMCPNotification('connection/data_alert', {
+                id: watchId,
+                pattern: r.pattern,
+                level: r.level,
+                watch_id: wid,
+                context: alertEntry.context,
+              });
             }
           }
-        } catch { break; }
+        } catch {
+          break;
+        }
       }
       ctx.watches.delete(wid);
       setTimeout(() => ctx.watchResults.delete(wid), 30 * 60 * 1000);
@@ -398,7 +547,11 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const wid = args.watch_id as string;
     if (!wid) return formatError('MISSING_PARAM', 'missing watch_id');
     const stopFn = ctx.watches.get(wid);
-    if (stopFn) { stopFn(); const wRes = ctx.watchResults.get(wid) || []; return formatOk({ stopped: wid, total_alerts: wRes.length, alerts: wRes }); }
+    if (stopFn) {
+      stopFn();
+      const wRes = ctx.watchResults.get(wid) || [];
+      return formatOk({ stopped: wid, total_alerts: wRes.length, alerts: wRes });
+    }
     return formatError('NOT_FOUND', 'watch not found: ' + wid);
   },
 
@@ -409,9 +562,25 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
       if (!results2) return formatError('NOT_FOUND', 'no results');
       return formatOk({ watch_id: wid2, total: results2.length, alerts: results2 });
     }
-    const allResults: Record<string, unknown> = {}; let grandTotal = 0;
-    ctx.watchResults.forEach((v, k) => { allResults[k] = { total: v.length, alerts: v.map(a => ({ ts: new Date(a.ts).toISOString(), pattern: a.pattern, level: a.level, context: a.context })) }; grandTotal += v.length; });
-    return formatOk({ watches_count: ctx.watchResults.size, total_alerts: grandTotal, watches: allResults });
+    const allResults: Record<string, unknown> = {};
+    let grandTotal = 0;
+    ctx.watchResults.forEach((v, k) => {
+      allResults[k] = {
+        total: v.length,
+        alerts: v.map((a) => ({
+          ts: new Date(a.ts).toISOString(),
+          pattern: a.pattern,
+          level: a.level,
+          context: a.context,
+        })),
+      };
+      grandTotal += v.length;
+    });
+    return formatOk({
+      watches_count: ctx.watchResults.size,
+      total_alerts: grandTotal,
+      watches: allResults,
+    });
   },
 
   'conn.record.start': async (args) => {
@@ -425,8 +594,19 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const unsub = recConn.onData((data: Buffer) => {
       frames.push({ ts: Date.now() - t0, data: data.toString('utf-8') });
     });
-    ctx.recordings.set(recId, { id: 'rec_' + crypto.randomUUID().slice(0, 8), connectionId: recId, startedAt: t0, duration_ms: 0, frames, unsub });
-    return formatOk({ recording_id: ctx.recordings.get(recId)!.id, connection_id: recId, started: new Date(t0).toISOString() });
+    ctx.recordings.set(recId, {
+      id: 'rec_' + crypto.randomUUID().slice(0, 8),
+      connectionId: recId,
+      startedAt: t0,
+      duration_ms: 0,
+      frames,
+      unsub,
+    });
+    return formatOk({
+      recording_id: ctx.recordings.get(recId)!.id,
+      connection_id: recId,
+      started: new Date(t0).toISOString(),
+    });
   },
 
   'conn.record.stop': async (args) => {
@@ -438,13 +618,25 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     rec.duration_ms = Date.now() - rec.startedAt;
     ctx.recordings.delete(recId2);
     const totalBytes = rec.frames.reduce((s, f) => s + f.data.length, 0);
-    return formatOk({ recording_id: rec.id, connection_id: rec.connectionId, duration_ms: rec.duration_ms, frames_count: rec.frames.length, total_bytes: totalBytes });
+    return formatOk({
+      recording_id: rec.id,
+      connection_id: rec.connectionId,
+      duration_ms: rec.duration_ms,
+      frames_count: rec.frames.length,
+      total_bytes: totalBytes,
+    });
   },
 
   'conn.record.list': async () => {
     const list: Array<Record<string, unknown>> = [];
     ctx.recordings.forEach((v) => {
-      list.push({ recording_id: v.id, connection_id: v.connectionId, started: new Date(v.startedAt).toISOString(), elapsed_ms: Date.now() - v.startedAt, frames_count: v.frames.length });
+      list.push({
+        recording_id: v.id,
+        connection_id: v.connectionId,
+        started: new Date(v.startedAt).toISOString(),
+        elapsed_ms: Date.now() - v.startedAt,
+        frames_count: v.frames.length,
+      });
     });
     return formatOk({ active: list.length, recordings: list });
   },
@@ -455,9 +647,15 @@ export const connAdvancedHandlers: Record<string, ToolHandler> = {
     const speed = (args.speed as number) || 1;
     const rec2 = ctx.recordings.get(replayId);
     if (!rec2) return formatError('NOT_FOUND', 'no active recording');
-    const text = rec2.frames.map(f => f.data).join('');
+    const text = rec2.frames.map((f) => f.data).join('');
     // eslint-disable-next-line no-control-regex
     const compact = text.replace(/\x1b\[\d+;\d+R/g, '').replace(/\x1b\]0;[^\x07]*\x07/g, '');
-    return formatOk({ recording_id: rec2.id, frames: rec2.frames.length, duration_ms: Date.now() - rec2.startedAt, speed, output: compact.slice(0, 50000) });
+    return formatOk({
+      recording_id: rec2.id,
+      frames: rec2.frames.length,
+      duration_ms: Date.now() - rec2.startedAt,
+      speed,
+      output: compact.slice(0, 50000),
+    });
   },
 };

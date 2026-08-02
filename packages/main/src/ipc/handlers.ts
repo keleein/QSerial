@@ -15,7 +15,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // 延迟加载重型模块的辅助函数
-let _SerialConnection: typeof import('../services/connection/serial.js').SerialConnection | null = null;
+let _SerialConnection: typeof import('../services/connection/serial.js').SerialConnection | null =
+  null;
 async function getSerialConnection() {
   if (!_SerialConnection) {
     _SerialConnection = (await import('../services/connection/serial.js')).SerialConnection;
@@ -23,10 +24,13 @@ async function getSerialConnection() {
   return _SerialConnection;
 }
 
-let _ConnectionServerConnection: typeof import('../services/connection/connectionServer.js').ConnectionServerConnection | null = null;
+let _ConnectionServerConnection:
+  | typeof import('../services/connection/connectionServer.js').ConnectionServerConnection
+  | null = null;
 async function getConnectionServerConnection() {
   if (!_ConnectionServerConnection) {
-    _ConnectionServerConnection = (await import('../services/connection/connectionServer.js')).ConnectionServerConnection;
+    _ConnectionServerConnection = (await import('../services/connection/connectionServer.js'))
+      .ConnectionServerConnection;
   }
   return _ConnectionServerConnection;
 }
@@ -72,11 +76,15 @@ export function setupIpcHandlers(): void {
 
 function setupMainWindowRefs(): void {
   // 使用动态 import 避免启动时加载
-  import('../services/tftp/manager.js').then(m => m.setTftpMainWindow(mainWindow)).catch(() => {});
-  import('../services/nfs/manager.js').then(m => m.setNfsMainWindow(mainWindow)).catch(() => {});
-  import('../services/ftp/manager.js').then(m => m.setFtpMainWindow(mainWindow)).catch(() => {});
-  import('../services/mcp/manager.js').then(m => m.setMcpMainWindow(mainWindow)).catch(() => {});
-  import('../services/sftp/manager.js').then(m => m.setSftpMainWindow(mainWindow)).catch(() => {});
+  import('../services/tftp/manager.js')
+    .then((m) => m.setTftpMainWindow(mainWindow))
+    .catch(() => {});
+  import('../services/nfs/manager.js').then((m) => m.setNfsMainWindow(mainWindow)).catch(() => {});
+  import('../services/ftp/manager.js').then((m) => m.setFtpMainWindow(mainWindow)).catch(() => {});
+  import('../services/mcp/manager.js').then((m) => m.setMcpMainWindow(mainWindow)).catch(() => {});
+  import('../services/sftp/manager.js')
+    .then((m) => m.setSftpMainWindow(mainWindow))
+    .catch(() => {});
 }
 
 /**
@@ -115,38 +123,38 @@ function setupConnectionHandlers(): void {
     const connection = ConnectionFactory.get(id);
     if (!connection) throw new Error(`Connection ${id} not found`);
     const { ConnectionType } = await import('@qserial/shared');
-      if (connection.type === ConnectionType.SERIAL) {
-        const serialOpts = connection.options as { path?: string };
-        const serialPath = serialOpts.path?.toLowerCase();
+    if (connection.type === ConnectionType.SERIAL) {
+      const serialOpts = connection.options as { path?: string };
+      const serialPath = serialOpts.path?.toLowerCase();
 
-        if (serialPath) {
-          const allConnections = ConnectionFactory.getAll();
-          const serverConnection = allConnections.find((c) => {
-            if (c.type !== ConnectionType.SERIAL_SERVER) return false;
-            const serverOpts = c.options as { serialPath?: string };
-            return serverOpts.serialPath?.toLowerCase() === serialPath;
-          });
+      if (serialPath) {
+        const allConnections = ConnectionFactory.getAll();
+        const serverConnection = allConnections.find((c) => {
+          if (c.type !== ConnectionType.SERIAL_SERVER) return false;
+          const serverOpts = c.options as { serialPath?: string };
+          return serverOpts.serialPath?.toLowerCase() === serialPath;
+        });
 
-          if (serverConnection) {
-            const server = serverConnection as unknown as {
-              serialPort?: { isOpen: boolean };
-              sharedConnection?: IConnection;
-            };
-            const hasOwnPort = server.serialPort?.isOpen;
-            const hasSharedConnection = !!server.sharedConnection;
+        if (serverConnection) {
+          const server = serverConnection as unknown as {
+            serialPort?: { isOpen: boolean };
+            sharedConnection?: IConnection;
+          };
+          const hasOwnPort = server.serialPort?.isOpen;
+          const hasSharedConnection = !!server.sharedConnection;
 
-            if (hasOwnPort || hasSharedConnection) {
-              const sharedConn = hasSharedConnection
-                ? server.sharedConnection
-                : serverConnection;
-              await (connection as unknown as { openWithShared: (shared: IConnection) => Promise<void> }).openWithShared(sharedConn as IConnection);
-              return;
-            }
+          if (hasOwnPort || hasSharedConnection) {
+            const sharedConn = hasSharedConnection ? server.sharedConnection : serverConnection;
+            await (
+              connection as unknown as { openWithShared: (shared: IConnection) => Promise<void> }
+            ).openWithShared(sharedConn as IConnection);
+            return;
           }
         }
       }
+    }
 
-      await connection.open();
+    await connection.open();
   });
 
   ipcMain.handle(IPC_CHANNELS.CONNECTION_CLOSE, async (_, { id }) => {
@@ -160,7 +168,12 @@ function setupConnectionHandlers(): void {
   });
 
   ipcMain.handle(IPC_CHANNELS.CONNECTION_WRITE, async (_, { id, data }) => {
-    console.log('[IPC] CONNECTION_WRITE received:', JSON.stringify(data).slice(0, 80), 'id:', id?.slice(0, 8));
+    console.log(
+      '[IPC] CONNECTION_WRITE received:',
+      JSON.stringify(data).slice(0, 80),
+      'id:',
+      id?.slice(0, 8)
+    );
     const connection = ConnectionFactory.get(id);
     if (!connection) {
       console.error('[IPC] CONNECTION_WRITE connection not found:', id?.slice(0, 8));
@@ -193,8 +206,12 @@ function setupConnectionHandlers(): void {
  */
 function setupConfigHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.CONFIG_GET, (_, { key }) => ConfigManager.get(key));
-  ipcMain.handle(IPC_CHANNELS.CONFIG_SET, (_, { key, value }) => { ConfigManager.set(key, value); });
-  ipcMain.handle(IPC_CHANNELS.CONFIG_DELETE, (_, { key }) => { ConfigManager.delete(key); });
+  ipcMain.handle(IPC_CHANNELS.CONFIG_SET, (_, { key, value }) => {
+    ConfigManager.set(key, value);
+  });
+  ipcMain.handle(IPC_CHANNELS.CONFIG_DELETE, (_, { key }) => {
+    ConfigManager.delete(key);
+  });
   ipcMain.handle(IPC_CHANNELS.CONFIG_GET_ALL, () => ConfigManager.getAll());
 }
 
@@ -202,7 +219,9 @@ function setupConfigHandlers(): void {
  * 窗口相关处理器
  */
 function setupWindowHandlers(): void {
-  ipcMain.handle(IPC_CHANNELS.WINDOW_MINIMIZE, () => { mainWindow?.minimize(); });
+  ipcMain.handle(IPC_CHANNELS.WINDOW_MINIMIZE, () => {
+    mainWindow?.minimize();
+  });
   ipcMain.handle(IPC_CHANNELS.WINDOW_MAXIMIZE, () => {
     if (mainWindow?.isMaximized()) {
       mainWindow.unmaximize();
@@ -210,8 +229,12 @@ function setupWindowHandlers(): void {
       mainWindow?.maximize();
     }
   });
-  ipcMain.handle(IPC_CHANNELS.WINDOW_CLOSE, () => { mainWindow?.close(); });
-  ipcMain.handle(IPC_CHANNELS.WINDOW_SET_TITLE, (_, { title }) => { mainWindow?.setTitle(title); });
+  ipcMain.handle(IPC_CHANNELS.WINDOW_CLOSE, () => {
+    mainWindow?.close();
+  });
+  ipcMain.handle(IPC_CHANNELS.WINDOW_SET_TITLE, (_, { title }) => {
+    mainWindow?.setTitle(title);
+  });
 }
 
 /**
@@ -219,7 +242,9 @@ function setupWindowHandlers(): void {
  */
 function setupAppHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.APP_VERSION, () => app.getVersion());
-  ipcMain.handle(IPC_CHANNELS.APP_QUIT, () => { app.quit(); });
+  ipcMain.handle(IPC_CHANNELS.APP_QUIT, () => {
+    app.quit();
+  });
 }
 
 /**
@@ -327,16 +352,20 @@ function setupLogHandlers(): void {
         { name: '文本文件', extensions: ['txt'] },
         { name: '日志文件', extensions: ['log'] },
         { name: '所有文件', extensions: ['*'] },
-      ],
+      ]
     );
   });
 
   ipcMain.handle(IPC_CHANNELS.LOG_START, async (_, { sessionId, filePath }) => {
     const existingStream = logStreams.get(sessionId);
-    if (existingStream) { existingStream.end(); }
+    if (existingStream) {
+      existingStream.end();
+    }
 
     const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); }
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
     const stream = fs.createWriteStream(filePath, { flags: 'a', encoding: 'utf-8' });
     logStreams.set(sessionId, stream);
@@ -369,7 +398,9 @@ function setupLogHandlers(): void {
         const timestamp = new Date().toLocaleString();
         stream.write(`\n========== 日志结束 [${timestamp}] ==========\n`);
         stream.end();
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     logStreams.clear();
   });
@@ -389,12 +420,19 @@ function setupConnectionServerHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.CONNECTION_SERVER_START, async (_, options) => {
     const { ConnectionType } = await import('@qserial/shared');
     const {
-      id, sourceType, existingConnectionId, newConnectionOptions,
-      localPort, listenAddress, accessPassword,
+      id,
+      sourceType,
+      existingConnectionId,
+      newConnectionOptions,
+      localPort,
+      listenAddress,
+      accessPassword,
     } = options;
 
     const existingServer = ConnectionFactory.get(id);
-    if (existingServer) { await ConnectionFactory.destroy(id); }
+    if (existingServer) {
+      await ConnectionFactory.destroy(id);
+    }
 
     if (sourceType === 'existing' && !existingConnectionId) {
       throw new Error('复用已有连接模式需要指定 existingConnectionId');
@@ -405,7 +443,9 @@ function setupConnectionServerHandlers(): void {
 
     if (sourceType === 'existing') {
       const existingConn = ConnectionFactory.get(existingConnectionId);
-      if (!existingConn) { throw new Error(`找不到已有连接: ${existingConnectionId}`); }
+      if (!existingConn) {
+        throw new Error(`找不到已有连接: ${existingConnectionId}`);
+      }
       const { ConnectionState } = await import('@qserial/shared');
       if (existingConn.state !== ConnectionState.CONNECTED) {
         throw new Error(`已有连接未处于连接状态: ${existingConnectionId}`);
@@ -450,8 +490,14 @@ function setupConnectionServerHandlers(): void {
     const connection = ConnectionFactory.get(id);
     if (!connection) {
       return {
-        running: false, sourceType: 'existing', sourceDescription: '',
-        localPort: 0, listenAddress: '0.0.0.0', clientCount: 0, clients: [], hasPassword: false,
+        running: false,
+        sourceType: 'existing',
+        sourceDescription: '',
+        localPort: 0,
+        listenAddress: '0.0.0.0',
+        clientCount: 0,
+        clients: [],
+        hasPassword: false,
       };
     }
     const ConnServer = await getConnectionServerConnection();
@@ -463,25 +509,31 @@ function setupConnectionServerHandlers(): void {
  * MCP 服务器处理器
  */
 function setupMcpHandlers(): void {
-  ipcMain.handle(IPC_CHANNELS.MCP_START, async (_, { port, listenAddress, authPassword, autoStart, corsOrigins }) => {
-    const { startMcpServer } = await import('../services/mcp/manager.js');
-    await startMcpServer(port, listenAddress, authPassword, corsOrigins);
-    if (autoStart) {
-      ConfigManager.set('mcp', {
-        enabled: true, port,
-        listenAddress: listenAddress || '0.0.0.0',
-        authPassword: authPassword || '',
-        corsOrigins: corsOrigins || [],
-      });
+  ipcMain.handle(
+    IPC_CHANNELS.MCP_START,
+    async (_, { port, listenAddress, authPassword, autoStart, corsOrigins }) => {
+      const { startMcpServer } = await import('../services/mcp/manager.js');
+      await startMcpServer(port, listenAddress, authPassword, corsOrigins);
+      if (autoStart) {
+        ConfigManager.set('mcp', {
+          enabled: true,
+          port,
+          listenAddress: listenAddress || '0.0.0.0',
+          authPassword: authPassword || '',
+          corsOrigins: corsOrigins || [],
+        });
+      }
     }
-  });
+  );
 
   ipcMain.handle(IPC_CHANNELS.MCP_STOP, async (_, { autoStart }) => {
     const { stopMcpServer } = await import('../services/mcp/manager.js');
     await stopMcpServer();
     if (autoStart === false) {
       const mcpConfig = ConfigManager.get('mcp');
-      if (mcpConfig) { ConfigManager.set('mcp', { ...mcpConfig, enabled: false }); }
+      if (mcpConfig) {
+        ConfigManager.set('mcp', { ...mcpConfig, enabled: false });
+      }
     }
   });
 
@@ -575,10 +627,15 @@ function setupSftpHandlers(): void {
  */
 function setupFileHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.READ_FILE, async (_, { path: filePath }) => {
-    if (!filePath || typeof filePath !== 'string') { throw new Error('无效的文件路径'); }
+    if (!filePath || typeof filePath !== 'string') {
+      throw new Error('无效的文件路径');
+    }
     const resolved = path.resolve(filePath);
     const userData = app.getPath('userData');
-    if (!resolved.startsWith(userData) && !resolved.startsWith(path.join(userData, '..', 'QSerial'))) {
+    if (
+      !resolved.startsWith(userData) &&
+      !resolved.startsWith(path.join(userData, '..', 'QSerial'))
+    ) {
       throw new Error('不允许的路径');
     }
     return fs.promises.readFile(resolved, 'utf-8');

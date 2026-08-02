@@ -9,7 +9,9 @@ import type { SavedSession } from '@/stores/sessions';
 interface SerialConnectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConnect: (options: SerialConnectOptions & { saveConfig?: boolean; configName?: string }) => void;
+  onConnect: (
+    options: SerialConnectOptions & { saveConfig?: boolean; configName?: string }
+  ) => void;
   editSession?: SavedSession | null;
 }
 
@@ -110,11 +112,19 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-              <path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z"/>
-              <path d="M19 10v2a7 7 0 01-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="8" y1="22" x2="16" y2="22"/>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-primary"
+            >
+              <path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z" />
+              <path d="M19 10v2a7 7 0 01-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+              <line x1="8" y1="22" x2="16" y2="22" />
             </svg>
             <h2 className="text-base font-semibold">{editSession ? '编辑串口配置' : '串口连接'}</h2>
           </div>
@@ -122,8 +132,15 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
             onClick={onClose}
             className="dialog-close w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M1 1l12 12M13 1L1 13"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M1 1l12 12M13 1L1 13" />
             </svg>
           </button>
         </div>
@@ -157,8 +174,16 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
                 className="dialog-btn dialog-btn-secondary px-3 flex items-center gap-1.5 disabled:opacity-50"
                 title="刷新串口列表"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={loading ? 'animate-spin' : ''}>
-                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.3"/>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={loading ? 'animate-spin' : ''}
+                >
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.3" />
                 </svg>
                 {loading ? '' : '刷新'}
               </button>
@@ -254,34 +279,38 @@ export const SerialConnectDialog: React.FC<SerialConnectDialogProps> = ({
           {/* 错误提示 */}
           {error && (
             <div className="flex items-center gap-2 text-sm text-error bg-error/10 border-l-2 border-error px-3 py-2.5 rounded-r-lg">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" className="flex-shrink-0">
-                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="currentColor"
+                className="flex-shrink-0"
+              >
+                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z" />
               </svg>
               {error}
             </div>
           )}
 
           {/* 选中串口信息 */}
-          {selectedPort && (() => {
-            const port = ports.find(p => p.path === selectedPort);
-            if (!port) return null;
-            return (
-              <div className="text-xs text-text-secondary p-2.5 bg-background/50 rounded-lg space-y-0.5">
-                {port.manufacturer && <div>制造商: {port.manufacturer}</div>}
-                {port.serialNumber && <div>序列号: {port.serialNumber}</div>}
-                {port.vendorId && <div>VID: {port.vendorId}</div>}
-                {port.productId && <div>PID: {port.productId}</div>}
-              </div>
-            );
-          })()}
+          {selectedPort &&
+            (() => {
+              const port = ports.find((p) => p.path === selectedPort);
+              if (!port) return null;
+              return (
+                <div className="text-xs text-text-secondary p-2.5 bg-background/50 rounded-lg space-y-0.5">
+                  {port.manufacturer && <div>制造商: {port.manufacturer}</div>}
+                  {port.serialNumber && <div>序列号: {port.serialNumber}</div>}
+                  {port.vendorId && <div>VID: {port.vendorId}</div>}
+                  {port.productId && <div>PID: {port.productId}</div>}
+                </div>
+              );
+            })()}
         </div>
 
         {/* 底部按钮 */}
         <div className="flex justify-end gap-2.5 px-5 py-4 border-t border-border bg-background/30">
-          <button
-            onClick={onClose}
-            className="dialog-btn dialog-btn-secondary"
-          >
+          <button onClick={onClose} className="dialog-btn dialog-btn-secondary">
             取消
           </button>
           <button

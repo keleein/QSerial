@@ -29,15 +29,24 @@ export const App: React.FC = () => {
     const autoStartServices = async () => {
       const tftpCfg = useTftpStore.getState().config;
       if (tftpCfg.autoStart && tftpCfg.rootDir) {
-        useTftpStore.getState().startServer().catch(() => {});
+        useTftpStore
+          .getState()
+          .startServer()
+          .catch(() => {});
       }
       const nfsCfg = useNfsStore.getState().config;
       if (nfsCfg.autoStart && nfsCfg.exportDir) {
-        useNfsStore.getState().startServer().catch(() => {});
+        useNfsStore
+          .getState()
+          .startServer()
+          .catch(() => {});
       }
       const ftpCfg = useFtpStore.getState().config;
       if (ftpCfg.autoStart && ftpCfg.rootDir) {
-        useFtpStore.getState().startServer().catch(() => {});
+        useFtpStore
+          .getState()
+          .startServer()
+          .catch(() => {});
       }
       if (config.mcp.enabled) {
         try {
@@ -48,11 +57,15 @@ export const App: React.FC = () => {
             mcpStore.loadStatus();
           } else {
             const mcpCfg = useMcpStore.getState().config;
-            window.qserial.mcp.start(mcpCfg.port, mcpCfg.listenAddress, mcpCfg.authPassword || undefined, true).catch(() => {});
+            window.qserial.mcp
+              .start(mcpCfg.port, mcpCfg.listenAddress, mcpCfg.authPassword || undefined, true)
+              .catch(() => {});
           }
         } catch {
           const mcpCfg = useMcpStore.getState().config;
-          window.qserial.mcp.start(mcpCfg.port, mcpCfg.listenAddress, mcpCfg.authPassword || undefined, true).catch(() => {});
+          window.qserial.mcp
+            .start(mcpCfg.port, mcpCfg.listenAddress, mcpCfg.authPassword || undefined, true)
+            .catch(() => {});
         }
       }
     };
@@ -75,17 +88,19 @@ export const App: React.FC = () => {
     const mix = (a: string, b: string, t: number) => {
       const ca = hexToRgb(a);
       const cb = hexToRgb(b);
-      return rgbToHex(
-        ca.r + (cb.r - ca.r) * t,
-        ca.g + (cb.g - ca.g) * t,
-        ca.b + (cb.b - ca.b) * t,
-      );
+      return rgbToHex(ca.r + (cb.r - ca.r) * t, ca.g + (cb.g - ca.g) * t, ca.b + (cb.b - ca.b) * t);
     };
 
     // 衍生 dim 色默认值
-    const primaryDim = colors.primaryDim || `rgba(${hexToRgb(colors.primary).r},${hexToRgb(colors.primary).g},${hexToRgb(colors.primary).b},0.12)`;
-    const accentDim = colors.accentDim || `rgba(${hexToRgb(colors.accent).r},${hexToRgb(colors.accent).g},${hexToRgb(colors.accent).b},0.10)`;
-    const successDim = colors.successDim || `rgba(${hexToRgb(colors.success).r},${hexToRgb(colors.success).g},${hexToRgb(colors.success).b},0.15)`;
+    const primaryDim =
+      colors.primaryDim ||
+      `rgba(${hexToRgb(colors.primary).r},${hexToRgb(colors.primary).g},${hexToRgb(colors.primary).b},0.12)`;
+    const accentDim =
+      colors.accentDim ||
+      `rgba(${hexToRgb(colors.accent).r},${hexToRgb(colors.accent).g},${hexToRgb(colors.accent).b},0.10)`;
+    const successDim =
+      colors.successDim ||
+      `rgba(${hexToRgb(colors.success).r},${hexToRgb(colors.success).g},${hexToRgb(colors.success).b},0.15)`;
     const surfaceRaised = colors.surfaceRaised || mix(colors.surface, colors.background, 0.6);
     const textTertiary = colors.textTertiary || mix(colors.textSecondary, colors.background, 0.35);
     const borderSubtle = colors.borderSubtle || mix(colors.border, colors.background, 0.45);
@@ -122,9 +137,9 @@ export const App: React.FC = () => {
     root.style.setProperty('--texture-background', texture || 'none');
 
     // 主题切换过渡 (仅在非首次应用时添加)
-    root.style.transition = 'background-color 150ms ease, color 150ms ease, border-color 150ms ease';
+    root.style.transition =
+      'background-color 150ms ease, color 150ms ease, border-color 150ms ease';
   }, [currentTheme, config.terminal.fontFamily]);
-
 
   // 璇█鍒囨崲
   React.useEffect(() => {

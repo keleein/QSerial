@@ -38,19 +38,16 @@ const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'manage', label: '配置管理' },
 ];
 
-export const SettingsDialog: React.FC<SettingsDialogProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose }) => {
   const { currentTheme, themes, setTheme } = useThemeStore();
   const { config, updateConfig } = useConfigStore();
   const savedSessionsState = useSavedSessionsStore();
   const sessions = savedSessionsState?.sessions || [];
   const quickButtonsState = useQuickButtonsStore();
   const groups = quickButtonsState?.groups || [];
-  const tftpConfig = useTftpStore(s => s.config);
-  const nfsConfig = useNfsStore(s => s.config);
-  const ftpConfig = useFtpStore(s => s.config);
+  const tftpConfig = useTftpStore((s) => s.config);
+  const nfsConfig = useNfsStore((s) => s.config);
+  const ftpConfig = useFtpStore((s) => s.config);
 
   const [activeSection, setActiveSection] = useState<SectionId>('appearance');
 
@@ -100,13 +97,24 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const handleSave = () => {
     updateConfig('terminal', {
       ...config.terminal,
-      fontSize, fontFamily, scrollback,
-      autoReconnect, reconnectInterval, reconnectAttempts,
-      bellStyle, copyOnSelect, rightClickPaste, enableWebLinks,
+      fontSize,
+      fontFamily,
+      scrollback,
+      autoReconnect,
+      reconnectInterval,
+      reconnectAttempts,
+      bellStyle,
+      copyOnSelect,
+      rightClickPaste,
+      enableWebLinks,
     });
     updateConfig('app', {
       ...config.app,
-      uiFontFamily, language, autoUpdate, minimizeToTray, closeToTray,
+      uiFontFamily,
+      language,
+      autoUpdate,
+      minimizeToTray,
+      closeToTray,
     });
     onClose();
   };
@@ -187,11 +195,16 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
   // ── 工具组件 ──
   const SectionTitle: React.FC<{ title: string }> = ({ title }) => (
-    <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">{title}</h3>
+    <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
+      {title}
+    </h3>
   );
 
   const Toggle: React.FC<{
-    label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void;
+    label: string;
+    hint?: string;
+    checked: boolean;
+    onChange: (v: boolean) => void;
   }> = ({ label, hint, checked, onChange }) => (
     <div className="flex items-center justify-between">
       <div>
@@ -199,33 +212,51 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {hint && <p className="text-[11px] text-text-secondary mt-0.5">{hint}</p>}
       </div>
       <button
-        type="button" role="switch" aria-checked={checked}
+        type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${checked ? 'bg-[var(--color-primary)]' : 'bg-border'}`}
       >
-        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${checked ? 'translate-x-[18px]' : 'translate-x-[4px]'}`} />
+        <span
+          className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${checked ? 'translate-x-[18px]' : 'translate-x-[4px]'}`}
+        />
       </button>
     </div>
   );
 
   const Select: React.FC<{
-    label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[];
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    options: { value: string; label: string }[];
   }> = ({ label, value, onChange, options }) => (
     <div>
       <label className="block text-xs font-medium text-text-secondary mb-1.5">{label}</label>
       <select value={value} onChange={(e) => onChange(e.target.value)} className="dialog-select">
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
     </div>
   );
 
   const NumberInput: React.FC<{
-    label: string; value: number; onChange: (v: number) => void; min?: number; max?: number;
+    label: string;
+    value: number;
+    onChange: (v: number) => void;
+    min?: number;
+    max?: number;
   }> = ({ label, value, onChange, min, max }) => (
     <div>
       <label className="block text-xs font-medium text-text-secondary mb-1.5">{label}</label>
       <input
-        type="number" min={min} max={max} value={value}
+        type="number"
+        min={min}
+        max={max}
+        value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="dialog-input w-24"
       />
@@ -253,28 +284,49 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: theme.xterm.background }} />
+                      <div
+                        className="w-4 h-4 rounded-full border border-border"
+                        style={{ backgroundColor: theme.xterm.background }}
+                      />
                       <span className="text-sm font-medium">{theme.name}</span>
-                      <span className="text-[10px] text-text-secondary">{theme.type === 'dark' ? '深色' : '浅色'}</span>
+                      <span className="text-[10px] text-text-secondary">
+                        {theme.type === 'dark' ? '深色' : '浅色'}
+                      </span>
                     </div>
                     <div className="flex gap-1">
                       {['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'].map((color) => (
-                        <div key={color} className="w-3 h-3 rounded-sm" style={{ backgroundColor: theme.xterm[color as keyof typeof theme.xterm] as string }} />
+                        <div
+                          key={color}
+                          className="w-3 h-3 rounded-sm"
+                          style={{
+                            backgroundColor: theme.xterm[
+                              color as keyof typeof theme.xterm
+                            ] as string,
+                          }}
+                        />
                       ))}
                     </div>
                   </button>
                 ))}
               </div>
             </div>
-            <Select label="UI 字体" value={uiFontFamily}
+            <Select
+              label="UI 字体"
+              value={uiFontFamily}
               onChange={setUiFontFamily}
               options={[
-                { value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', label: '系统默认（推荐）' },
+                {
+                  value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  label: '系统默认（推荐）',
+                },
                 { value: '"Microsoft YaHei", "PingFang SC", sans-serif', label: '微软雅黑 / 苹方' },
                 { value: '"Source Han Sans CN", "Noto Sans SC", sans-serif', label: '思源黑体' },
               ]}
             />
-            <Select label="语言" value={language} onChange={setLanguage}
+            <Select
+              label="语言"
+              value={language}
+              onChange={setLanguage}
               options={[
                 { value: 'zh-CN', label: '简体中文' },
                 { value: 'en-US', label: 'English' },
@@ -288,8 +340,18 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <div className="space-y-4">
             <SectionTitle title="应用行为" />
             <Toggle label="自动更新" checked={autoUpdate} onChange={setAutoUpdate} />
-            <Toggle label="最小化到托盘" hint="关闭窗口时隐藏到系统托盘而非退出" checked={minimizeToTray} onChange={setMinimizeToTray} />
-            <Toggle label="关闭到托盘" hint="点击关闭按钮时隐藏到托盘" checked={closeToTray} onChange={setCloseToTray} />
+            <Toggle
+              label="最小化到托盘"
+              hint="关闭窗口时隐藏到系统托盘而非退出"
+              checked={minimizeToTray}
+              onChange={setMinimizeToTray}
+            />
+            <Toggle
+              label="关闭到托盘"
+              hint="点击关闭按钮时隐藏到托盘"
+              checked={closeToTray}
+              onChange={setCloseToTray}
+            />
           </div>
         );
 
@@ -298,10 +360,22 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <div className="space-y-4">
             <SectionTitle title="终端" />
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">字体大小: {fontSize}px</label>
-              <input type="range" min="10" max="24" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-full accent-[var(--color-primary)]" />
+              <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                字体大小: {fontSize}px
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="24"
+                value={fontSize}
+                onChange={(e) => setFontSize(Number(e.target.value))}
+                className="w-full accent-[var(--color-primary)]"
+              />
             </div>
-            <Select label="字体" value={fontFamily} onChange={setFontFamily}
+            <Select
+              label="字体"
+              value={fontFamily}
+              onChange={setFontFamily}
               options={[
                 { value: 'JetBrains Mono, Consolas, monospace', label: 'JetBrains Mono（推荐）' },
                 { value: 'Consolas, monospace', label: 'Consolas' },
@@ -310,17 +384,52 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 { value: 'Fira Code, monospace', label: 'Fira Code（连字符）' },
               ]}
             />
-            <NumberInput label="回滚行数" value={scrollback} onChange={setScrollback} min={100} max={100000} />
+            <NumberInput
+              label="回滚行数"
+              value={scrollback}
+              onChange={setScrollback}
+              min={100}
+              max={100000}
+            />
             <Toggle label="选中即复制" checked={copyOnSelect} onChange={setCopyOnSelect} />
             <Toggle label="右键粘贴" checked={rightClickPaste} onChange={setRightClickPaste} />
-            <Toggle label="启用链接检测" hint="自动识别终端中的 URL 和文件路径" checked={enableWebLinks} onChange={setEnableWebLinks} />
-            <Select label="铃声" value={bellStyle} onChange={setBellStyle}
-              options={[{ value: 'none', label: '无' }, { value: 'sound', label: '声音' }, { value: 'visual', label: '闪烁' }]}
+            <Toggle
+              label="启用链接检测"
+              hint="自动识别终端中的 URL 和文件路径"
+              checked={enableWebLinks}
+              onChange={setEnableWebLinks}
             />
-            <Toggle label="自动重连" hint="断开后自动尝试重新连接" checked={autoReconnect} onChange={setAutoReconnect} />
+            <Select
+              label="铃声"
+              value={bellStyle}
+              onChange={setBellStyle}
+              options={[
+                { value: 'none', label: '无' },
+                { value: 'sound', label: '声音' },
+                { value: 'visual', label: '闪烁' },
+              ]}
+            />
+            <Toggle
+              label="自动重连"
+              hint="断开后自动尝试重新连接"
+              checked={autoReconnect}
+              onChange={setAutoReconnect}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <NumberInput label="重连间隔 (ms)" value={reconnectInterval} onChange={setReconnectInterval} min={1000} max={30000} />
-              <NumberInput label="最大重连次数" value={reconnectAttempts} onChange={setReconnectAttempts} min={1} max={100} />
+              <NumberInput
+                label="重连间隔 (ms)"
+                value={reconnectInterval}
+                onChange={setReconnectInterval}
+                min={1000}
+                max={30000}
+              />
+              <NumberInput
+                label="最大重连次数"
+                value={reconnectAttempts}
+                onChange={setReconnectAttempts}
+                min={1}
+                max={100}
+              />
             </div>
           </div>
         );
@@ -330,32 +439,76 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <div className="space-y-4">
             <SectionTitle title="配置管理" />
             <div className="flex gap-2">
-              <button onClick={handleExport} id="settings-export-btn" className="dialog-btn dialog-btn-secondary flex-1 flex items-center justify-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              <button
+                onClick={handleExport}
+                id="settings-export-btn"
+                className="dialog-btn dialog-btn-secondary flex-1 flex items-center justify-center gap-2"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 导出配置
               </button>
-              <button onClick={handleImport} id="settings-import-btn" className="dialog-btn dialog-btn-secondary flex-1 flex items-center justify-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              <button
+                onClick={handleImport}
+                id="settings-import-btn"
+                className="dialog-btn dialog-btn-secondary flex-1 flex items-center justify-center gap-2"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
                 导入配置
               </button>
             </div>
             {exportSuccess && (
               <div className="flex items-center gap-2 text-sm text-success bg-success/10 border-l-2 border-success px-3 py-2.5 rounded-r-lg">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" className="flex-shrink-0"><path d="M7 0a7 7 0 100 14A7 7 0 007 0zm3.03 5.03a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-1.5-1.5a.75.75 0 011.06-1.06L6 7.94l2.97-2.97a.75.75 0 011.06 0z"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="currentColor"
+                  className="flex-shrink-0"
+                >
+                  <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm3.03 5.03a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-1.5-1.5a.75.75 0 011.06-1.06L6 7.94l2.97-2.97a.75.75 0 011.06 0z" />
+                </svg>
                 配置已导出
               </div>
             )}
             {importError && (
               <div className="flex items-center gap-2 text-sm text-error bg-error/10 border-l-2 border-error px-3 py-2.5 rounded-r-lg">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" className="flex-shrink-0"><path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="currentColor"
+                  className="flex-shrink-0"
+                >
+                  <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z" />
+                </svg>
                 {importError}
               </div>
             )}
-            <p className="text-xs text-text-secondary/70">导出包含：全部配置、主题、会话列表、快捷按钮、TFTP / NFS / FTP 服务配置</p>
+            <p className="text-xs text-text-secondary/70">
+              导出包含：全部配置、主题、会话列表、快捷按钮、TFTP / NFS / FTP 服务配置
+            </p>
           </div>
         );
 
@@ -373,41 +526,55 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             <h2 className="text-sm font-semibold">设置</h2>
           </div>
           <div className="flex-1 overflow-y-auto py-1.5">
-          {SECTIONS.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setActiveSection(section.id)}
-              className={`w-full text-left px-3.5 py-1.5 text-xs transition-all ${
-                activeSection === section.id
-                  ? 'bg-primary/10 text-primary border-r-[2.5px] border-primary font-medium'
-                  : 'text-text-secondary hover:bg-hover hover:text-text'
-              }`}
-            >
-              {section.label}
-            </button>
-          ))}
+            {SECTIONS.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`w-full text-left px-3.5 py-1.5 text-xs transition-all ${
+                  activeSection === section.id
+                    ? 'bg-primary/10 text-primary border-r-[2.5px] border-primary font-medium'
+                    : 'text-text-secondary hover:bg-hover hover:text-text'
+                }`}
+              >
+                {section.label}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* 右侧内容 */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center justify-between px-5 py-3 border-b border-border flex-shrink-0 bg-surface">
-            <h3 className="text-sm font-medium">{SECTIONS.find((s) => s.id === activeSection)?.label}</h3>
-            <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text hover:bg-hover transition-colors">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 1l12 12M13 1L1 13"/>
+            <h3 className="text-sm font-medium">
+              {SECTIONS.find((s) => s.id === activeSection)?.label}
+            </h3>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text hover:bg-hover transition-colors"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M1 1l12 12M13 1L1 13" />
               </svg>
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5">
-            {renderSection()}
-          </div>
+          <div className="flex-1 overflow-y-auto p-5">{renderSection()}</div>
 
           {/* 底部按钮 */}
           <div className="flex justify-end gap-2.5 px-5 py-3.5 border-t border-border bg-background/30 flex-shrink-0">
-            <button onClick={onClose} className="dialog-btn dialog-btn-secondary text-sm px-4">取消</button>
-            <button onClick={handleSave} className="dialog-btn dialog-btn-primary text-sm px-4">保存</button>
+            <button onClick={onClose} className="dialog-btn dialog-btn-secondary text-sm px-4">
+              取消
+            </button>
+            <button onClick={handleSave} className="dialog-btn dialog-btn-primary text-sm px-4">
+              保存
+            </button>
           </div>
         </div>
       </div>

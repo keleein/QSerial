@@ -57,9 +57,7 @@ export const useQuickButtonsStore = create<QuickButtonsState>()(
 
       updateGroup: (id, name) => {
         set((state) => ({
-          groups: state.groups.map((g) =>
-            g.id === id ? { ...g, name } : g
-          ),
+          groups: state.groups.map((g) => (g.id === id ? { ...g, name } : g)),
         }));
       },
 
@@ -85,9 +83,7 @@ export const useQuickButtonsStore = create<QuickButtonsState>()(
             g.id === groupId
               ? {
                   ...g,
-                  buttons: g.buttons.map((b) =>
-                    b.id === buttonId ? { ...b, ...button } : b
-                  ),
+                  buttons: g.buttons.map((b) => (b.id === buttonId ? { ...b, ...button } : b)),
                 }
               : g
           ),
@@ -97,9 +93,7 @@ export const useQuickButtonsStore = create<QuickButtonsState>()(
       removeButton: (groupId, buttonId) => {
         set((state) => ({
           groups: state.groups.map((g) =>
-            g.id === groupId
-              ? { ...g, buttons: g.buttons.filter((b) => b.id !== buttonId) }
-              : g
+            g.id === groupId ? { ...g, buttons: g.buttons.filter((b) => b.id !== buttonId) } : g
           ),
         }));
       },

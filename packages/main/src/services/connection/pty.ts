@@ -47,17 +47,19 @@ function resolveShellPath(shell: string): string {
       ];
       // 尝试从注册表读取 Git 安装路径
       try {
-        const regPath = execSync(
-          'reg query "HKLM\\SOFTWARE\\GitForWindows" /v InstallPath 2>nul',
-          { encoding: 'utf8', timeout: 3000 }
-        );
+        const regPath = execSync('reg query "HKLM\\SOFTWARE\\GitForWindows" /v InstallPath 2>nul', {
+          encoding: 'utf8',
+          timeout: 3000,
+        });
         const match = regPath.match(/REG_SZ\s+(.+)/);
         if (match) {
           const gitRoot = match[1].trim();
           gitBashPaths.unshift(path.join(gitRoot, 'bin', 'bash.exe'));
           gitBashPaths.unshift(path.join(gitRoot, 'usr', 'bin', 'bash.exe'));
         }
-      } catch { /* 注册表无 Git 信息 */ }
+      } catch {
+        /* 注册表无 Git 信息 */
+      }
 
       for (const candidate of gitBashPaths) {
         if (fs.existsSync(candidate)) return candidate;
@@ -71,11 +73,13 @@ function resolveShellPath(shell: string): string {
         });
         const lines = result.trim().split('\r\n').filter(Boolean);
         if (lines.length > 0) return lines[0].trim();
-      } catch { /* PATH 中也未找到 */ }
+      } catch {
+        /* PATH 中也未找到 */
+      }
 
       throw new Error(
         `bash.exe 未找到。请确认 Git for Windows 已安装。` +
-        `尝试的路径: ${gitBashPaths.slice(0, 4).join(', ')}`
+          `尝试的路径: ${gitBashPaths.slice(0, 4).join(', ')}`
       );
     }
 

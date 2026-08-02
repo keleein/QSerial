@@ -6,35 +6,79 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSftpStore } from '@/stores/sftp';
 import { useTerminalStore } from '@/stores/terminal';
 
-
 // ============ SVG 图标组件 ============
 
 const IconArrowLeft: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M19 12H5M12 19l-7-7 7-7" />
   </svg>
 );
 
 const IconArrowRight: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M5 12h14M12 5l7 7-7 7" />
   </svg>
 );
 
 const IconRefresh: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
   </svg>
 );
 
 const IconUpload: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
   </svg>
 );
 
 const IconFolderPlus: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     <line x1="12" y1="11" x2="12" y2="17" />
     <line x1="9" y1="14" x2="15" y2="14" />
@@ -42,62 +86,147 @@ const IconFolderPlus: React.FC<{ size?: number }> = ({ size = 14 }) => (
 );
 
 const IconDownload: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
   </svg>
 );
 
 const IconRename: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
   </svg>
 );
 
 const IconTrash: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 );
 
 const IconOpenFolder: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M5 19a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2 2h4a2 2 0 0 1 2 2v1M5 19h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2z" />
   </svg>
 );
 
 const IconFolder: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
   </svg>
 );
 
 const IconFile: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
     <polyline points="14,2 14,8 20,8" />
   </svg>
 );
 
 const IconLink: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
 );
 
 const IconChevronRight: React.FC<{ size?: number }> = ({ size = 10 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="9,18 15,12 9,6" />
   </svg>
 );
 
 const IconX: React.FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 
-const IconSort: React.FC<{ size?: number; direction?: 'asc' | 'desc' }> = ({ size = 10, direction }) => (
+const IconSort: React.FC<{ size?: number; direction?: 'asc' | 'desc' }> = ({
+  size = 10,
+  direction,
+}) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     {direction === 'asc' ? (
       <path d="M12 5l7 7H5z" />
@@ -131,29 +260,70 @@ function getFileIconColor(name: string, type: string): string {
   const ext = name.split('.').pop()?.toLowerCase() || '';
   const colorMap: Record<string, string> = {
     // 代码
-    js: '#f0db4f', ts: '#3178c6', tsx: '#3178c6', jsx: '#61dafb',
-    py: '#3776ab', rs: '#dea584', go: '#00add8', c: '#555555', cpp: '#f34b7d',
-    h: '#555555', java: '#b07219', rb: '#701516', php: '#4f5d95',
+    js: '#f0db4f',
+    ts: '#3178c6',
+    tsx: '#3178c6',
+    jsx: '#61dafb',
+    py: '#3776ab',
+    rs: '#dea584',
+    go: '#00add8',
+    c: '#555555',
+    cpp: '#f34b7d',
+    h: '#555555',
+    java: '#b07219',
+    rb: '#701516',
+    php: '#4f5d95',
     // Web
-    html: '#e34c26', css: '#563d7c', scss: '#c6538c', less: '#1d365d',
+    html: '#e34c26',
+    css: '#563d7c',
+    scss: '#c6538c',
+    less: '#1d365d',
     // 配置/数据
-    json: '#89d185', yaml: '#cb171e', yml: '#cb171e', toml: '#9c4221',
-    xml: '#e37933', ini: '#89d185', env: '#89d185',
+    json: '#89d185',
+    yaml: '#cb171e',
+    yml: '#cb171e',
+    toml: '#9c4221',
+    xml: '#e37933',
+    ini: '#89d185',
+    env: '#89d185',
     // Shell
-    sh: '#89e051', bash: '#89e051', zsh: '#89e051', fish: '#89e051',
+    sh: '#89e051',
+    bash: '#89e051',
+    zsh: '#89e051',
+    fish: '#89e051',
     // 文档
-    md: '#519aba', txt: '#cccccc', log: '#cccccc', doc: '#2b579a', docx: '#2b579a',
-    pdf: '#cc2027', xls: '#207245', xlsx: '#207245', ppt: '#d24726',
+    md: '#519aba',
+    txt: '#cccccc',
+    log: '#cccccc',
+    doc: '#2b579a',
+    docx: '#2b579a',
+    pdf: '#cc2027',
+    xls: '#207245',
+    xlsx: '#207245',
+    ppt: '#d24726',
     // 图片
-    png: '#a074c4', jpg: '#a074c4', jpeg: '#a074c4', gif: '#a074c4',
-    svg: '#f7931e', ico: '#a074c4', webp: '#a074c4',
+    png: '#a074c4',
+    jpg: '#a074c4',
+    jpeg: '#a074c4',
+    gif: '#a074c4',
+    svg: '#f7931e',
+    ico: '#a074c4',
+    webp: '#a074c4',
     // 压缩
-    zip: '#f0c040', tar: '#f0c040', gz: '#f0c040', bz2: '#f0c040',
-    '7z': '#f0c040', rar: '#f0c040', xz: '#f0c040',
+    zip: '#f0c040',
+    tar: '#f0c040',
+    gz: '#f0c040',
+    bz2: '#f0c040',
+    '7z': '#f0c040',
+    rar: '#f0c040',
+    xz: '#f0c040',
     // 可执行
-    exe: '#e06c75', bin: '#e06c75',
+    exe: '#e06c75',
+    bin: '#e06c75',
     // 数据库
-    sql: '#e38c00', db: '#e38c00', sqlite: '#e38c00',
+    sql: '#e38c00',
+    db: '#e38c00',
+    sqlite: '#e38c00',
   };
   return colorMap[ext] || '#9da5b4';
 }
@@ -171,8 +341,14 @@ const ConfirmDialog: React.FC<{
 }> = ({ isOpen, title, message, confirmLabel = '确认', danger, onConfirm, onCancel }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onCancel}>
-      <div className="bg-surface border border-border rounded-lg p-4 w-80 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-surface border border-border rounded-lg p-4 w-80 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="text-sm font-medium mb-2">{title}</h3>
         <p className="text-sm text-text-secondary mb-4">{message}</p>
         <div className="flex justify-end gap-2">
@@ -223,14 +399,22 @@ const InputDialog: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onCancel}>
-      <div className="bg-surface border border-border rounded-lg p-4 w-80 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-surface border border-border rounded-lg p-4 w-80 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="text-sm font-medium mb-3">{title}</h3>
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSubmit();
+          }}
           className="w-full px-3 py-2 bg-background border border-border rounded text-sm focus:outline-none focus:border-primary"
           placeholder={placeholder}
           autoFocus
@@ -257,7 +441,11 @@ const InputDialog: React.FC<{
 
 // ============ 文件图标组件 ============
 
-const FileIcon: React.FC<{ name: string; type: string; size?: number }> = ({ name, type, size = 14 }) => {
+const FileIcon: React.FC<{ name: string; type: string; size?: number }> = ({
+  name,
+  type,
+  size = 14,
+}) => {
   const color = getFileIconColor(name, type);
   if (type === 'directory') {
     return <IconFolder size={size} />;
@@ -265,7 +453,11 @@ const FileIcon: React.FC<{ name: string; type: string; size?: number }> = ({ nam
   if (type === 'symlink') {
     return <IconLink size={size} />;
   }
-  return <span style={{ color }}><IconFile size={size} /></span>;
+  return (
+    <span style={{ color }}>
+      <IconFile size={size} />
+    </span>
+  );
 };
 
 // ============ 排序类型 ============
@@ -330,17 +522,20 @@ export const SftpPanel: React.FC = () => {
   const activeSession = activeSftpId ? sessions[activeSftpId] : null;
 
   // 获取会话显示名称（用关联的终端会话名）
-  const getSessionLabel = useCallback((connectionId: string) => {
-    const terminalSession = Object.values(terminalSessions).find(
-      (s) => s.connectionId === connectionId
-    );
-    if (terminalSession) {
-      const tab = tabs.find((t) => t.sessions.includes(terminalSession.id));
-      if (tab) return tab.name;
-    }
-    // 从 connectionId 尝试提取 host
-    return connectionId.length > 8 ? connectionId.slice(0, 8) + '...' : connectionId;
-  }, [terminalSessions, tabs]);
+  const getSessionLabel = useCallback(
+    (connectionId: string) => {
+      const terminalSession = Object.values(terminalSessions).find(
+        (s) => s.connectionId === connectionId
+      );
+      if (terminalSession) {
+        const tab = tabs.find((t) => t.sessions.includes(terminalSession.id));
+        if (tab) return tab.name;
+      }
+      // 从 connectionId 尝试提取 host
+      return connectionId.length > 8 ? connectionId.slice(0, 8) + '...' : connectionId;
+    },
+    [terminalSessions, tabs]
+  );
 
   // 排序后的文件列表
   const sortedFiles = useMemo(() => {
@@ -417,23 +612,28 @@ export const SftpPanel: React.FC = () => {
     if (!activeSession) return;
 
     if (file.type === 'directory') {
-      const newPath = activeSession.currentPath === '/'
-        ? `/${file.name}`
-        : `${activeSession.currentPath}/${file.name}`;
+      const newPath =
+        activeSession.currentPath === '/'
+          ? `/${file.name}`
+          : `${activeSession.currentPath}/${file.name}`;
       await navigateTo(activeSftpId!, newPath);
     } else {
       const localPath = await window.qserial.sftp.pickLocalDir();
       if (localPath) {
-        const remotePath = activeSession.currentPath === '/'
-          ? `/${file.name}`
-          : `${activeSession.currentPath}/${file.name}`;
+        const remotePath =
+          activeSession.currentPath === '/'
+            ? `/${file.name}`
+            : `${activeSession.currentPath}/${file.name}`;
         await downloadFile(activeSftpId!, remotePath, `${localPath}/${file.name}`);
       }
     }
   };
 
   // 右键菜单
-  const handleContextMenu = (e: React.MouseEvent, file: { name: string; type: 'file' | 'directory' | 'symlink' }) => {
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    file: { name: string; type: 'file' | 'directory' | 'symlink' }
+  ) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, file: file.name, type: file.type });
   };
@@ -446,9 +646,10 @@ export const SftpPanel: React.FC = () => {
     const localPath = await window.qserial.sftp.pickLocalFile();
     if (localPath) {
       const fileName = localPath.split('/').pop() || 'file';
-      const remotePath = activeSession.currentPath === '/'
-        ? `/${fileName}`
-        : `${activeSession.currentPath}/${fileName}`;
+      const remotePath =
+        activeSession.currentPath === '/'
+          ? `/${fileName}`
+          : `${activeSession.currentPath}/${fileName}`;
       await uploadFile(activeSftpId, localPath, remotePath);
     }
   };
@@ -460,9 +661,8 @@ export const SftpPanel: React.FC = () => {
       title: '新建文件夹',
       placeholder: '输入文件夹名称',
       onConfirm: async (name) => {
-        const remotePath = activeSession.currentPath === '/'
-          ? `/${name}`
-          : `${activeSession.currentPath}/${name}`;
+        const remotePath =
+          activeSession.currentPath === '/' ? `/${name}` : `${activeSession.currentPath}/${name}`;
         try {
           await window.qserial.sftp.mkdir(activeSftpId!, remotePath);
           await refresh(activeSftpId!);
@@ -483,12 +683,14 @@ export const SftpPanel: React.FC = () => {
       placeholder: '输入新名称',
       defaultValue: fileName,
       onConfirm: async (newName) => {
-        const oldRemotePath = activeSession.currentPath === '/'
-          ? `/${fileName}`
-          : `${activeSession.currentPath}/${fileName}`;
-        const newRemotePath = activeSession.currentPath === '/'
-          ? `/${newName}`
-          : `${activeSession.currentPath}/${newName}`;
+        const oldRemotePath =
+          activeSession.currentPath === '/'
+            ? `/${fileName}`
+            : `${activeSession.currentPath}/${fileName}`;
+        const newRemotePath =
+          activeSession.currentPath === '/'
+            ? `/${newName}`
+            : `${activeSession.currentPath}/${newName}`;
         try {
           await window.qserial.sftp.rename(activeSftpId!, oldRemotePath, newRemotePath);
           await refresh(activeSftpId!);
@@ -508,9 +710,10 @@ export const SftpPanel: React.FC = () => {
       title: '确认删除',
       message: `确定要删除 "${fileName}" 吗？${type === 'directory' ? '该文件夹下的所有内容也将被删除。' : ''}`,
       onConfirm: async () => {
-        const remotePath = activeSession.currentPath === '/'
-          ? `/${fileName}`
-          : `${activeSession.currentPath}/${fileName}`;
+        const remotePath =
+          activeSession.currentPath === '/'
+            ? `/${fileName}`
+            : `${activeSession.currentPath}/${fileName}`;
         try {
           if (type === 'directory') {
             await window.qserial.sftp.rmdir(activeSftpId!, remotePath);
@@ -689,12 +892,18 @@ export const SftpPanel: React.FC = () => {
                 className="flex items-center gap-1 w-28 justify-end hover:text-text transition-colors"
               >
                 <span>修改时间</span>
-                <IconSort size={8} direction={sortField === 'modifyTime' ? sortDirection : undefined} />
+                <IconSort
+                  size={8}
+                  direction={sortField === 'modifyTime' ? sortDirection : undefined}
+                />
               </button>
             </div>
 
             {/* 文件列表 */}
-            <div className="flex-1 overflow-y-auto min-h-0" onClick={() => activeSftpId && clearSelection(activeSftpId)}>
+            <div
+              className="flex-1 overflow-y-auto min-h-0"
+              onClick={() => activeSftpId && clearSelection(activeSftpId)}
+            >
               {activeSession.loading ? (
                 <div className="flex items-center justify-center h-20 text-text-secondary text-xs">
                   <IconRefresh size={14} />
@@ -715,7 +924,8 @@ export const SftpPanel: React.FC = () => {
                     <div
                       className="flex items-center gap-2 px-2 py-1 hover:bg-hover cursor-pointer"
                       onClick={async () => {
-                        const parentPath = activeSession.currentPath.split('/').slice(0, -1).join('/') || '/';
+                        const parentPath =
+                          activeSession.currentPath.split('/').slice(0, -1).join('/') || '/';
                         await navigateTo(activeSftpId!, parentPath);
                       }}
                     >
@@ -728,35 +938,35 @@ export const SftpPanel: React.FC = () => {
                   {sortedFiles.map((file) => {
                     const isSelected = activeSession.selectedFiles.includes(file.name);
                     return (
-                    <div
-                      key={file.name}
-                      className={`flex items-center gap-2 px-2 py-1 cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-primary/20 border-l-2 border-primary text-text'
-                          : 'hover:bg-hover border-l-2 border-transparent'
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        selectFile(activeSftpId!, file.name, e.ctrlKey || e.metaKey);
-                      }}
-                      onDoubleClick={() => handleDoubleClick(file)}
-                      onContextMenu={(e) =>
-                        handleContextMenu(e, {
-                          name: file.name,
-                          type: file.type as 'file' | 'directory' | 'symlink',
-                        })
-                      }
-                    >
-                      <FileIcon name={file.name} type={file.type} size={14} />
-                      <span className="flex-1 text-xs truncate">{file.name}</span>
-                      <span className="text-xs text-text-secondary w-16 text-right flex-shrink-0">
-                        {file.type === 'file' ? formatSize(file.size) : ''}
-                      </span>
-                      <span className="text-xs text-text-secondary w-28 text-right flex-shrink-0">
-                        {formatTime(file.modifyTime)}
-                      </span>
-                    </div>
-                  );
+                      <div
+                        key={file.name}
+                        className={`flex items-center gap-2 px-2 py-1 cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'bg-primary/20 border-l-2 border-primary text-text'
+                            : 'hover:bg-hover border-l-2 border-transparent'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectFile(activeSftpId!, file.name, e.ctrlKey || e.metaKey);
+                        }}
+                        onDoubleClick={() => handleDoubleClick(file)}
+                        onContextMenu={(e) =>
+                          handleContextMenu(e, {
+                            name: file.name,
+                            type: file.type as 'file' | 'directory' | 'symlink',
+                          })
+                        }
+                      >
+                        <FileIcon name={file.name} type={file.type} size={14} />
+                        <span className="flex-1 text-xs truncate">{file.name}</span>
+                        <span className="text-xs text-text-secondary w-16 text-right flex-shrink-0">
+                          {file.type === 'file' ? formatSize(file.size) : ''}
+                        </span>
+                        <span className="text-xs text-text-secondary w-28 text-right flex-shrink-0">
+                          {formatTime(file.modifyTime)}
+                        </span>
+                      </div>
+                    );
                   })}
                 </div>
               )}
@@ -788,9 +998,10 @@ export const SftpPanel: React.FC = () => {
                   if (!activeSession || !activeSftpId) return;
                   const localDir = await window.qserial.sftp.pickLocalDir();
                   if (localDir) {
-                    const remotePath = activeSession.currentPath === '/'
-                      ? `/${contextMenu.file}`
-                      : `${activeSession.currentPath}/${contextMenu.file}`;
+                    const remotePath =
+                      activeSession.currentPath === '/'
+                        ? `/${contextMenu.file}`
+                        : `${activeSession.currentPath}/${contextMenu.file}`;
                     await downloadFile(activeSftpId, remotePath, `${localDir}/${contextMenu.file}`);
                   }
                   closeContextMenu();
@@ -805,9 +1016,10 @@ export const SftpPanel: React.FC = () => {
               <button
                 onClick={async () => {
                   if (!activeSession || !activeSftpId) return;
-                  const newPath = activeSession.currentPath === '/'
-                    ? `/${contextMenu.file}`
-                    : `${activeSession.currentPath}/${contextMenu.file}`;
+                  const newPath =
+                    activeSession.currentPath === '/'
+                      ? `/${contextMenu.file}`
+                      : `${activeSession.currentPath}/${contextMenu.file}`;
                   await navigateTo(activeSftpId, newPath);
                   closeContextMenu();
                 }}

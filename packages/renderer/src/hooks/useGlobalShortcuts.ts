@@ -75,7 +75,9 @@ export function useGlobalShortcuts() {
       if (ctrl && shift && e.key === 'B') {
         e.preventDefault();
         const d = useQuickButtonsStore.getState().direction;
-        useQuickButtonsStore.getState().setDirection(d === 'horizontal' ? 'vertical' : 'horizontal');
+        useQuickButtonsStore
+          .getState()
+          .setDirection(d === 'horizontal' ? 'vertical' : 'horizontal');
         return;
       }
 
@@ -98,7 +100,9 @@ export function useGlobalShortcuts() {
         e.preventDefault();
         const { tabs, activeTabId, sessions } = useTerminalStore.getState();
         const activeTab = tabs.find((t) => t.id === activeTabId);
-        const activeSession = activeTab?.activeSessionId ? sessions[activeTab.activeSessionId] : null;
+        const activeSession = activeTab?.activeSessionId
+          ? sessions[activeTab.activeSessionId]
+          : null;
         if (activeSession?.connectionId) {
           window.qserial.connection.close(activeSession.connectionId).catch(() => {});
         }
@@ -113,7 +117,9 @@ export function useGlobalShortcuts() {
         } else {
           const { tabs, activeTabId, sessions } = useTerminalStore.getState();
           const activeTab = tabs.find((t) => t.id === activeTabId);
-          const activeSession = activeTab?.activeSessionId ? sessions[activeTab.activeSessionId] : null;
+          const activeSession = activeTab?.activeSessionId
+            ? sessions[activeTab.activeSessionId]
+            : null;
           if (activeSession?.connectionId) {
             window.qserial.connection.open(activeSession.connectionId).catch(() => {});
           }

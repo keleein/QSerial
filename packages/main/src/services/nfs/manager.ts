@@ -113,7 +113,15 @@ function findWinnfsdPath(): string | null {
   if (fs.existsSync(devPath)) return devPath;
 
   // 2b. 开发模式备用: 从 dist 目录向上查找项目根 (packages/main/dist -> 项目根)
-  const devRootPath = path.resolve(app.getAppPath(), '..', '..', '..', 'resources', 'nfs', 'winnfsd.exe');
+  const devRootPath = path.resolve(
+    app.getAppPath(),
+    '..',
+    '..',
+    '..',
+    'resources',
+    'nfs',
+    'winnfsd.exe'
+  );
   if (fs.existsSync(devRootPath)) return devRootPath;
 
   // 3. 可执行文件同目录
@@ -154,15 +162,19 @@ function copyWinnfsdToTemp(srcPath: string): string {
 /**
  * Windows: 启动 WinNFSd
  */
-async function startWinnfsd(exportDir: string, _allowedClients: string, options: string): Promise<void> {
+async function startWinnfsd(
+  exportDir: string,
+  _allowedClients: string,
+  options: string
+): Promise<void> {
   const originalPath = findWinnfsdPath();
   if (!originalPath) {
     throw new Error(
       '未找到 WinNFSd.exe，请下载 WinNFSd 并放到以下任一位置：\n' +
-      `1. ${path.join(process.resourcesPath || '', 'resources', 'nfs', 'winnfsd.exe')}\n` +
-      `2. ${path.join(app.getAppPath(), 'resources', 'nfs', 'winnfsd.exe')}\n` +
-      `3. 与应用同目录\n` +
-      '下载地址: https://github.com/winnfsd/winnfsd/releases'
+        `1. ${path.join(process.resourcesPath || '', 'resources', 'nfs', 'winnfsd.exe')}\n` +
+        `2. ${path.join(app.getAppPath(), 'resources', 'nfs', 'winnfsd.exe')}\n` +
+        `3. 与应用同目录\n` +
+        '下载地址: https://github.com/winnfsd/winnfsd/releases'
     );
   }
 
@@ -172,7 +184,7 @@ async function startWinnfsd(exportDir: string, _allowedClients: string, options:
   // 检查目录是否存在
   if (!fs.existsSync(exportDir)) {
     console.warn('[NFS] Shared dir not found, skipping');
-      return;
+    return;
   }
 
   // WinNFSd 需要使用正斜杠或转义的路径
@@ -242,7 +254,14 @@ async function startWinnfsd(exportDir: string, _allowedClients: string, options:
   proc.on('exit', (code) => {
     processExited = true;
     exitCode = code;
-    console.log('[NFS] process exit: code=', code, 'nfsdProcess===proc=', nfsdProcess === proc, 'serverRunning=', serverRunning);
+    console.log(
+      '[NFS] process exit: code=',
+      code,
+      'nfsdProcess===proc=',
+      nfsdProcess === proc,
+      'serverRunning=',
+      serverRunning
+    );
   });
 
   // WinNFSd 2.4.0 在管道模式下可能不输出 "listening on" 等就绪信号
@@ -290,7 +309,7 @@ async function startWinnfsd(exportDir: string, _allowedClients: string, options:
     }
 
     // 等待后重试
-    await new Promise(resolve => setTimeout(resolve, CHECK_INTERVAL_MS));
+    await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL_MS));
   }
 
   // 最终检查：进程是否仍在运行
@@ -305,7 +324,14 @@ async function startWinnfsd(exportDir: string, _allowedClients: string, options:
   proc.on('exit', (code) => {
     // 防止重复处理（上面已经注册了 exit 监听）
     // 这里只处理服务运行中的异常退出
-    console.log('[NFS] running process exit: code=', code, 'nfsdProcess===proc=', nfsdProcess === proc, 'serverRunning=', serverRunning);
+    console.log(
+      '[NFS] running process exit: code=',
+      code,
+      'nfsdProcess===proc=',
+      nfsdProcess === proc,
+      'serverRunning=',
+      serverRunning
+    );
     if (nfsdProcess === proc) {
       const detail = allOutput ? `\n输出:\n${allOutput.trim()}` : '';
       nfsdLastError = `退出码: ${code}${lastError ? ` (${lastError})` : ''}${detail}`;
@@ -352,7 +378,11 @@ function killWinnfsd(): void {
 
 function writeExports(content: string): void {
   try {
-    spawnSync('sudo', ['tee', '/etc/exports'], { input: content, encoding: 'utf-8', timeout: 10000 });
+    spawnSync('sudo', ['tee', '/etc/exports'], {
+      input: content,
+      encoding: 'utf-8',
+      timeout: 10000,
+    });
   } catch {
     fs.writeFileSync('/etc/exports', content);
   }
@@ -367,9 +397,7 @@ function restoreExports(): void {
     } else {
       if (fs.existsSync('/etc/exports')) {
         const content = fs.readFileSync('/etc/exports', 'utf-8');
-        const lines = content.split('\n').filter(
-          line => !line.includes('# QSerial-NFS')
-        );
+        const lines = content.split('\n').filter((line) => !line.includes('# QSerial-NFS'));
         writeExports(lines.join('\n').trim() + '\n');
       }
     }
@@ -385,7 +413,7 @@ function startLinuxNfs(exportDir: string, allowedClients: string, options: strin
   // 检查目录是否存在
   if (!fs.existsSync(exportDir)) {
     console.warn('[NFS] Shared dir not found, skipping');
-      return;
+    return;
   }
 
   // 备份原始 exports
@@ -419,9 +447,7 @@ function startLinuxNfs(exportDir: string, allowedClients: string, options: strin
 
     // 读取现有 /etc/exports，移除旧的 QSerial 条目
     let exportsContent = fs.readFileSync('/etc/exports', 'utf-8');
-    const lines = exportsContent.split('\n').filter(
-      line => !line.includes('# QSerial-NFS')
-    );
+    const lines = exportsContent.split('\n').filter((line) => !line.includes('# QSerial-NFS'));
     exportsContent = lines.join('\n').trim();
 
     // 添加 QSerial 条目
@@ -429,7 +455,11 @@ function startLinuxNfs(exportDir: string, allowedClients: string, options: strin
 
     // 写入 /etc/exports
     try {
-      spawnSync('sudo', ['tee', '/etc/exports'], { input: exportsContent, encoding: 'utf-8', timeout: 10000 });
+      spawnSync('sudo', ['tee', '/etc/exports'], {
+        input: exportsContent,
+        encoding: 'utf-8',
+        timeout: 10000,
+      });
     } catch {
       fs.writeFileSync('/etc/exports', exportsContent);
     }
@@ -488,8 +518,19 @@ function stopLinuxNfs(): void {
 /**
  * 启动 NFS 服务器
  */
-export async function startNfsServer(exportDir: string, allowedClients: string, options: string): Promise<void> {
-  console.log('[NFS] startNfsServer called, serverRunning:', serverRunning, 'isWindows:', isWindows, 'nfsdProcess:', !!nfsdProcess);
+export async function startNfsServer(
+  exportDir: string,
+  allowedClients: string,
+  options: string
+): Promise<void> {
+  console.log(
+    '[NFS] startNfsServer called, serverRunning:',
+    serverRunning,
+    'isWindows:',
+    isWindows,
+    'nfsdProcess:',
+    !!nfsdProcess
+  );
   // 先静默清理已有服务（不发送状态事件，避免渲染进程竞态）
   if (serverRunning || (isWindows && nfsdProcess)) {
     console.log('[NFS] silently stopping existing server before start');
@@ -517,7 +558,7 @@ export async function startNfsServer(exportDir: string, allowedClients: string, 
       // 没有残留进程，忽略
     }
     // 等待进程完全退出
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   if (isWindows) {
@@ -525,24 +566,26 @@ export async function startNfsServer(exportDir: string, allowedClients: string, 
 
     // WinNFSd 输出就绪信号后，再等待 1 秒确认进程没有立即退出
     // 避免发送 running:true 后立刻又发 running:false 造成渲染端状态混乱
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // 检查进程是否在稳定性验证期间退出
     if (!nfsdProcess || nfsdProcess.killed || nfsdProcess.exitCode !== null) {
       serverRunning = false;
       // 收集退出码和输出信息
-      const exitInfo = nfsdProcess?.exitCode !== null && nfsdProcess?.exitCode !== undefined
-        ? `（退出码: ${nfsdProcess.exitCode}）` : '';
+      const exitInfo =
+        nfsdProcess?.exitCode !== null && nfsdProcess?.exitCode !== undefined
+          ? `（退出码: ${nfsdProcess.exitCode}）`
+          : '';
       const outputInfo = nfsdLastError ? `\n进程输出: ${nfsdLastError}` : '';
       // 清理进程引用
       nfsdProcess = null;
       nfsdPid = null;
       throw new Error(
         `WinNFSd 启动后立即退出${exitInfo}，可能原因：\n` +
-        '1. 端口 2049 被其他程序占用\n' +
-        '2. 共享目录路径包含特殊字符\n' +
-        '3. WinNFSd 版本不兼容' +
-        outputInfo
+          '1. 端口 2049 被其他程序占用\n' +
+          '2. 共享目录路径包含特殊字符\n' +
+          '3. WinNFSd 版本不兼容' +
+          outputInfo
       );
     }
   } else {
@@ -590,7 +633,16 @@ export function stopNfsServer(): void {
  * 获取 NFS 服务器状态
  */
 export function getNfsStatus(): NfsServerStatus {
-  console.log('[NFS] getNfsStatus: serverRunning=', serverRunning, 'currentStatus=', JSON.stringify(currentStatus), 'nfsdProcess=', !!nfsdProcess, 'nfsdPid=', nfsdPid);
+  console.log(
+    '[NFS] getNfsStatus: serverRunning=',
+    serverRunning,
+    'currentStatus=',
+    JSON.stringify(currentStatus),
+    'nfsdProcess=',
+    !!nfsdProcess,
+    'nfsdPid=',
+    nfsdPid
+  );
   return { ...currentStatus };
 }
 
@@ -651,7 +703,9 @@ export function getNfsClients(): NfsClientEvent[] {
       return clients;
     } else {
       // Linux: 通过 nfsstat 或 ss 检测
-      const output = run('sudo nfsstat -l 2>/dev/null || ss -tn state established \'( dport = :2049 or sport = :2049 )\' 2>/dev/null');
+      const output = run(
+        "sudo nfsstat -l 2>/dev/null || ss -tn state established '( dport = :2049 or sport = :2049 )' 2>/dev/null"
+      );
       const clients: NfsClientEvent[] = [];
       const lines = output.split('\n');
       for (const line of lines) {
@@ -685,7 +739,7 @@ function startClientMonitor(): void {
     if (!serverRunning) return;
 
     const clients = getNfsClients();
-    const currentIps = new Set(clients.map(c => c.address));
+    const currentIps = new Set(clients.map((c) => c.address));
 
     // 新连接：上次没有，这次有
     for (const client of clients) {

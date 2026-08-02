@@ -15,12 +15,7 @@ import {
 import { EventEmitter } from 'events';
 
 // 默认密钥文件名列表（按优先级）
-const DEFAULT_KEY_NAMES = [
-  'id_ed25519',
-  'id_rsa',
-  'id_ecdsa',
-  'id_dsa',
-];
+const DEFAULT_KEY_NAMES = ['id_ed25519', 'id_rsa', 'id_ecdsa', 'id_dsa'];
 
 /**
  * 获取用户默认 SSH 密钥列表
@@ -84,12 +79,7 @@ const ALGORITHM_PRESETS = {
       'aes256-cbc',
       '3des-cbc',
     ],
-    hmac: [
-      'hmac-sha2-512',
-      'hmac-sha2-256',
-      'hmac-sha1',
-      'hmac-sha1-96',
-    ],
+    hmac: ['hmac-sha2-512', 'hmac-sha2-256', 'hmac-sha1', 'hmac-sha1-96'],
   },
   legacy: {
     kex: [
@@ -105,20 +95,8 @@ const ALGORITHM_PRESETS = {
       'ssh-rsa',
       'ssh-dss',
     ],
-    cipher: [
-      'aes128-ctr',
-      'aes192-ctr',
-      'aes256-ctr',
-      'aes128-cbc',
-      'aes256-cbc',
-      '3des-cbc',
-    ],
-    hmac: [
-      'hmac-sha1',
-      'hmac-sha1-96',
-      'hmac-sha2-256',
-      'hmac-sha2-512',
-    ],
+    cipher: ['aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-cbc', 'aes256-cbc', '3des-cbc'],
+    hmac: ['hmac-sha1', 'hmac-sha1-96', 'hmac-sha2-256', 'hmac-sha2-512'],
   },
 };
 
@@ -188,7 +166,6 @@ export class SshConnection implements IConnection {
       throw new Error('未找到 SSH 密钥 (~/.ssh/id_*) 且未提供密码');
     }
 
-
     // 连接策略：先用完整算法列表，失败后回退到保守算法
     const algorithmPresets = ['full', 'legacy'] as const;
     let lastError: Error | null = null;
@@ -204,7 +181,9 @@ export class SshConnection implements IConnection {
 
           // 签名验证失败时，立即切换到保守算法预设重试
           if (errMsg.includes('signature verification failed') && preset === 'full') {
-            console.log('[SSH] signature verification failed with full algorithms, retrying with legacy preset...');
+            console.log(
+              '[SSH] signature verification failed with full algorithms, retrying with legacy preset...'
+            );
             break; // 跳出 authMethods 循环，进入 legacy preset
           }
 
@@ -231,11 +210,15 @@ export class SshConnection implements IConnection {
 
   private async tryConnect(
     auth: { privateKey?: Buffer; password?: string; passphrase?: string },
-    algorithms: typeof ALGORITHM_PRESETS.full,
+    algorithms: typeof ALGORITHM_PRESETS.full
   ): Promise<void> {
     // Cleanup previous client
     if (this.client) {
-      try { this.client.end(); } catch { /* ignore */ }
+      try {
+        this.client.end();
+      } catch {
+        /* ignore */
+      }
       this.client = null;
     }
     if (this.stream) {
@@ -258,7 +241,11 @@ export class SshConnection implements IConnection {
         algorithms,
       };
       if (jumpHost.privateKey) {
-        try { jumpConfig.privateKey = fs.readFileSync(jumpHost.privateKey.replace(/^~/, os.homedir())); } catch { /* ignore */ }
+        try {
+          jumpConfig.privateKey = fs.readFileSync(jumpHost.privateKey.replace(/^~/, os.homedir()));
+        } catch {
+          /* ignore */
+        }
       }
       if (jumpHost.password) {
         jumpConfig.password = jumpHost.password;
@@ -273,8 +260,10 @@ export class SshConnection implements IConnection {
 
       sock = await new Promise<import('stream').Duplex>((resolveFwd, rejectFwd) => {
         jumpClient!.forwardOut(
-          '127.0.0.1', 0,
-          this.options.host, this.options.port,
+          '127.0.0.1',
+          0,
+          this.options.host,
+          this.options.port,
           (err, stream) => {
             if (err) return rejectFwd(err);
             resolveFwd(stream);
@@ -288,10 +277,20 @@ export class SshConnection implements IConnection {
 
       const cleanup = () => {
         this.client?.removeAllListeners();
-        try { this.client?.end(); } catch { /* ignore */ }
+        try {
+          this.client?.end();
+        } catch {
+          /* ignore */
+        }
         this.client = null;
         this.stream = null;
-        if (jumpClient) { try { jumpClient.end(); } catch { /* ignore */ } }
+        if (jumpClient) {
+          try {
+            jumpClient.end();
+          } catch {
+            /* ignore */
+          }
+        }
       };
 
       const onError = (err: Error) => {
@@ -300,39 +299,36 @@ export class SshConnection implements IConnection {
       };
 
       const onHandshake = () => {
-        this.client!.shell(
-          { term: 'xterm-256color', cols: 80, rows: 24 },
-          (err, stream) => {
-            if (err) {
-              cleanup();
-              reject(err);
-              return;
-            }
-
-            this.stream = stream;
-
-            stream.on('data', (data: Buffer) => {
-              this.eventEmitter.emit('data', data);
-            });
-
-            stream.on('close', () => {
-              this._state = ConnectionState.DISCONNECTED;
-              this.emitStateChange();
-              this.eventEmitter.emit('close');
-              this.client?.end();
-              this.handleReconnect();
-            });
-
-            stream.stderr.on('data', (data: Buffer) => {
-              this.eventEmitter.emit('data', data);
-            });
-
-            this._state = ConnectionState.CONNECTED;
-            this.reconnectCount = 0;
-            this.emitStateChange();
-            resolve();
+        this.client!.shell({ term: 'xterm-256color', cols: 80, rows: 24 }, (err, stream) => {
+          if (err) {
+            cleanup();
+            reject(err);
+            return;
           }
-        );
+
+          this.stream = stream;
+
+          stream.on('data', (data: Buffer) => {
+            this.eventEmitter.emit('data', data);
+          });
+
+          stream.on('close', () => {
+            this._state = ConnectionState.DISCONNECTED;
+            this.emitStateChange();
+            this.eventEmitter.emit('close');
+            this.client?.end();
+            this.handleReconnect();
+          });
+
+          stream.stderr.on('data', (data: Buffer) => {
+            this.eventEmitter.emit('data', data);
+          });
+
+          this._state = ConnectionState.CONNECTED;
+          this.reconnectCount = 0;
+          this.emitStateChange();
+          resolve();
+        });
       };
 
       this.client.on('ready', onHandshake);
@@ -345,23 +341,25 @@ export class SshConnection implements IConnection {
         this.handleReconnect();
       });
 
-      const config: Record<string, unknown> = sock ? {
-        sock,
-        username: this.options.username,
-        readyTimeout: 20000,
-        keepaliveInterval: this.options.keepaliveInterval || 30000,
-        algorithms,
-      } : {
-        host: this.options.host,
-        port: this.options.port,
-        username: this.options.username,
-        readyTimeout: 20000,
-        keepaliveInterval: this.options.keepaliveInterval || 30000,
-        algorithms,
-        debug: (msg: string) => {
-          console.log('[SSH]', msg);
-        },
-      };
+      const config: Record<string, unknown> = sock
+        ? {
+            sock,
+            username: this.options.username,
+            readyTimeout: 20000,
+            keepaliveInterval: this.options.keepaliveInterval || 30000,
+            algorithms,
+          }
+        : {
+            host: this.options.host,
+            port: this.options.port,
+            username: this.options.username,
+            readyTimeout: 20000,
+            keepaliveInterval: this.options.keepaliveInterval || 30000,
+            algorithms,
+            debug: (msg: string) => {
+              console.log('[SSH]', msg);
+            },
+          };
 
       if (auth.privateKey) {
         config.privateKey = auth.privateKey;
@@ -401,7 +399,11 @@ export class SshConnection implements IConnection {
       this.stream = null;
     }
     if (this.client) {
-      try { this.client.end(); } catch { /* ignore */ }
+      try {
+        this.client.end();
+      } catch {
+        /* ignore */
+      }
       this.client = null;
     }
     this._state = ConnectionState.DISCONNECTED;

@@ -47,13 +47,20 @@ $dialog.Dispose()
  * Windows: PowerShell OpenFileDialog
  * Linux/macOS: Electron dialog.showOpenDialog
  */
-export async function pickFile(title: string, filters?: Array<{ name: string; extensions: string[] }>): Promise<string | null> {
+export async function pickFile(
+  title: string,
+  filters?: Array<{ name: string; extensions: string[] }>
+): Promise<string | null> {
   if (process.platform !== 'win32') {
     return electronPickFile(title, filters);
   }
 
   const filterStr = filters
-    ? filters.map(f => `${f.name}|${f.extensions.map(e => e === '*' ? '*.*' : `*.${e}`).join(';')}`).join('|')
+    ? filters
+        .map(
+          (f) => `${f.name}|${f.extensions.map((e) => (e === '*' ? '*.*' : `*.${e}`)).join(';')}`
+        )
+        .join('|')
     : 'All Files|*.*';
 
   const ps = `
@@ -88,7 +95,11 @@ export async function pickSaveFile(
   }
 
   const filterStr = filters
-    ? filters.map(f => `${f.name}|${f.extensions.map(e => e === '*' ? '*.*' : `*.${e}`).join(';')}`).join('|')
+    ? filters
+        .map(
+          (f) => `${f.name}|${f.extensions.map((e) => (e === '*' ? '*.*' : `*.${e}`)).join(';')}`
+        )
+        .join('|')
     : 'All Files|*.*';
 
   const ps = `
@@ -157,15 +168,14 @@ function runPowerShell(script: string): Promise<string | null> {
     const utf8Script = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n${script}`;
     fs.writeFileSync(tmpFile, utf8Script, 'utf-8');
 
-    const proc = spawn('powershell.exe', [
-      '-NoProfile',
-      '-NonInteractive',
-      '-ExecutionPolicy', 'Bypass',
-      '-File', tmpFile,
-    ], {
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    const proc = spawn(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', tmpFile],
+      {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }
+    );
 
     let stdout = '';
     let stderr = '';
@@ -179,7 +189,11 @@ function runPowerShell(script: string): Promise<string | null> {
     });
 
     proc.on('close', (code) => {
-      try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(tmpFile);
+      } catch {
+        /* ignore */
+      }
 
       if (code !== 0 && stderr) {
         console.error('[native-dialog] PowerShell error:', stderr.trim());
@@ -194,7 +208,11 @@ function runPowerShell(script: string): Promise<string | null> {
     });
 
     proc.on('error', (err) => {
-      try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(tmpFile);
+      } catch {
+        /* ignore */
+      }
       console.error('[native-dialog] Failed to spawn PowerShell:', err);
       resolve(null);
     });

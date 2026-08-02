@@ -50,7 +50,9 @@ function copyNativeModule(srcFile: string): string {
       let stat;
       try {
         stat = fs.statSync(srcItem);
-      } catch { continue; }
+      } catch {
+        continue;
+      }
 
       if (stat.isFile()) {
         if (item.endsWith('.node') || item.endsWith('.pdb')) continue;
@@ -66,7 +68,9 @@ function copyNativeModule(srcFile: string): string {
         }
       }
     }
-  } catch { /* 非关键，跳过 */ }
+  } catch {
+    /* 非关键，跳过 */
+  }
 
   return dest;
 }
@@ -93,11 +97,7 @@ export function ensureNativePatch(): void {
     return;
   }
 
-  process.dlopen = function (
-    module: object,
-    filename: string,
-    flags?: number,
-  ) {
+  process.dlopen = function (module: object, filename: string, flags?: number) {
     // 注意：flags 为 undefined 时不能作为第三个参数显式传递，
     // 否则 Node.js C++ 层会将 undefined 当作 dlopen flags 导致 EINVAL
     const dlopen = (f: string) =>
@@ -115,20 +115,17 @@ export function ensureNativePatch(): void {
           console.error(
             '[native-patch] dlopen failed for',
             path.basename(filename),
-            '| electron:', process.versions.electron,
-            '| node:', process.versions.node,
+            '| electron:',
+            process.versions.electron,
+            '| node:',
+            process.versions.node,
             '| error:',
-            errMsg.slice(0, 80),
+            errMsg.slice(0, 80)
           );
         }
         try {
           const tempFile = copyNativeModule(filename);
-          console.log(
-            '[native-patch] Reloaded from temp:',
-            path.basename(filename),
-            '→',
-            tempFile,
-          );
+          console.log('[native-patch] Reloaded from temp:', path.basename(filename), '→', tempFile);
           return dlopen(tempFile);
         } catch (e2) {
           console.error('[native-patch] Temp retry also failed:', (e2 as Error).message);

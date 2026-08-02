@@ -49,13 +49,52 @@ export const TitleBar: React.FC = () => {
   }, []);
 
   // Tab 右键菜单
-  const tabCtxItems = tabContextMenu ? [
-    { label: '关闭', onClick: () => { closeTab(tabContextMenu.tabId); setTabContextMenu(null); } },
-    { label: '关闭左侧标签页', onClick: () => { const idx = tabs.findIndex((t) => t.id === tabContextMenu.tabId); for (let i = idx - 1; i >= 0; i--) closeTab(tabs[i].id); setTabContextMenu(null); }, disabled: tabs.findIndex((t) => t.id === tabContextMenu.tabId) <= 0 },
-    { label: '关闭右侧标签页', onClick: () => { const idx = tabs.findIndex((t) => t.id === tabContextMenu.tabId); for (let i = tabs.length - 1; i > idx; i--) closeTab(tabs[i].id); setTabContextMenu(null); }, disabled: tabs.findIndex((t) => t.id === tabContextMenu.tabId) >= tabs.length - 1 },
-    { label: '关闭其他标签页', onClick: () => { tabs.forEach((t) => { if (t.id !== tabContextMenu.tabId) closeTab(t.id); }); setTabContextMenu(null); }, disabled: tabs.length <= 1 },
-    { label: '关闭所有标签页', onClick: () => { [...tabs].reverse().forEach((t) => closeTab(t.id)); setTabContextMenu(null); } },
-  ] : [];
+  const tabCtxItems = tabContextMenu
+    ? [
+        {
+          label: '关闭',
+          onClick: () => {
+            closeTab(tabContextMenu.tabId);
+            setTabContextMenu(null);
+          },
+        },
+        {
+          label: '关闭左侧标签页',
+          onClick: () => {
+            const idx = tabs.findIndex((t) => t.id === tabContextMenu.tabId);
+            for (let i = idx - 1; i >= 0; i--) closeTab(tabs[i].id);
+            setTabContextMenu(null);
+          },
+          disabled: tabs.findIndex((t) => t.id === tabContextMenu.tabId) <= 0,
+        },
+        {
+          label: '关闭右侧标签页',
+          onClick: () => {
+            const idx = tabs.findIndex((t) => t.id === tabContextMenu.tabId);
+            for (let i = tabs.length - 1; i > idx; i--) closeTab(tabs[i].id);
+            setTabContextMenu(null);
+          },
+          disabled: tabs.findIndex((t) => t.id === tabContextMenu.tabId) >= tabs.length - 1,
+        },
+        {
+          label: '关闭其他标签页',
+          onClick: () => {
+            tabs.forEach((t) => {
+              if (t.id !== tabContextMenu.tabId) closeTab(t.id);
+            });
+            setTabContextMenu(null);
+          },
+          disabled: tabs.length <= 1,
+        },
+        {
+          label: '关闭所有标签页',
+          onClick: () => {
+            [...tabs].reverse().forEach((t) => closeTab(t.id));
+            setTabContextMenu(null);
+          },
+        },
+      ]
+    : [];
 
   return (
     <div className="bg-surface flex flex-col select-none app-drag flex-shrink-0 border-b border-border">
@@ -74,8 +113,13 @@ export const TitleBar: React.FC = () => {
         <div className="flex-1 flex items-center justify-center min-w-0">
           {activeTab ? (
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? 'bg-success' : 'bg-text-secondary/30'}`} />
-              <span className="text-xs font-medium text-text truncate max-w-[300px]" title={activeName}>
+              <span
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? 'bg-success' : 'bg-text-secondary/30'}`}
+              />
+              <span
+                className="text-xs font-medium text-text truncate max-w-[300px]"
+                title={activeName}
+              >
                 {activeName}
               </span>
             </div>
@@ -126,18 +170,28 @@ export const TitleBar: React.FC = () => {
                 }`}
                 onClick={() => setActiveTab(tab.id)}
                 onContextMenu={(e) => {
-                  e.preventDefault(); e.stopPropagation();
+                  e.preventDefault();
+                  e.stopPropagation();
                   setTabContextMenu({ x: e.clientX, y: e.clientY, tabId: tab.id });
                 }}
               >
-                <span className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${connected ? 'bg-success' : 'bg-text-secondary/30'}`} />
-                <span className="truncate max-w-[130px]" title={tab.name}>{tab.name}</span>
+                <span
+                  className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${connected ? 'bg-success' : 'bg-text-secondary/30'}`}
+                />
+                <span className="truncate max-w-[130px]" title={tab.name}>
+                  {tab.name}
+                </span>
                 <button
-                  onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeTab(tab.id);
+                  }}
                   className={`w-3.5 h-3.5 flex items-center justify-center rounded hover:bg-active text-text-tertiary hover:text-text transition-all text-[11px] ${
                     isActive ? 'opacity-100' : 'opacity-0'
                   } hover:opacity-100`}
-                >×</button>
+                >
+                  ×
+                </button>
               </div>
             );
           })
@@ -146,7 +200,12 @@ export const TitleBar: React.FC = () => {
 
       {/* Tab 右键菜单 */}
       {tabContextMenu && (
-        <ContextMenu x={tabContextMenu.x} y={tabContextMenu.y} items={tabCtxItems} onClose={() => setTabContextMenu(null)} />
+        <ContextMenu
+          x={tabContextMenu.x}
+          y={tabContextMenu.y}
+          items={tabCtxItems}
+          onClose={() => setTabContextMenu(null)}
+        />
       )}
     </div>
   );

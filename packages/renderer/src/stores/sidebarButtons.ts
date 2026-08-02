@@ -5,7 +5,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type SidebarButtonType = 'pty' | 'serial' | 'ssh' | 'telnet' | 'tftp' | 'nfs' | 'ftp' | 'mcp';
+export type SidebarButtonType =
+  | 'pty'
+  | 'serial'
+  | 'ssh'
+  | 'telnet'
+  | 'tftp'
+  | 'nfs'
+  | 'ftp'
+  | 'mcp';
 
 interface SidebarButtonConfig {
   type: SidebarButtonType;

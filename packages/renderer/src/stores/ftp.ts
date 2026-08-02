@@ -87,9 +87,14 @@ export const useFtpStore = create<FtpState & FtpActions>()(
             config.port,
             config.rootDir,
             config.username,
-            config.password,
+            config.password
           );
-          set({ running: true, starting: false, error: undefined, config: { ...config, autoStart: true } });
+          set({
+            running: true,
+            starting: false,
+            error: undefined,
+            config: { ...config, autoStart: true },
+          });
         } catch (error) {
           set({ error: (error as Error).message, running: false, starting: false });
         }
@@ -99,7 +104,13 @@ export const useFtpStore = create<FtpState & FtpActions>()(
         set({ starting: false, stopping: true });
         try {
           await window.qserial.ftp.stop();
-          set({ running: false, stopping: false, error: undefined, clients: [], config: { ...get().config, autoStart: false } });
+          set({
+            running: false,
+            stopping: false,
+            error: undefined,
+            clients: [],
+            config: { ...get().config, autoStart: false },
+          });
         } catch (error) {
           set({ error: (error as Error).message, stopping: false });
         }
@@ -113,7 +124,7 @@ export const useFtpStore = create<FtpState & FtpActions>()(
           if (status.running) {
             // 同步客户端列表（补充 action/timestamp 以匹配 FtpClient 类型）
             const clientInfos = await window.qserial.ftp.getClients();
-            const clients = (clientInfos || []).map(c => ({
+            const clients = (clientInfos || []).map((c) => ({
               ...c,
               action: 'connected' as const,
               timestamp: Date.now(),
@@ -131,7 +142,9 @@ export const useFtpStore = create<FtpState & FtpActions>()(
             });
           } else {
             if (currentRunning) {
-              console.log('[FTP] loadStatus: main process reports not running, syncing state to false');
+              console.log(
+                '[FTP] loadStatus: main process reports not running, syncing state to false'
+              );
             }
             set({ running: false });
           }
@@ -146,7 +159,7 @@ export const useFtpStore = create<FtpState & FtpActions>()(
             ...event,
             timestamp: Date.now(),
           };
-          const existing = state.clients.findIndex(c => c.address === event.address);
+          const existing = state.clients.findIndex((c) => c.address === event.address);
           let clients: FtpClient[];
           if (existing >= 0) {
             clients = [...state.clients];
@@ -154,7 +167,7 @@ export const useFtpStore = create<FtpState & FtpActions>()(
           } else {
             clients = [...state.clients, newClient];
           }
-          clients = clients.filter(c => c.action !== 'disconnected');
+          clients = clients.filter((c) => c.action !== 'disconnected');
           return { clients };
         });
       },

@@ -13,7 +13,10 @@ import {
 import { EventEmitter } from 'events';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { autoFixSerialPermission, getPermissionErrorHint } from '../../utils/linux-serial-permissions.js';
+import {
+  autoFixSerialPermission,
+  getPermissionErrorHint,
+} from '../../utils/linux-serial-permissions.js';
 
 // 惰性加载 serialport 原生模块，避免模块导入阶段触发 dlopen
 // 当原生模块与 Electron ABI 不兼容时，Linux 回退机制需要在方法调用层面捕获错误
@@ -84,36 +87,38 @@ export class SerialConnection implements IConnection {
         this.port = port;
       };
 
-    try {
-      await createAndOpenPort();
-    } catch (error) {
-      // Linux 权限自动修复：当设备打开失败且为权限错误时，尝试自动修复
-      const errMsg = (error as Error).message || '';
-      const isPermissionError =
-        process.platform === 'linux' &&
-        (errMsg.includes('Permission denied') ||
-         errMsg.includes('EACCES') ||
-         errMsg.includes('EPERM'));
+      try {
+        await createAndOpenPort();
+      } catch (error) {
+        // Linux 权限自动修复：当设备打开失败且为权限错误时，尝试自动修复
+        const errMsg = (error as Error).message || '';
+        const isPermissionError =
+          process.platform === 'linux' &&
+          (errMsg.includes('Permission denied') ||
+            errMsg.includes('EACCES') ||
+            errMsg.includes('EPERM'));
 
-      if (!isPermissionError) throw error;
+        if (!isPermissionError) throw error;
 
-      console.warn('[serial] Permission denied for', this.options.path, '- attempting auto-fix');
+        console.warn('[serial] Permission denied for', this.options.path, '- attempting auto-fix');
 
-      const { fixed, permanentFixInstalled } = await autoFixSerialPermission(this.options.path);
+        const { fixed, permanentFixInstalled } = await autoFixSerialPermission(this.options.path);
 
-      if (!fixed) {
-        const hint = getPermissionErrorHint(this.options.path);
-        throw new Error(`Permission denied, cannot open ${this.options.path}${hint}`);
+        if (!fixed) {
+          const hint = getPermissionErrorHint(this.options.path);
+          throw new Error(`Permission denied, cannot open ${this.options.path}${hint}`);
+        }
+
+        // 权限已修复，重试打开
+        console.log('[serial] Permission fixed, retrying open for', this.options.path);
+        await createAndOpenPort();
+
+        if (permanentFixInstalled) {
+          console.log(
+            '[serial] Permanent udev rules installed - future devices will work out of the box'
+          );
+        }
       }
-
-      // 权限已修复，重试打开
-      console.log('[serial] Permission fixed, retrying open for', this.options.path);
-      await createAndOpenPort();
-
-      if (permanentFixInstalled) {
-        console.log('[serial] Permanent udev rules installed - future devices will work out of the box');
-      }
-    }
 
       if (!this.port) throw new Error('Port not created');
 
@@ -352,7 +357,7 @@ export class SerialConnection implements IConnection {
       if (process.platform === 'linux') {
         console.warn(
           '[serial] SerialPort.list() failed, falling back to sysfs detection:',
-          (err as Error).message?.slice(0, 80),
+          (err as Error).message?.slice(0, 80)
         );
         return SerialConnection.listPortsLinux();
       }
@@ -380,8 +385,8 @@ export class SerialConnection implements IConnection {
         // 只收集真实硬件串口设备
         const isHardware =
           entry.startsWith('ttyUSB') ||
-          entry.startsWith('ttyACM')  ||
-          entry.startsWith('ttyAMA')  ||
+          entry.startsWith('ttyACM') ||
+          entry.startsWith('ttyAMA') ||
           entry.startsWith('ttyS');
 
         if (!isHardware) continue;
@@ -401,15 +406,35 @@ export class SerialConnection implements IConnection {
             for (let level = 0; level < 6; level++) {
               if (fs.existsSync(path.join(searchDir, 'idVendor'))) {
                 info.vendorId = fs.readFileSync(path.join(searchDir, 'idVendor'), 'utf-8').trim();
-                try { info.productId = fs.readFileSync(path.join(searchDir, 'idProduct'), 'utf-8').trim(); } catch { /* 无 idProduct */ }
-                try { info.manufacturer = fs.readFileSync(path.join(searchDir, 'manufacturer'), 'utf-8').trim(); } catch { /* 无制造商信息 */ }
-                try { info.serialNumber = fs.readFileSync(path.join(searchDir, 'serial'), 'utf-8').trim(); } catch { /* 无序列号 */ }
+                try {
+                  info.productId = fs
+                    .readFileSync(path.join(searchDir, 'idProduct'), 'utf-8')
+                    .trim();
+                } catch {
+                  /* 无 idProduct */
+                }
+                try {
+                  info.manufacturer = fs
+                    .readFileSync(path.join(searchDir, 'manufacturer'), 'utf-8')
+                    .trim();
+                } catch {
+                  /* 无制造商信息 */
+                }
+                try {
+                  info.serialNumber = fs
+                    .readFileSync(path.join(searchDir, 'serial'), 'utf-8')
+                    .trim();
+                } catch {
+                  /* 无序列号 */
+                }
                 break;
               }
               searchDir = path.resolve(searchDir, '..');
             }
           }
-        } catch { /* sysfs 信息读取失败不影响基本功能 */ }
+        } catch {
+          /* sysfs 信息读取失败不影响基本功能 */
+        }
 
         // 补充 /dev/serial/by-id/ 的信息
         try {
@@ -423,7 +448,9 @@ export class SerialConnection implements IConnection {
               }
             }
           }
-        } catch { /* by-id 读取失败不影响 */ }
+        } catch {
+          /* by-id 读取失败不影响 */
+        }
 
         ports.push(info);
       }

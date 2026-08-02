@@ -13,7 +13,13 @@ import { MCP_RESOURCES, readResource, setResourcesWindow } from './resources.js'
 import { sseClients } from './notifications.js';
 import { drainSampling, resolveSampling } from './sampling.js';
 import { MCP_PROMPTS, getPrompt } from './prompts.js';
-import { loadPlugins, getPluginResources, readPluginResource, getPluginPrompts, getPluginPrompt } from './plugin-loader.js';
+import {
+  loadPlugins,
+  getPluginResources,
+  readPluginResource,
+  getPluginPrompts,
+  getPluginPrompt,
+} from './plugin-loader.js';
 import * as ctx from './context.js';
 import type { ToolContext } from './types.js';
 
@@ -35,13 +41,27 @@ let mcpListenAddress = '127.0.0.1';
 
 // 构建 ToolContext
 const toolContext: ToolContext = {
-  get mainWindow() { return ctx.mainWindow; },
-  get buffers() { return ctx.buffers; },
-  get bufferSubscriptions() { return ctx.bufferSubscriptions; },
-  get sharePool() { return ctx.sharePool; },
-  get watches() { return ctx.watches; },
-  get watchResults() { return ctx.watchResults; },
-  get recordings() { return ctx.recordings; },
+  get mainWindow() {
+    return ctx.mainWindow;
+  },
+  get buffers() {
+    return ctx.buffers;
+  },
+  get bufferSubscriptions() {
+    return ctx.bufferSubscriptions;
+  },
+  get sharePool() {
+    return ctx.sharePool;
+  },
+  get watches() {
+    return ctx.watches;
+  },
+  get watchResults() {
+    return ctx.watchResults;
+  },
+  get recordings() {
+    return ctx.recordings;
+  },
 };
 
 export interface McpServerStatus {
@@ -63,7 +83,8 @@ export interface McpServerStatus {
 const MCP_TOOLS = [
   {
     name: 'conn.list',
-    description: '列出所有活跃连接，或传 id 获取指定连接详细信息（含完整连接参数）。无参数时返回摘要列表，传 id 时返回详情。',
+    description:
+      '列出所有活跃连接，或传 id 获取指定连接详细信息（含完整连接参数）。无参数时返回摘要列表，传 id 时返回详情。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -74,7 +95,8 @@ const MCP_TOOLS = [
   },
   {
     name: 'conn.data.write',
-    description: '向指定连接发送数据或命令。支持发送前延迟和条件等待。注意：终端命令末尾需包含 \\n 换行符。',
+    description:
+      '向指定连接发送数据或命令。支持发送前延迟和条件等待。注意：终端命令末尾需包含 \\n 换行符。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -82,15 +104,23 @@ const MCP_TOOLS = [
         connectionId: { type: 'string', description: '连接 ID（id 的别名）' },
         data: { type: 'string', description: '要发送的文本，如 "ls -la\\n"' },
         delay_ms: { type: 'integer', description: '发送前等待毫秒数，默认 0' },
-        wait_before: { type: 'string', description: '发送前等待输出中出现此文本（子串匹配），超时 10s' },
-        response_timeout_ms: { type: 'integer', description: '等待回显最大毫秒数，默认 2000。有新数据立即返回，不等到超时。慢速嵌入式设备建议 3000-5000' },
+        wait_before: {
+          type: 'string',
+          description: '发送前等待输出中出现此文本（子串匹配），超时 10s',
+        },
+        response_timeout_ms: {
+          type: 'integer',
+          description:
+            '等待回显最大毫秒数，默认 2000。有新数据立即返回，不等到超时。慢速嵌入式设备建议 3000-5000',
+        },
       },
       required: ['data'],
     },
   },
   {
     name: 'conn.data.write_hex',
-    description: '向指定连接发送十六进制数据。输入为纯十六进制字符串（如 "0D0A"），自动转为二进制发送。',
+    description:
+      '向指定连接发送十六进制数据。输入为纯十六进制字符串（如 "0D0A"），自动转为二进制发送。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -103,14 +133,21 @@ const MCP_TOOLS = [
   },
   {
     name: 'conn.data.read',
-    description: '读取连接输出缓冲区。支持 consume 模式（读后清空）和 peek 模式（预览不清空）。max_bytes=0 时仅清空。',
+    description:
+      '读取连接输出缓冲区。支持 consume 模式（读后清空）和 peek 模式（预览不清空）。max_bytes=0 时仅清空。',
     inputSchema: {
       type: 'object',
       properties: {
         id: { type: 'string', description: '连接 ID' },
         connectionId: { type: 'string', description: '连接 ID（id 的别名）' },
-        consume: { type: 'boolean', description: '是否消费（读后清空），默认 true（读后清空）。false 为预览模式' },
-        max_bytes: { type: 'integer', description: '最多读取字节数，默认 4096。0 表示仅清空（consume=true 时）' },
+        consume: {
+          type: 'boolean',
+          description: '是否消费（读后清空），默认 true（读后清空）。false 为预览模式',
+        },
+        max_bytes: {
+          type: 'integer',
+          description: '最多读取字节数，默认 4096。0 表示仅清空（consume=true 时）',
+        },
       },
     },
   },
@@ -142,7 +179,8 @@ const MCP_TOOLS = [
   },
   {
     name: 'conn.create',
-    description: '创建并连接一个新设备（serial/ssh/telnet/pty）。创建后自动打开连接，数据流向渲染进程。',
+    description:
+      '创建并连接一个新设备（serial/ssh/telnet/pty）。创建后自动打开连接，数据流向渲染进程。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -153,15 +191,24 @@ const MCP_TOOLS = [
         dataBits: { type: 'integer', description: '数据位' },
         stopBits: { type: 'integer', description: '停止位' },
         parity: { type: 'string', description: '校验位' },
-        flowControl: { type: 'string', description: '流控: "none" / "hardware" / "software"（serial 可选，默认 none）' },
+        flowControl: {
+          type: 'string',
+          description: '流控: "none" / "hardware" / "software"（serial 可选，默认 none）',
+        },
         host: { type: 'string', description: '主机名/IP（ssh/telnet 必需）' },
         port: { type: 'integer', description: '端口（ssh 默认 22, telnet 默认 23）' },
         username: { type: 'string', description: '用户名（ssh 必需）' },
         password: { type: 'string', description: '密码（ssh 可选）' },
         privateKey: { type: 'string', description: '私钥内容（ssh 可选）' },
         passphrase: { type: 'string', description: '私钥密码（ssh 可选）' },
-        jumpHost: { type: 'object', description: '跳板机配置 { host, port?, username, password?, privateKey? }' },
-        shell: { type: 'string', description: 'PTY shell 命令（pty 类型，默认操作系统默认 shell）' },
+        jumpHost: {
+          type: 'object',
+          description: '跳板机配置 { host, port?, username, password?, privateKey? }',
+        },
+        shell: {
+          type: 'string',
+          description: 'PTY shell 命令（pty 类型，默认操作系统默认 shell）',
+        },
         savedSessionId: { type: 'string', description: '保存的会话 ID（用于渲染进程恢复 UI）' },
       },
       required: ['type'],
@@ -216,7 +263,8 @@ const MCP_TOOLS = [
   },
   {
     name: 'conn.script.login',
-    description: '自动化登录流程。等待登录提示 → 发送用户名 → 等待密码提示 → 发送密码 → 等待 Shell 就绪。支持无密码设备和 AI 采样回退。',
+    description:
+      '自动化登录流程。等待登录提示 → 发送用户名 → 等待密码提示 → 发送密码 → 等待 Shell 就绪。支持无密码设备和 AI 采样回退。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -224,12 +272,18 @@ const MCP_TOOLS = [
         connectionId: { type: 'string', description: '连接 ID（id 的别名）' },
         username: { type: 'string', description: '用户名' },
         password: { type: 'string', description: '密码（可选，默认空）' },
-        loginPrompt: { type: 'string', description: '登录提示符正则（默认 login[:\\s]|username[:\\s]）' },
+        loginPrompt: {
+          type: 'string',
+          description: '登录提示符正则（默认 login[:\\s]|username[:\\s]）',
+        },
         passwordPrompt: { type: 'string', description: '密码提示符正则（默认 [Pp]assword[:\\s]）' },
         shellPrompt: { type: 'string', description: 'Shell 提示符正则（默认 [#$>]\\s）' },
         timeout: { type: 'number', description: '超时秒数（默认 30）', default: 30 },
         debug: { type: 'boolean', description: '输出调试步骤（默认 true）' },
-        no_password: { type: 'boolean', description: '跳过密码步骤（仅发送用户名）。用于无密码设备' },
+        no_password: {
+          type: 'boolean',
+          description: '跳过密码步骤（仅发送用户名）。用于无密码设备',
+        },
       },
       required: ['username'],
     },
@@ -299,7 +353,10 @@ const MCP_TOOLS = [
       properties: {
         id: { type: 'string', description: '连接 ID' },
         connectionId: { type: 'string', description: '连接 ID（id 的别名）' },
-        duration_ms: { type: 'integer', description: 'break 持续时间（ms），默认 200，范围 10-5000' },
+        duration_ms: {
+          type: 'integer',
+          description: 'break 持续时间（ms），默认 200，范围 10-5000',
+        },
       },
     },
   },
@@ -337,15 +394,22 @@ const MCP_TOOLS = [
   },
   {
     name: 'conn.file.write',
-    description: '将本地文本文件逐行写入串口设备。通过 echo/printf 命令逐行发送，自动转义特殊字符。适用于无 XModem 支持的设备。',
+    description:
+      '将本地文本文件逐行写入串口设备。通过 echo/printf 命令逐行发送，自动转义特殊字符。适用于无 XModem 支持的设备。',
     inputSchema: {
       type: 'object',
       properties: {
         id: { type: 'string', description: '连接 ID' },
         connectionId: { type: 'string', description: '连接 ID（id 的别名）' },
         localPath: { type: 'string', description: '要发送的本地文件路径' },
-        remote_path: { type: 'string', description: '设备端目标路径（如 /etc/config.conf），不传则输出到 stdout' },
-        write_cmd: { type: 'string', description: '写入命令（默认 "echo"），可用 "printf" 处理特殊字符' },
+        remote_path: {
+          type: 'string',
+          description: '设备端目标路径（如 /etc/config.conf），不传则输出到 stdout',
+        },
+        write_cmd: {
+          type: 'string',
+          description: '写入命令（默认 "echo"），可用 "printf" 处理特殊字符',
+        },
         chunk_size: { type: 'integer', description: '每行最大字节数（默认 256）' },
         delay_ms: { type: 'integer', description: '行间延迟毫秒数（默认 30）' },
       },
@@ -354,21 +418,29 @@ const MCP_TOOLS = [
   },
   {
     name: 'app.screenshot',
-    description: '获取应用窗口截图。支持 html（DOM 快照）和 image（SVG+JPEG）两种模式。自动保存到 docs 目录。',
+    description:
+      '获取应用窗口截图。支持 html（DOM 快照）和 image（SVG+JPEG）两种模式。自动保存到 docs 目录。',
     inputSchema: {
       type: 'object',
       properties: {
-        mode: { type: 'string', description: '"html" 返回 innerHTML（快而轻量） / "image" 返回 SVG 截图（默认 "html"）' },
+        mode: {
+          type: 'string',
+          description: '"html" 返回 innerHTML（快而轻量） / "image" 返回 SVG 截图（默认 "html"）',
+        },
         compact: { type: 'boolean', description: 'html 模式下是否清理冗余属性（默认 true）' },
         scale: { type: 'number', description: 'image 模式缩放比例（默认 0.5）' },
         quality: { type: 'integer', description: 'image 模式 JPEG 质量（默认 60）' },
-        scope: { type: 'string', description: 'image 模式:"body" 仅 body 区域 / "window" 整个窗口（默认 "body"）' },
+        scope: {
+          type: 'string',
+          description: 'image 模式:"body" 仅 body 区域 / "window" 整个窗口（默认 "body"）',
+        },
       },
     },
   },
   {
     name: 'conn.data.send',
-    description: '向连接发送命令并等待 Shell 提示符返回清理后的输出。自动剥离回显和提示符，解析 AT 命令响应。用于命令执行（expect 等需要自动匹配提示符的场景）。',
+    description:
+      '向连接发送命令并等待 Shell 提示符返回清理后的输出。自动剥离回显和提示符，解析 AT 命令响应。用于命令执行（expect 等需要自动匹配提示符的场景）。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -396,7 +468,8 @@ const MCP_TOOLS = [
   },
   {
     name: 'conn.script.run',
-    description: '执行一系列 send/expect 步骤（自动化脚本运行器）。每步发送命令 → 等待 Shell 提示符 → 检查 expect。失败步骤支持 AI 采样回退。',
+    description:
+      '执行一系列 send/expect 步骤（自动化脚本运行器）。每步发送命令 → 等待 Shell 提示符 → 检查 expect。失败步骤支持 AI 采样回退。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -441,7 +514,8 @@ const MCP_TOOLS = [
         connectionId: { type: 'string', description: '连接 ID（id 的别名）' },
         rules: {
           type: 'array',
-          description: '监控规则 [{pattern: 匹配文本, regex: 是否正则(默认true), level: "info"|"warning"|"error"(默认warning)}, ...]',
+          description:
+            '监控规则 [{pattern: 匹配文本, regex: 是否正则(默认true), level: "info"|"warning"|"error"(默认warning)}, ...]',
           items: { type: 'object' },
         },
         duration_ms: { type: 'integer', description: '监控持续时长（ms），默认 60000' },
@@ -640,7 +714,8 @@ const MCP_TOOLS = [
   },
   {
     name: 'app.record.start',
-    description: 'Start screen recording of the application window. Captures frames at specified FPS and encodes to MP4 on stop.',
+    description:
+      'Start screen recording of the application window. Captures frames at specified FPS and encodes to MP4 on stop.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -650,12 +725,19 @@ const MCP_TOOLS = [
   },
   {
     name: 'app.record.stop',
-    description: 'Stop screen recording and encode to MP4. Returns file path, size, duration, and frame count.',
+    description:
+      'Stop screen recording and encode to MP4. Returns file path, size, duration, and frame count.',
     inputSchema: {
       type: 'object',
       properties: {
-        recording_id: { type: 'string', description: 'Recording ID from app.record.start (required)' },
-        output: { type: 'string', description: 'Output file path (default: docs/recording-<timestamp>.mp4)' },
+        recording_id: {
+          type: 'string',
+          description: 'Recording ID from app.record.start (required)',
+        },
+        output: {
+          type: 'string',
+          description: 'Output file path (default: docs/recording-<timestamp>.mp4)',
+        },
       },
       required: ['recording_id'],
     },
@@ -672,7 +754,10 @@ const MCP_TOOLS = [
 
 // ==================== Handler 注册表 ====================
 
-const allHandlers: Record<string, (args: Record<string, unknown>, toolCtx: ToolContext) => Promise<string>> = {
+const allHandlers: Record<
+  string,
+  (args: Record<string, unknown>, toolCtx: ToolContext) => Promise<string>
+> = {
   ...deviceHandlers,
   ...sessionHandlers,
   ...connectionHandlers,
@@ -709,7 +794,7 @@ function checkAuth(req: http.IncomingMessage, res: http.ServerResponse): boolean
   if (!ctx.mcpAuthPassword) return true;
 
   const authHeader = req.headers.authorization;
-  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (authHeader || '');
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : authHeader || '';
 
   const qs = (req.url || '').includes('?') ? (req.url || '').split('?')[1] : '';
   const queryToken = new URLSearchParams(qs).get('token') || '';
@@ -721,12 +806,19 @@ function checkAuth(req: http.IncomingMessage, res: http.ServerResponse): boolean
       'Content-Type': 'application/json',
       'WWW-Authenticate': 'Bearer realm="QSerial MCP"',
     });
-    res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32001, message: '未授权：需要 Bearer token 认证' } }));
+    res.end(
+      JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32001, message: '未授权：需要 Bearer token 认证' },
+      })
+    );
     return false;
   }
   if (token !== ctx.mcpAuthPassword) {
     res.writeHead(403, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32002, message: '认证失败：token 不匹配' } }));
+    res.end(
+      JSON.stringify({ jsonrpc: '2.0', error: { code: -32002, message: '认证失败：token 不匹配' } })
+    );
     return false;
   }
   return true;
@@ -734,7 +826,11 @@ function checkAuth(req: http.IncomingMessage, res: http.ServerResponse): boolean
 
 // ==================== JSON-RPC handler builder ====================
 
-function createRpcHandler(): (_req: http.IncomingMessage, res: http.ServerResponse, body: string) => Promise<void> {
+function createRpcHandler(): (
+  _req: http.IncomingMessage,
+  res: http.ServerResponse,
+  body: string
+) => Promise<void> {
   return async (_req, res, body) => {
     try {
       const rpcData = JSON.parse(body);
@@ -742,10 +838,24 @@ function createRpcHandler(): (_req: http.IncomingMessage, res: http.ServerRespon
 
       if (method === 'initialize') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: { protocolVersion: '2025-03-26', capabilities: { tools: {}, resources: {}, sampling: {}, prompts: {} }, serverInfo: { name: 'qserial-mcp', version: '0.1.0' } } }));
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: reqId,
+            result: {
+              protocolVersion: '2025-03-26',
+              capabilities: { tools: {}, resources: {}, sampling: {}, prompts: {} },
+              serverInfo: { name: 'qserial-mcp', version: '0.1.0' },
+            },
+          })
+        );
         return;
       }
-      if (method === 'notifications/initialized') { res.writeHead(202); res.end(); return; }
+      if (method === 'notifications/initialized') {
+        res.writeHead(202);
+        res.end();
+        return;
+      }
       if (method === 'tools/list') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: { tools: MCP_TOOLS } }));
@@ -755,49 +865,147 @@ function createRpcHandler(): (_req: http.IncomingMessage, res: http.ServerRespon
         try {
           const text = await executeTool(params.name, params.arguments || {});
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          const sDrain = drainSampling(); const resp: Record<string, unknown> = { jsonrpc: '2.0', id: reqId, result: { content: [{ type: 'text', text }], isError: false } }; if (sDrain) resp.sampling = sDrain; res.end(JSON.stringify(resp));
+          const sDrain = drainSampling();
+          const resp: Record<string, unknown> = {
+            jsonrpc: '2.0',
+            id: reqId,
+            result: { content: [{ type: 'text', text }], isError: false },
+          };
+          if (sDrain) resp.sampling = sDrain;
+          res.end(JSON.stringify(resp));
         } catch (e) {
           const error = e as Error;
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, error: { code: -32603, message: error.message } }));
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: reqId,
+              error: { code: -32603, message: error.message },
+            })
+          );
         }
         return;
       }
       if (method === 'resources/list') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: { resources: [...MCP_RESOURCES, ...getPluginResources()] } }));
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: reqId,
+            result: { resources: [...MCP_RESOURCES, ...getPluginResources()] },
+          })
+        );
         return;
       }
       if (method === 'resources/read') {
         try {
           const rUri = (params as { uri: string }).uri;
-          if (!rUri) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, error: { code: -32602, message: 'Missing uri' } })); return; }
+          if (!rUri) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                jsonrpc: '2.0',
+                id: reqId,
+                error: { code: -32602, message: 'Missing uri' },
+              })
+            );
+            return;
+          }
           let result = await readResource(rUri);
-          if (!result) { const pluginRes = readPluginResource(rUri); if (pluginRes) { result = { contents: [{ uri: rUri, mimeType: pluginRes.mimeType, text: pluginRes.text }] }; } }
-          if (!result) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, error: { code: -32002, message: 'Resource not found: ' + rUri } })); return; }
+          if (!result) {
+            const pluginRes = readPluginResource(rUri);
+            if (pluginRes) {
+              result = {
+                contents: [{ uri: rUri, mimeType: pluginRes.mimeType, text: pluginRes.text }],
+              };
+            }
+          }
+          if (!result) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                jsonrpc: '2.0',
+                id: reqId,
+                error: { code: -32002, message: 'Resource not found: ' + rUri },
+              })
+            );
+            return;
+          }
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result }));
-        } catch (e) { const err = e as Error; res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, error: { code: -32603, message: err.message } })); }
+        } catch (e) {
+          const err = e as Error;
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: reqId,
+              error: { code: -32603, message: err.message },
+            })
+          );
+        }
         return;
       }
-      if (method === 'sampling/response') { const sr = (params as Record<string, string>); if (sr.samplingId && sr.choice) resolveSampling(sr.samplingId, sr.choice); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: { acknowledged: true } })); return; }
+      if (method === 'sampling/response') {
+        const sr = params as Record<string, string>;
+        if (sr.samplingId && sr.choice) resolveSampling(sr.samplingId, sr.choice);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: { acknowledged: true } }));
+        return;
+      }
       if (method === 'prompts/list') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: { prompts: [...MCP_PROMPTS, ...getPluginPrompts()] } }));
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: reqId,
+            result: { prompts: [...MCP_PROMPTS, ...getPluginPrompts()] },
+          })
+        );
         return;
       }
       if (method === 'prompts/get') {
-        const { name, arguments: promptArgs } = (params as { name: string; arguments?: Record<string, string> });
+        const { name, arguments: promptArgs } = params as {
+          name: string;
+          arguments?: Record<string, string>;
+        };
         let result = getPrompt(name, promptArgs || {});
-        if (!result) { const pluginContent = getPluginPrompt(name); if (pluginContent) { result = { messages: [{ role: 'user', content: { type: 'text', text: pluginContent } }] }; } }
-        if (!result) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, error: { code: -32002, message: 'Prompt not found: ' + name } })); return; }
+        if (!result) {
+          const pluginContent = getPluginPrompt(name);
+          if (pluginContent) {
+            result = {
+              messages: [{ role: 'user', content: { type: 'text', text: pluginContent } }],
+            };
+          }
+        }
+        if (!result) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: reqId,
+              error: { code: -32002, message: 'Prompt not found: ' + name },
+            })
+          );
+          return;
+        }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result }));
         return;
       }
-      if (method === 'ping') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: {} })); return; }
+      if (method === 'ping') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, result: {} }));
+        return;
+      }
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ jsonrpc: '2.0', id: reqId, error: { code: -32601, message: 'unknown method: ' + method } }));
+      res.end(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          id: reqId,
+          error: { code: -32601, message: 'unknown method: ' + method },
+        })
+      );
     } catch {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32700, message: 'Parse error' } }));
@@ -807,7 +1015,12 @@ function createRpcHandler(): (_req: http.IncomingMessage, res: http.ServerRespon
 
 // ==================== 公共接口 ====================
 
-export async function startMcpServer(port: number, listenAddress?: string, authPassword?: string, corsOrigins?: string[]): Promise<void> {
+export async function startMcpServer(
+  port: number,
+  listenAddress?: string,
+  authPassword?: string,
+  corsOrigins?: string[]
+): Promise<void> {
   if (mcpRunning) {
     await stopMcpServer();
   }
@@ -816,7 +1029,11 @@ export async function startMcpServer(port: number, listenAddress?: string, authP
   ctx.setCorsOrigins(corsOrigins || []);
   mcpListenAddress = listenAddress || '127.0.0.1';
 
-  if (!ctx.mcpAuthPassword && mcpListenAddress !== '127.0.0.1' && mcpListenAddress !== 'localhost') {
+  if (
+    !ctx.mcpAuthPassword &&
+    mcpListenAddress !== '127.0.0.1' &&
+    mcpListenAddress !== 'localhost'
+  ) {
     const pwd = crypto.randomBytes(16).toString('hex');
     ctx.setAuthPassword(pwd);
     console.log('[MCP] Auto-generated password:', pwd);
@@ -829,9 +1046,12 @@ export async function startMcpServer(port: number, listenAddress?: string, authP
   const handleRpc = createRpcHandler();
 
   const httpServer = http.createServer(async (req, res) => {
-    const corsOrigin = ctx.mcpCorsOrigins.length > 0
-      ? (ctx.mcpCorsOrigins.includes(req.headers.origin || '') ? req.headers.origin || '' : ctx.mcpCorsOrigins[0])
-      : '*';
+    const corsOrigin =
+      ctx.mcpCorsOrigins.length > 0
+        ? ctx.mcpCorsOrigins.includes(req.headers.origin || '')
+          ? req.headers.origin || ''
+          : ctx.mcpCorsOrigins[0]
+        : '*';
     res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -849,7 +1069,10 @@ export async function startMcpServer(port: number, listenAddress?: string, authP
       if (!checkAuth(req, res)) return;
       sseClients.add(res);
       const sseTransport = new SSEServerTransport('/messages', res);
-      req.on('close', () => { sseClients.delete(res); sseTransport.close().catch(() => {}); });
+      req.on('close', () => {
+        sseClients.delete(res);
+        sseTransport.close().catch(() => {});
+      });
       return;
     }
 
@@ -857,7 +1080,9 @@ export async function startMcpServer(port: number, listenAddress?: string, authP
     if (req.method === 'POST' && urlPath === '/messages') {
       if (ctx.mcpAuthPassword && !checkAuth(req, res)) return;
       let body = '';
-      req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+      req.on('data', (chunk: Buffer) => {
+        body += chunk.toString();
+      });
       req.on('end', () => handleRpc(req, res, body));
       return;
     }
@@ -866,7 +1091,9 @@ export async function startMcpServer(port: number, listenAddress?: string, authP
     if (req.method === 'POST' && (urlPath === '/mcp' || urlPath === '/')) {
       if (ctx.mcpAuthPassword && !checkAuth(req, res)) return;
       let body = '';
-      req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+      req.on('data', (chunk: Buffer) => {
+        body += chunk.toString();
+      });
       req.on('end', () => handleRpc(req, res, body));
       return;
     }
@@ -889,9 +1116,13 @@ export async function startMcpServer(port: number, listenAddress?: string, authP
     });
     httpServer.on('error', (err: NodeJS.ErrnoException) => {
       console.error('[MCP] Server listen error:', err.message);
-      reject(new Error(err.code === 'EADDRINUSE'
-        ? 'Port ' + port + ' in use'
-        : 'MCP start failed: ' + err.message));
+      reject(
+        new Error(
+          err.code === 'EADDRINUSE'
+            ? 'Port ' + port + ' in use'
+            : 'MCP start failed: ' + err.message
+        )
+      );
     });
   });
 }
@@ -905,7 +1136,13 @@ export async function stopMcpServer(): Promise<void> {
     mcpServer = null;
   }
 
-  for (const rec of ctx.recordings.values()) { try { rec.unsub(); } catch { /* ignore */ } }
+  for (const rec of ctx.recordings.values()) {
+    try {
+      rec.unsub();
+    } catch {
+      /* ignore */
+    }
+  }
   ctx.recordings.clear();
   for (const unsub of ctx.bufferSubscriptions.values()) {
     unsub();

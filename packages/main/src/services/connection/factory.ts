@@ -54,7 +54,9 @@ class ConnectionFactoryImpl {
         const { ConnectionType } = await import('@qserial/shared');
         if ((options as { type: string }).type === ConnectionType.SERIAL_SERVER) {
           const { ConnectionServerConnection } = await import('./connectionServer.js');
-          connection = new ConnectionServerConnection(options as unknown as import('@qserial/shared').ConnectionServerOptions);
+          connection = new ConnectionServerConnection(
+            options as unknown as import('@qserial/shared').ConnectionServerOptions
+          );
           break;
         }
         throw new Error(`Unsupported connection type: ${options.type}`);

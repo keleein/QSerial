@@ -60,5 +60,8 @@ declare module 'tftp' {
     close(): void;
   }
 
-  export function createServer(options?: TftpServerOptions, requestListener?: (req: TftpGetStream, res: TftpPutStream) => void): TftpServer;
+  export function createServer(
+    options?: TftpServerOptions,
+    requestListener?: (req: TftpGetStream, res: TftpPutStream) => void
+  ): TftpServer;
 }

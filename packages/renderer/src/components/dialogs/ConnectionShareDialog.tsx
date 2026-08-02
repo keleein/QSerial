@@ -68,18 +68,18 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
   const [selectedSessionId, setSelectedSessionId] = useState('');
 
   // 服务配置
-  const localPort = config.connectionShare?.defaultLocalPort || config.serialShare?.defaultLocalPort || 8888;
+  const localPort =
+    config.connectionShare?.defaultLocalPort || config.serialShare?.defaultLocalPort || 8888;
   const [localPortValue, setLocalPortValue] = useState(localPort);
   const [listenAddress, setListenAddress] = useState(
-    config.connectionShare?.defaultListenAddress || config.serialShare?.defaultListenAddress || '0.0.0.0'
+    config.connectionShare?.defaultListenAddress ||
+      config.serialShare?.defaultListenAddress ||
+      '0.0.0.0'
   );
   const [accessPassword, setAccessPassword] = useState('');
 
-
   // 服务ID
-  const serverId = selectedSessionId
-    ? `conn-server-${selectedSessionId.slice(0, 8)}`
-    : '';
+  const serverId = selectedSessionId ? `conn-server-${selectedSessionId.slice(0, 8)}` : '';
 
   // 计算活跃会话
   useEffect(() => {
@@ -148,25 +148,33 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
   // 监听 MCP 创建的共享变化（跨代码路径同步）
   useEffect(() => {
     if (!isOpen) return;
-    const unsub = window.qserial.mcp.onShareChanged((event: {
-      shareId: string; running: boolean; sourceId?: string; localPort?: number; listenAddress?: string;
-    }) => {
-      if (event.running) {
-        setStatus({
-          running: true,
-          sourceType: 'existing',
-          sourceDescription: `MCP (${event.sourceId?.slice(0, 8) || '?'})`,
-          localPort: event.localPort || 0,
-          listenAddress: event.listenAddress || '',
-          clientCount: 0,
-          clients: [],
-          hasPassword: false,
-        });
-      } else {
-        setStatus((prev) => prev?.localPort === event.localPort ? null : prev);
+    const unsub = window.qserial.mcp.onShareChanged(
+      (event: {
+        shareId: string;
+        running: boolean;
+        sourceId?: string;
+        localPort?: number;
+        listenAddress?: string;
+      }) => {
+        if (event.running) {
+          setStatus({
+            running: true,
+            sourceType: 'existing',
+            sourceDescription: `MCP (${event.sourceId?.slice(0, 8) || '?'})`,
+            localPort: event.localPort || 0,
+            listenAddress: event.listenAddress || '',
+            clientCount: 0,
+            clients: [],
+            hasPassword: false,
+          });
+        } else {
+          setStatus((prev) => (prev?.localPort === event.localPort ? null : prev));
+        }
       }
-    });
-    return () => { unsub?.(); };
+    );
+    return () => {
+      unsub?.();
+    };
   }, [isOpen]);
 
   const handleStart = async () => {
@@ -231,12 +239,20 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-              <circle cx="18" cy="5" r="3"/>
-              <circle cx="6" cy="12" r="3"/>
-              <circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-primary"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
             <h3 className="text-base font-semibold">连接共享</h3>
           </div>
@@ -244,8 +260,15 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
             onClick={onClose}
             className="dialog-close w-7 h-7 flex items-center justify-center rounded-md text-text-secondary hover:text-text transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M1 1l12 12M13 1L1 13"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M1 1l12 12M13 1L1 13" />
             </svg>
           </button>
         </div>
@@ -253,7 +276,9 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
         <div className="space-y-4 flex-1 overflow-y-auto min-h-0 p-5">
           {/* 数据源选择 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">选择活跃连接</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              选择活跃连接
+            </label>
             <select
               value={selectedSessionId}
               onChange={(e) => setSelectedSessionId(e.target.value)}
@@ -286,7 +311,9 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
 
           {/* 本地监听端口 */}
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">本地监听端口</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              本地监听端口
+            </label>
             <input
               type="number"
               value={localPortValue}
@@ -318,7 +345,8 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
           {/* 访问密码 */}
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">
-              访问密码 <span className="text-text-secondary/50 font-normal">(可选，留空则无需认证)</span>
+              访问密码{' '}
+              <span className="text-text-secondary/50 font-normal">(可选，留空则无需认证)</span>
             </label>
             <input
               type="password"
@@ -336,7 +364,9 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
           {/* 状态 */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-full ${isRunning ? 'bg-green-500' : 'bg-gray-500'}`} />
+              <span
+                className={`w-3 h-3 rounded-full ${isRunning ? 'bg-green-500' : 'bg-gray-500'}`}
+              />
               <span className="text-sm">
                 {isRunning
                   ? `运行中 - ${status?.sourceDescription || ''} -> ${status?.listenAddress || '0.0.0.0'}:${localPortValue}${status?.hasPassword ? ' [已设密码]' : ''}`
@@ -345,9 +375,13 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
             </div>
             {isRunning && status && status.clients.length > 0 && (
               <div className="ml-5 text-xs text-text-secondary space-y-0.5">
-                <p className="font-medium text-text-secondary/80">TELNET 客户端 ({status.clientCount})：</p>
+                <p className="font-medium text-text-secondary/80">
+                  TELNET 客户端 ({status.clientCount})：
+                </p>
                 {status.clients.map((addr) => (
-                  <p key={addr} className="ml-2 font-mono">{addr}</p>
+                  <p key={addr} className="ml-2 font-mono">
+                    {addr}
+                  </p>
                 ))}
               </div>
             )}
@@ -361,8 +395,14 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
           {/* 错误信息 */}
           {error && (
             <div className="flex items-center gap-2 text-sm text-error bg-error/10 border-l-2 border-error px-3 py-2.5 rounded-r-lg">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" className="flex-shrink-0">
-                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="currentColor"
+                className="flex-shrink-0"
+              >
+                <path d="M7 0a7 7 0 100 14A7 7 0 007 0zm0 10.5a.75.75 0 110-1.5.75.75 0 010 1.5zM7.75 4v3.5a.75.75 0 01-1.5 0V4a.75.75 0 011.5 0z" />
               </svg>
               {error}
             </div>
@@ -392,8 +432,12 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
           <div className="text-xs text-text-secondary bg-background/50 rounded-lg p-3 space-y-1">
             <p className="font-medium text-text-secondary/80">使用方式：</p>
             <p>1. 选择任意活跃连接（串口、SSH、Telnet等），点击启动共享</p>
-            <p>2. 远程设备执行: telnet {'<IP>'} {'{端口}'} 即可操作</p>
-            <p>3. Windows需先启用Telnet客户端: dism /online /Enable-Feature /FeatureName:TelnetClient</p>
+            <p>
+              2. 远程设备执行: telnet {'<IP>'} {'{端口}'} 即可操作
+            </p>
+            <p>
+              3. Windows需先启用Telnet客户端: dism /online /Enable-Feature /FeatureName:TelnetClient
+            </p>
           </div>
         </div>
 
@@ -410,8 +454,15 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
         <div className="fixed inset-0 bg-black/60 dialog-overlay flex items-center justify-center z-[60]">
           <div className="dialog-content bg-surface rounded-xl p-5 w-[480px] max-h-[80vh] flex flex-col border border-white/5">
             <h3 className="text-base font-semibold mb-4 flex items-center gap-2 text-success">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M20 6L9 17l-5-5"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path d="M20 6L9 17l-5-5" />
               </svg>
               连接共享已启动
             </h3>
@@ -420,10 +471,18 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
               <div className="bg-background/50 rounded p-3">
                 <p className="text-sm text-text-secondary mb-2">连接信息：</p>
                 <div className="space-y-1 text-sm">
-                  <p><span className="text-text-secondary">数据源：</span>{status?.sourceDescription || '未知'}</p>
-                  <p><span className="text-text-secondary">TELNET 端口：</span>{listenAddress}:{localPortValue}</p>
+                  <p>
+                    <span className="text-text-secondary">数据源：</span>
+                    {status?.sourceDescription || '未知'}
+                  </p>
+                  <p>
+                    <span className="text-text-secondary">TELNET 端口：</span>
+                    {listenAddress}:{localPortValue}
+                  </p>
                   {accessPassword && (
-                    <p><span className="text-text-secondary">访问密码：</span>已设置</p>
+                    <p>
+                      <span className="text-text-secondary">访问密码：</span>已设置
+                    </p>
                   )}
                 </div>
               </div>
@@ -447,12 +506,9 @@ export const ConnectionShareDialog: React.FC<ConnectionShareDialogProps> = ({
                   复制 TELNET 命令
                 </button>
                 {accessPassword && (
-                  <p className="text-xs text-yellow-500 mt-2">
-                    连接后直接输入密码回车即可认证
-                  </p>
+                  <p className="text-xs text-yellow-500 mt-2">连接后直接输入密码回车即可认证</p>
                 )}
               </div>
-
             </div>
 
             <div className="flex justify-end mt-4 pt-4 border-t border-border">

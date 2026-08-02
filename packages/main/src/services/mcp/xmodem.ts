@@ -21,7 +21,7 @@ function crc16(data: Buffer): number {
   for (let i = 0; i < data.length; i++) {
     crc ^= data[i] << 8;
     for (let j = 0; j < 8; j++) {
-      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
     }
   }
   return crc & 0xffff;
@@ -30,7 +30,7 @@ function crc16(data: Buffer): number {
 function buildPacket(blockNum: number, data: Buffer, blockSize: number): Buffer {
   const header = blockSize === 1024 ? STX : SOH;
   const blk = blockNum & 0xff;
-  const blkComp = (~blockNum) & 0xff;
+  const blkComp = ~blockNum & 0xff;
   const padded = Buffer.alloc(blockSize);
   data.copy(padded);
   const crc = crc16(padded);
@@ -54,8 +54,8 @@ function byteName(b: number): string {
 export type XmodemProtocol = 'xmodem' | 'ymodem';
 
 export interface XmodemOptions {
-  timeout?: number;   // per-byte read timeout in seconds, default 10
-  retries?: number;   // max retries per packet, default 10
+  timeout?: number; // per-byte read timeout in seconds, default 10
+  retries?: number; // max retries per packet, default 10
 }
 
 /**
@@ -70,7 +70,7 @@ export async function xmodemSend(
   readByte: (timeoutMs: number) => Promise<number>,
   fileData: Buffer,
   protocol: XmodemProtocol,
-  opts?: XmodemOptions,
+  opts?: XmodemOptions
 ): Promise<void> {
   const timeout = (opts?.timeout ?? 10) * 1000;
   const maxRetries = opts?.retries ?? MAX_RETRIES;
@@ -83,7 +83,9 @@ export async function xmodemSend(
     throw new Error(`文件过大 (最大 ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
   }
 
-  console.log(`[XModem] Starting ${protocol.toUpperCase()} transfer, ${fileData.length}B, block=${blockSize}B, timeout=${timeout}ms, retries=${maxRetries}`);
+  console.log(
+    `[XModem] Starting ${protocol.toUpperCase()} transfer, ${fileData.length}B, block=${blockSize}B, timeout=${timeout}ms, retries=${maxRetries}`
+  );
 
   // 1. Wait for 'C' (CRC mode handshake) from receiver
   console.log('[XModem] Phase 1: Waiting for CRC handshake (C)...');
@@ -91,9 +93,17 @@ export async function xmodemSend(
   let handshakeOk = false;
   while (handshakeCount < maxRetries) {
     const b = await readByte(timeout);
-    console.log(`[XModem] Handshake attempt ${handshakeCount + 1}/${maxRetries}: got ${byteName(b)}`);
-    if (b === C) { handshakeOk = true; break; }
-    if (b === NAK) { handshakeCount++; continue; }
+    console.log(
+      `[XModem] Handshake attempt ${handshakeCount + 1}/${maxRetries}: got ${byteName(b)}`
+    );
+    if (b === C) {
+      handshakeOk = true;
+      break;
+    }
+    if (b === NAK) {
+      handshakeCount++;
+      continue;
+    }
     handshakeCount++;
   }
   if (!handshakeOk) {
@@ -125,7 +135,9 @@ export async function xmodemSend(
     const packet = buildPacket(blockNum + i, chunk, blockSize);
     await sendPacketWithRetry(write, readByte, packet, timeout, maxRetries, `BLK-${blockNum + i}`);
     if ((i + 1) % 10 === 0 || i === totalBlocks - 1) {
-      console.log(`[XModem] Progress: ${i + 1}/${totalBlocks} blocks (${Math.round((i + 1) / totalBlocks * 100)}%)`);
+      console.log(
+        `[XModem] Progress: ${i + 1}/${totalBlocks} blocks (${Math.round(((i + 1) / totalBlocks) * 100)}%)`
+      );
     }
   }
 
@@ -153,7 +165,7 @@ async function sendPacketWithRetry(
   packet: Buffer,
   timeout: number,
   maxRetries: number,
-  label: string,
+  label: string
 ): Promise<void> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     write(packet);

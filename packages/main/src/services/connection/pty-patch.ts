@@ -78,11 +78,18 @@ export function ensurePtyPatch(): void {
     // Patch loadNativeModule
     const utils = req('node-pty/lib/utils.js') as {
       loadNativeModule: (name: string) => { dir: string; module: unknown };
-      assign: (target: Record<string, unknown>, ...sources: Record<string, unknown>[]) => Record<string, unknown>;
+      assign: (
+        target: Record<string, unknown>,
+        ...sources: Record<string, unknown>[]
+      ) => Record<string, unknown>;
     };
 
     utils.loadNativeModule = function (name: string) {
-      const dirs = ['build/Release', 'build/Debug', `prebuilds/${process.platform}-${process.arch}`];
+      const dirs = [
+        'build/Release',
+        'build/Debug',
+        `prebuilds/${process.platform}-${process.arch}`,
+      ];
       const errors: string[] = [];
 
       for (const d of dirs) {
@@ -149,9 +156,7 @@ export function ensurePtyPatch(): void {
         }
       }
 
-      throw new Error(
-        `[pty-patch] Failed to load ${name}.node:\n  ${errors.join('\n  ')}`
-      );
+      throw new Error(`[pty-patch] Failed to load ${name}.node:\n  ${errors.join('\n  ')}`);
     };
 
     console.log('[pty-patch] Patch installed');

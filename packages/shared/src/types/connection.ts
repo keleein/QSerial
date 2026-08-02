@@ -79,7 +79,13 @@ export interface SshConnectionOptions extends BaseConnectionOptions {
   /** 是否验证 SSH 主机密钥，默认 true */
   verifyHostKey?: boolean;
   /** SSH jump host (bastion) */
-  jumpHost?: { host: string; port?: number; username: string; password?: string; privateKey?: string };
+  jumpHost?: {
+    host: string;
+    port?: number;
+    username: string;
+    password?: string;
+    privateKey?: string;
+  };
 }
 
 /**
@@ -97,7 +103,13 @@ export interface SftpConnectionOptions extends BaseConnectionOptions {
   /** ???? SSH ??????? true */
   verifyHostKey?: boolean;
   /** SSH jump host (bastion) */
-  jumpHost?: { host: string; port?: number; username: string; password?: string; privateKey?: string };
+  jumpHost?: {
+    host: string;
+    port?: number;
+    username: string;
+    password?: string;
+    privateKey?: string;
+  };
 }
 
 /**

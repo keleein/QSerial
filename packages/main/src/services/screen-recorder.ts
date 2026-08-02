@@ -15,16 +15,17 @@ async function getFfmpegPath(): Promise<string> {
   if (ffmpegPath) return ffmpegPath;
 
   const extraResPath = path.join(process.resourcesPath, 'ffmpeg-static', 'ffmpeg.exe');
-  const bundled = process.platform === 'win32'
-    ? extraResPath
-    : path.join(process.resourcesPath, 'ffmpeg-static', 'ffmpeg');
+  const bundled =
+    process.platform === 'win32'
+      ? extraResPath
+      : path.join(process.resourcesPath, 'ffmpeg-static', 'ffmpeg');
   if (fs.existsSync(bundled)) {
     ffmpegPath = bundled;
     return ffmpegPath;
   }
 
   try {
-    const m = await import('ffmpeg-static') as { default?: string };
+    const m = (await import('ffmpeg-static')) as { default?: string };
     ffmpegPath = String(m.default || m);
   } catch {
     ffmpegPath = 'ffmpeg';
@@ -46,7 +47,10 @@ interface ActiveRecording {
 const activeRecordings = new Map<string, ActiveRecording>();
 
 function createTempDir(): string {
-  const dir = path.join(os.tmpdir(), `qserial-rec-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = path.join(
+    os.tmpdir(),
+    `qserial-rec-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  );
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -54,7 +58,7 @@ function createTempDir(): string {
 export async function startRecording(
   window: BrowserWindow,
   fps: number = 10,
-  format: 'mp4' | 'webm' = 'mp4',
+  format: 'mp4' | 'webm' = 'mp4'
 ): Promise<string> {
   const id = `rec_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const frameDir = createTempDir();
@@ -70,15 +74,23 @@ export async function startRecording(
     startedAt: Date.now(),
   };
 
-  recording.interval = setInterval(async () => {
-    if (window.isDestroyed()) return;
-    try {
-      const image = await window.webContents.capturePage();
-      const framePath = path.join(frameDir, `frame_${String(recording.frameCount).padStart(6, '0')}.png`);
-      fs.writeFileSync(framePath, image.toPNG());
-      recording.frameCount++;
-    } catch { /* window might be minimized */ }
-  }, Math.round(1000 / recording.fps));
+  recording.interval = setInterval(
+    async () => {
+      if (window.isDestroyed()) return;
+      try {
+        const image = await window.webContents.capturePage();
+        const framePath = path.join(
+          frameDir,
+          `frame_${String(recording.frameCount).padStart(6, '0')}.png`
+        );
+        fs.writeFileSync(framePath, image.toPNG());
+        recording.frameCount++;
+      } catch {
+        /* window might be minimized */
+      }
+    },
+    Math.round(1000 / recording.fps)
+  );
 
   activeRecordings.set(id, recording);
   return id;
@@ -86,8 +98,16 @@ export async function startRecording(
 
 export async function stopRecording(
   id: string,
-  outputPath?: string,
-): Promise<{ id: string; duration_ms: number; frames: number; fps: number; format: string; file: string; size: number }> {
+  outputPath?: string
+): Promise<{
+  id: string;
+  duration_ms: number;
+  frames: number;
+  fps: number;
+  format: string;
+  file: string;
+  size: number;
+}> {
   const recording = activeRecordings.get(id);
   if (!recording) {
     throw new Error(`Recording not found: ${id}`);
@@ -112,11 +132,13 @@ export async function stopRecording(
   }
 
   const defaultExt = format === 'webm' ? '.webm' : '.mp4';
-  const outFile = outputPath || path.resolve(
-    process.cwd?.() || __dirname,
-    '../../docs',
-    `recording-${Date.now()}${defaultExt}`,
-  );
+  const outFile =
+    outputPath ||
+    path.resolve(
+      process.cwd?.() || __dirname,
+      '../../docs',
+      `recording-${Date.now()}${defaultExt}`
+    );
   const outDir = path.dirname(outFile);
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -124,22 +146,33 @@ export async function stopRecording(
   const ffmpegBin = await getFfmpegPath();
 
   return new Promise((resolve, reject) => {
-    const args: string[] = [
-      '-y', '-framerate', String(recording.fps),
-      '-i', framePattern,
-    ];
+    const args: string[] = ['-y', '-framerate', String(recording.fps), '-i', framePattern];
 
     if (format === 'webm') {
       args.push(
-        '-c:v', 'libvpx', '-pix_fmt', 'yuv420p',
-        '-b:v', '1M', '-deadline', 'realtime',
-        '-crf', '10',
+        '-c:v',
+        'libvpx',
+        '-pix_fmt',
+        'yuv420p',
+        '-b:v',
+        '1M',
+        '-deadline',
+        'realtime',
+        '-crf',
+        '10'
       );
     } else {
       args.push(
-        '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
-        '-preset', 'fast', '-crf', '23',
-        '-movflags', '+faststart',
+        '-c:v',
+        'libx264',
+        '-pix_fmt',
+        'yuv420p',
+        '-preset',
+        'fast',
+        '-crf',
+        '23',
+        '-movflags',
+        '+faststart'
       );
     }
 
@@ -148,7 +181,9 @@ export async function stopRecording(
     const ffmpeg = spawn(ffmpegBin, args, { windowsHide: true });
     let stderr = '';
 
-    ffmpeg.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
+    ffmpeg.stderr.on('data', (chunk: Buffer) => {
+      stderr += chunk.toString();
+    });
 
     ffmpeg.on('close', (code: number | null) => {
       fs.rmSync(recording.frameDir, { recursive: true, force: true });
@@ -157,7 +192,15 @@ export async function stopRecording(
         return;
       }
       const stat = fs.statSync(outFile);
-      resolve({ id: recording.id, duration_ms, frames: recording.frameCount, fps: recording.fps, format, file: outFile, size: stat.size });
+      resolve({
+        id: recording.id,
+        duration_ms,
+        frames: recording.frameCount,
+        fps: recording.fps,
+        format,
+        file: outFile,
+        size: stat.size,
+      });
     });
 
     ffmpeg.on('error', (err: Error) => {
@@ -167,9 +210,19 @@ export async function stopRecording(
   });
 }
 
-export function listRecordings(): Array<{ id: string; startedAt: number; elapsed_ms: number; fps: number; frames: number }> {
+export function listRecordings(): Array<{
+  id: string;
+  startedAt: number;
+  elapsed_ms: number;
+  fps: number;
+  frames: number;
+}> {
   return Array.from(activeRecordings.values()).map((r) => ({
-    id: r.id, startedAt: r.startedAt, elapsed_ms: Date.now() - r.startedAt, fps: r.fps, frames: r.frameCount,
+    id: r.id,
+    startedAt: r.startedAt,
+    elapsed_ms: Date.now() - r.startedAt,
+    fps: r.fps,
+    frames: r.frameCount,
   }));
 }
 

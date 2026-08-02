@@ -78,8 +78,19 @@ export const useMcpStore = create<McpState & McpActions>()(
         if (starting) return;
         set({ starting: true, stopping: false, error: undefined });
         try {
-          const corsArr = config.corsOrigins ? config.corsOrigins.split(',').map(s => s.trim()).filter(Boolean) : undefined;
-          await window.qserial.mcp.start(config.port, config.listenAddress, config.authPassword || undefined, true, corsArr);
+          const corsArr = config.corsOrigins
+            ? config.corsOrigins
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : undefined;
+          await window.qserial.mcp.start(
+            config.port,
+            config.listenAddress,
+            config.authPassword || undefined,
+            true,
+            corsArr
+          );
           set({ running: true, starting: false, error: undefined });
         } catch (error) {
           set({ error: (error as Error).message, running: false, starting: false });
@@ -90,7 +101,13 @@ export const useMcpStore = create<McpState & McpActions>()(
         set({ starting: false, stopping: true });
         try {
           await window.qserial.mcp.stop(false);
-          set({ running: false, stopping: false, error: undefined, connections: [], activeToken: undefined });
+          set({
+            running: false,
+            stopping: false,
+            error: undefined,
+            connections: [],
+            activeToken: undefined,
+          });
         } catch (error) {
           set({ error: (error as Error).message, stopping: false });
         }
@@ -114,7 +131,9 @@ export const useMcpStore = create<McpState & McpActions>()(
             }));
           } else {
             if (currentRunning) {
-              console.log('[MCP] loadStatus: main process reports not running, syncing state to false');
+              console.log(
+                '[MCP] loadStatus: main process reports not running, syncing state to false'
+              );
             }
             set({ running: false, connections: [] });
           }
@@ -159,10 +178,10 @@ export function initMcpListeners(): void {
     const ConnectionType = (await import('@qserial/shared')).ConnectionType;
     store.createSession(
       event.connectionId,
-      event.type as typeof ConnectionType[keyof typeof ConnectionType],
+      event.type as (typeof ConnectionType)[keyof typeof ConnectionType],
       event.path,
       event.host,
-      event.savedSessionId,
+      event.savedSessionId
     );
   });
 }

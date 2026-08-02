@@ -4,8 +4,8 @@
  * 支持颜色标记、描述、编辑、导入导出
  */
 
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // ??????????????? {data,delay} ???
 export type MacroStepType = 'send' | 'wait' | 'expect' | 'loop' | 'if' | 'set';
@@ -65,13 +65,7 @@ export interface SetStep extends BaseMacroStep {
 }
 
 /** ??????? */
-export type MacroStep =
-  | SendStep
-  | WaitStep
-  | ExpectStep
-  | LoopStep
-  | IfStep
-  | SetStep;
+export type MacroStep = SendStep | WaitStep | ExpectStep | LoopStep | IfStep | SetStep;
 
 export interface SavedMacro {
   id: string;
@@ -98,7 +92,10 @@ interface TerminalMacroState {
   stopRecording: () => MacroStep[];
   addStep: (data: string) => void;
   saveMacro: (name: string, description?: string, color?: string, textColor?: string) => SavedMacro;
-  updateMacro: (id: string, updates: Partial<Pick<SavedMacro, 'name' | 'description' | 'color' | 'textColor'>>) => void;
+  updateMacro: (
+    id: string,
+    updates: Partial<Pick<SavedMacro, 'name' | 'description' | 'color' | 'textColor'>>
+  ) => void;
   deleteMacro: (id: string) => void;
   getMacro: (id: string) => SavedMacro | undefined;
   importMacros: (macros: SavedMacro[]) => void;
@@ -146,9 +143,15 @@ export const useTerminalMacroStore = create<TerminalMacroState>()(
       addStep: (data: string) => {
         if (!get().isRecording) return;
         // 过滤 ANSI 转义序列和控制序列
-        if (data.includes("\u001b")) return;
+        if (data.includes('\u001b')) return;
         // 过滤 xterm 窗口大小命令
-        if (data.startsWith('COLUMNS=') || data.startsWith('LINES=') || data.includes('export COLUMNS') || data.includes('export LINES')) return;
+        if (
+          data.startsWith('COLUMNS=') ||
+          data.startsWith('LINES=') ||
+          data.includes('export COLUMNS') ||
+          data.includes('export LINES')
+        )
+          return;
         // 过滤 xterm 窗口大小请求
         if (data.length > 20 && (data.includes('COLUMNS') || data.includes('LINES'))) return;
 
@@ -221,7 +224,7 @@ export const useTerminalMacroStore = create<TerminalMacroState>()(
       },
     }),
     {
-      name: "qserial-terminal-macros",
+      name: 'qserial-terminal-macros',
       partialize: (state) => ({
         savedMacros: state.savedMacros,
       }),
@@ -230,7 +233,9 @@ export const useTerminalMacroStore = create<TerminalMacroState>()(
         if (!p || typeof p !== 'object') return current;
         return {
           ...current,
-          savedMacros: Array.isArray(p.savedMacros) ? p.savedMacros as SavedMacro[] : current.savedMacros,
+          savedMacros: Array.isArray(p.savedMacros)
+            ? (p.savedMacros as SavedMacro[])
+            : current.savedMacros,
         };
       },
     }

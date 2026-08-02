@@ -87,8 +87,12 @@ export const useSavedSessionsStore = create<SavedSessionsState>()(
 
         // 检查是否已存在相同名称或相同串口路径的配置
         const existingIndex = currentSessions.findIndex((s) => {
-          if (session.type === 'serial' && s.type === 'serial' &&
-              session.serialConfig && s.serialConfig) {
+          if (
+            session.type === 'serial' &&
+            s.type === 'serial' &&
+            session.serialConfig &&
+            s.serialConfig
+          ) {
             return s.serialConfig.path === session.serialConfig.path;
           }
           return s.name === session.name;
@@ -131,9 +135,7 @@ export const useSavedSessionsStore = create<SavedSessionsState>()(
 
       updateSession: (id, updates) => {
         set((state) => ({
-          sessions: (state.sessions || []).map((s) =>
-            s.id === id ? { ...s, ...updates } : s
-          ),
+          sessions: (state.sessions || []).map((s) => (s.id === id ? { ...s, ...updates } : s)),
         }));
       },
 
@@ -191,7 +193,9 @@ export const useSavedSessionsStore = create<SavedSessionsState>()(
         return {
           ...current,
           ...persistedState,
-          sessions: Array.isArray(persistedState.sessions) ? persistedState.sessions : current.sessions,
+          sessions: Array.isArray(persistedState.sessions)
+            ? persistedState.sessions
+            : current.sessions,
         };
       },
     }

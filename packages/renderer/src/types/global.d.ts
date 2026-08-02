@@ -2,7 +2,20 @@
  * 全局类型声明
  */
 
-import type { SerialPortInfo, ConnectionServerStatus, McpServerStatus, TftpTransferEvent, SftpFileInfo, SftpFileStat, SftpProgressEvent, NfsServerStatus, NfsMountHint, FtpServerStatus, FtpClientInfo, FtpClientEvent } from '@qserial/shared';
+import type {
+  SerialPortInfo,
+  ConnectionServerStatus,
+  McpServerStatus,
+  TftpTransferEvent,
+  SftpFileInfo,
+  SftpFileStat,
+  SftpProgressEvent,
+  NfsServerStatus,
+  NfsMountHint,
+  FtpServerStatus,
+  FtpClientInfo,
+  FtpClientEvent,
+} from '@qserial/shared';
 
 interface QSerialAPI {
   connection: {
@@ -93,12 +106,34 @@ interface QSerialAPI {
   };
 
   mcp: {
-    start: (port: number, listenAddress?: string, authPassword?: string, autoStart?: boolean) => Promise<void>;
+    start: (
+      port: number,
+      listenAddress?: string,
+      authPassword?: string,
+      autoStart?: boolean
+    ) => Promise<void>;
     stop: (autoStart?: boolean) => Promise<void>;
     getStatus: () => Promise<McpServerStatus>;
     onStatusChange: (callback: (event: { running: boolean; port: number }) => void) => () => void;
-    onConnectionCreated: (callback: (event: { connectionId: string; type: string; name: string; path?: string; host?: string; savedSessionId?: string }) => void) => () => void;
-    onShareChanged: (callback: (event: { shareId: string; running: boolean; sourceId?: string; localPort?: number; listenAddress?: string }) => void) => () => void;
+    onConnectionCreated: (
+      callback: (event: {
+        connectionId: string;
+        type: string;
+        name: string;
+        path?: string;
+        host?: string;
+        savedSessionId?: string;
+      }) => void
+    ) => () => void;
+    onShareChanged: (
+      callback: (event: {
+        shareId: string;
+        running: boolean;
+        sourceId?: string;
+        localPort?: number;
+        listenAddress?: string;
+      }) => void
+    ) => () => void;
   };
 
   // 网络

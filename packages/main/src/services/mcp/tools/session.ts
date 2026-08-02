@@ -57,7 +57,9 @@ export const sessionHandlers: Record<string, ToolHandler> = {
     if (connId && !type) {
       const { ConnectionFactory } = await import('../../connection/factory.js');
       const conn = ConnectionFactory.get(connId);
-      if (conn) { type = conn.type; }
+      if (conn) {
+        type = conn.type;
+      }
     }
     if (!name) return '错误: 未提供 name 参数';
     if (!type) return '错误: 未提供 type 参数';

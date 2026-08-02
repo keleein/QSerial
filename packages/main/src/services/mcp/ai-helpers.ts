@@ -8,15 +8,17 @@ type AtField = Record<string, string>;
 /** Strip ANSI escape sequences from terminal output */
 export function stripAnsi(text: string): string {
   if (!text) return text;
-  return text
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b\][^\x07]*\x07/g, '')       // OSC terminated by BEL
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b\][^\x1b]*\x1b\\/g, '')     // OSC terminated by ST
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, '') // CSI: \x1b[...final
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b[@-Z^_]/g, '');             // Other escape sequences
+  return (
+    text
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b\][^\x07]*\x07/g, '') // OSC terminated by BEL
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b\][^\x1b]*\x1b\\/g, '') // OSC terminated by ST
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, '') // CSI: \x1b[...final
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b[@-Z^_]/g, '')
+  ); // Other escape sequences
 }
 
 /** Extract shell prompt text from terminal output */
@@ -81,10 +83,20 @@ export function parseAtResponse(output: string): { result: string; fields: AtFie
   let result = 'unknown';
   for (const line of output.split('\n')) {
     const trimmed = line.trim();
-    if (trimmed === 'OK') { result = 'OK'; continue; }
-    if (trimmed === 'ERROR') { result = 'ERROR'; continue; }
+    if (trimmed === 'OK') {
+      result = 'OK';
+      continue;
+    }
+    if (trimmed === 'ERROR') {
+      result = 'ERROR';
+      continue;
+    }
     const m = trimmed.match(/^\+(\w+):\s*(.*)/);
-    if (m) { const obj: AtField = {}; obj[m[1]] = m[2]; fields.push(obj); }
+    if (m) {
+      const obj: AtField = {};
+      obj[m[1]] = m[2];
+      fields.push(obj);
+    }
   }
   return { result, fields };
 }

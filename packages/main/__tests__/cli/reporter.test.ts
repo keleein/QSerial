@@ -25,9 +25,7 @@ function makeResult(overrides: Partial<TestResult> = {}): TestResult {
 
 describe('toJUnitXml', () => {
   it('should produce valid XML with single passing test', () => {
-    const xml = toJUnitXml([
-      makeResult({ name: 'AT Test' }),
-    ]);
+    const xml = toJUnitXml([makeResult({ name: 'AT Test' })]);
 
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain('<testsuites');
@@ -111,10 +109,7 @@ describe('toJUnitXml', () => {
   });
 
   it('should produce well-formed XML closing tags', () => {
-    const xml = toJUnitXml([
-      makeResult(),
-      makeResult({ name: 'Test 2' }),
-    ]);
+    const xml = toJUnitXml([makeResult(), makeResult({ name: 'Test 2' })]);
 
     expect(xml.endsWith('</testsuites>\n')).toBe(true);
     const openSuites = (xml.match(/<testsuites/g) || []).length;
@@ -149,9 +144,7 @@ describe('toJUnitXml', () => {
 
 describe('toJsonReport', () => {
   it('should produce valid JSON with summary', () => {
-    const json = toJsonReport([
-      makeResult({ name: 'AT Test', duration_ms: 150 }),
-    ]);
+    const json = toJsonReport([makeResult({ name: 'AT Test', duration_ms: 150 })]);
 
     const parsed = JSON.parse(json);
     expect(parsed.total_tests).toBe(1);
@@ -186,7 +179,14 @@ describe('toJsonReport', () => {
         failed_count: 1,
         steps: [
           { step: 1, description: 'step1', passed: true, output: 'OK', duration_ms: 10 },
-          { step: 2, description: 'step2', passed: false, output: '', duration_ms: 20, error: 'timeout' },
+          {
+            step: 2,
+            description: 'step2',
+            passed: false,
+            output: '',
+            duration_ms: 20,
+            error: 'timeout',
+          },
         ],
       }),
     ]);

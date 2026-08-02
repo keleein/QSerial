@@ -47,7 +47,9 @@ function isLinux(): boolean {
  * 执行特权命令（通过 pkexec 弹出密码对话框，或回退到 sudo）
  * 返回 { success, stdout, stderr }
  */
-function execPrivileged(args: string[]): Promise<{ success: boolean; stdout: string; stderr: string }> {
+function execPrivileged(
+  args: string[]
+): Promise<{ success: boolean; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
     // 优先使用 pkexec（有 GUI 密码对话框），回退到 sudo
     const cmd = 'pkexec';
@@ -60,8 +62,12 @@ function execPrivileged(args: string[]): Promise<{ success: boolean; stdout: str
     let stdout = '';
     let stderr = '';
 
-    child.stdout?.on('data', (d: Buffer) => { stdout += d.toString(); });
-    child.stderr?.on('data', (d: Buffer) => { stderr += d.toString(); });
+    child.stdout?.on('data', (d: Buffer) => {
+      stdout += d.toString();
+    });
+    child.stderr?.on('data', (d: Buffer) => {
+      stderr += d.toString();
+    });
 
     child.on('close', (code) => {
       resolve({ success: code === 0, stdout, stderr });
@@ -79,7 +85,7 @@ function execPrivileged(args: string[]): Promise<{ success: boolean; stdout: str
  * 需要 root 权限，会通过 pkexec 弹出密码对话框
  */
 export async function ensureUdevRules(): Promise<boolean> {
-  if (!isLinux()) return true;  // 非 Linux 无需处理
+  if (!isLinux()) return true; // 非 Linux 无需处理
   if (udevInstalled) return true;
   if (udevInstallAttempted) return udevInstalled;
 
@@ -93,7 +99,9 @@ export async function ensureUdevRules(): Promise<boolean> {
         return true;
       }
     }
-  } catch { /* 权限不足无法读取，继续安装 */ }
+  } catch {
+    /* 权限不足无法读取，继续安装 */
+  }
 
   udevInstallAttempted = true;
 
@@ -106,12 +114,17 @@ export async function ensureUdevRules(): Promise<boolean> {
 
     // 路径来自 app.getPath('userData')，不含用户输入，安全
     const result = await execPrivileged([
-      'bash', '-c',
+      'bash',
+      '-c',
       `cp "${tmpFile}" "${UDEV_RULES_FILE}" && udevadm control --reload-rules && udevadm trigger`,
     ]);
 
     // 清理临时文件
-    try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(tmpFile);
+    } catch {
+      /* ignore */
+    }
 
     if (result.success) {
       udevInstalled = true;
@@ -132,7 +145,7 @@ export async function ensureUdevRules(): Promise<boolean> {
  * 使当前设备可立即访问，无需安装 udev 规则或重新插拔
  */
 export async function fixDevicePermission(devicePath: string): Promise<boolean> {
-  if (!isLinux()) return true;  // 非 Linux 无需处理
+  if (!isLinux()) return true; // 非 Linux 无需处理
 
   // 只在设备确实存在且无权限时尝试
   try {

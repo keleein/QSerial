@@ -5,11 +5,7 @@
  */
 
 import * as net from 'node:net';
-import {
-  ConnectionType,
-  ConnectionState,
-  ConnectionServerOptions,
-} from '@qserial/shared';
+import { ConnectionType, ConnectionState, ConnectionServerOptions } from '@qserial/shared';
 import type { IConnection } from '@qserial/shared';
 import { ConnectionFactory } from './factory.js';
 import {
@@ -119,7 +115,9 @@ export class ConnectionServerConnection implements IConnection {
     if (this.ownsSharedConnection && this.sharedConnection) {
       try {
         await ConnectionFactory.destroy(this.sharedConnection.id);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     this.sharedConnection = null;
     this.ownsSharedConnection = false;
@@ -164,7 +162,12 @@ export class ConnectionServerConnection implements IConnection {
         if (this.sourceCheckTimer) clearTimeout(this.sourceCheckTimer);
         this.sourceCheckTimer = setTimeout(() => {
           this.sourceCheckTimer = null;
-          if (connRef && this.sharedConnection === connRef && connRef.state === ConnectionState.DISCONNECTED && !wasDown) {
+          if (
+            connRef &&
+            this.sharedConnection === connRef &&
+            connRef.state === ConnectionState.DISCONNECTED &&
+            !wasDown
+          ) {
             this.sourceConnectionDown = true;
             this._notifyClientsConnectionDown();
           }
@@ -241,26 +244,22 @@ export class ConnectionServerConnection implements IConnection {
         socket.on('data', (data) => {
           if (accessPassword && !clientInfo.authenticated) {
             const userData = processTelnetData(data, clientInfo);
-            processPasswordAuth(
-              userData, clientInfo, socket, accessPassword,
-              () => this.clients.delete(address),
+            processPasswordAuth(userData, clientInfo, socket, accessPassword, () =>
+              this.clients.delete(address)
             );
             return;
           }
 
-          const userData = processTelnetData(
-            data, clientInfo,
-            (opt, subData) => {
-              if (opt === OPT_TTYPE && subData.length > 1 && subData[0] === 0) {
-                // 终端类型信息接收，无需特殊处理
-              }
-              if (opt === OPT_NAWS && subData.length >= 4) {
-                const cols = (subData[0] << 8) | subData[1];
-                const rows = (subData[2] << 8) | subData[3];
-                this.sharedConnection?.resize(cols, rows);
-              }
-            },
-          );
+          const userData = processTelnetData(data, clientInfo, (opt, subData) => {
+            if (opt === OPT_TTYPE && subData.length > 1 && subData[0] === 0) {
+              // 终端类型信息接收，无需特殊处理
+            }
+            if (opt === OPT_NAWS && subData.length >= 4) {
+              const cols = (subData[0] << 8) | subData[1];
+              const rows = (subData[2] << 8) | subData[3];
+              this.sharedConnection?.resize(cols, rows);
+            }
+          });
           if (userData.length > 0) {
             this.writeQueue.push({ data: userData, clientId: address });
             this._processWriteQueue();
@@ -341,7 +340,9 @@ export class ConnectionServerConnection implements IConnection {
     if (this.ownsSharedConnection && this.sharedConnection) {
       try {
         await ConnectionFactory.destroy(this.sharedConnection.id);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
 
     this.sharedConnection = null;

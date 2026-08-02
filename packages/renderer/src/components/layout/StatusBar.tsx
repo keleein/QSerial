@@ -25,12 +25,11 @@ export const StatusBar: React.FC = () => {
   const { panelVisible, setPanelVisible, createSession, sessions: sftpSessions } = useSftpStore();
 
   const activeTab = tabs.find((t) => t.id === activeTabId);
-  const activeSession = activeTab?.activeSessionId
-    ? sessions[activeTab.activeSessionId]
-    : null;
+  const activeSession = activeTab?.activeSessionId ? sessions[activeTab.activeSessionId] : null;
 
   // 判断当前活动会话是否为 SSH 且已连接
-  const isSshConnected = activeSession?.connectionType === ConnectionType.SSH &&
+  const isSshConnected =
+    activeSession?.connectionType === ConnectionType.SSH &&
     activeSession.connectionState === ConnectionState.CONNECTED;
 
   // 打开 SFTP 面板
@@ -51,9 +50,7 @@ export const StatusBar: React.FC = () => {
   };
 
   // 获取正在进行的传输
-  const activeTransfer = transfers.find(
-    (t) => t.status === 'started' || t.status === 'progress'
-  );
+  const activeTransfer = transfers.find((t) => t.status === 'started' || t.status === 'progress');
 
   // 格式化文件大小
   const formatSize = (bytes?: number): string => {
@@ -68,22 +65,29 @@ export const StatusBar: React.FC = () => {
       {/* 左侧信息 */}
       <div className="flex items-center gap-3 min-w-0">
         {!activeSession && (
-          <span className="text-text-tertiary/60 truncate">{t("statusBar.disconnected")}</span>
+          <span className="text-text-tertiary/60 truncate">{t('statusBar.disconnected')}</span>
         )}
         {activeSession && (
           <>
             {/* 连接状态指示点 */}
-            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-              activeSession.connectionState === 'connected' ? 'bg-success' :
-              activeSession.connectionState === 'error' ? 'bg-error' : 'bg-warning'
-            }`} />
-            <span className={
-              activeSession.connectionState === 'connected'
-                ? 'text-success'
-                : activeSession.connectionState === 'error'
-                ? 'text-error'
-                : 'text-warning'
-            }>
+            <span
+              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                activeSession.connectionState === 'connected'
+                  ? 'bg-success'
+                  : activeSession.connectionState === 'error'
+                    ? 'bg-error'
+                    : 'bg-warning'
+              }`}
+            />
+            <span
+              className={
+                activeSession.connectionState === 'connected'
+                  ? 'text-success'
+                  : activeSession.connectionState === 'error'
+                    ? 'text-error'
+                    : 'text-warning'
+              }
+            >
               {CONNECTION_STATE_NAMES[activeSession.connectionState]}
             </span>
             <span className="w-px h-3.5 bg-border flex-shrink-0" />
@@ -93,8 +97,11 @@ export const StatusBar: React.FC = () => {
                 : (activeSession as { serialPath?: string }).serialPath || ''}
             </span>
             <span className="text-text-secondary/60 flex-shrink-0 font-mono">
-              {activeSession.connectionType === 'ssh' ? ':22' :
-               activeSession.connectionType === 'telnet' ? ':23' : ''}
+              {activeSession.connectionType === 'ssh'
+                ? ':22'
+                : activeSession.connectionType === 'telnet'
+                  ? ':23'
+                  : ''}
             </span>
             <span className="w-px h-3.5 bg-border flex-shrink-0" />
             <span className="text-text-secondary/60 flex-shrink-0 font-mono">
@@ -113,9 +120,25 @@ export const StatusBar: React.FC = () => {
             <span className="text-text-secondary text-xs">TFTP</span>
             <span className="flex-shrink-0">
               {activeTransfer.direction === 'download' ? (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v8M3 6l3 3 3-3" stroke="var(--color-primary)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M6 1v8M3 6l3 3 3-3"
+                    stroke="var(--color-primary)"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               ) : (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 9V1M3 4l3-3 3 3" stroke="var(--color-primary)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M6 9V1M3 4l3-3 3 3"
+                    stroke="var(--color-primary)"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               )}
             </span>
             <span className="truncate max-w-[100px]" title={activeTransfer.file}>
@@ -142,7 +165,7 @@ export const StatusBar: React.FC = () => {
           <div
             className="flex items-center gap-1 flex-shrink-0 ml-4 pl-4 border-l border-border cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => window.dispatchEvent(new CustomEvent('qserial:open-tftp'))}
-            title={t("statusBar.tftpRunning")}
+            title={t('statusBar.tftpRunning')}
           >
             <span className="w-2 h-2 rounded-full bg-success" />
             <span className="text-text-secondary">TFTP</span>
@@ -154,7 +177,7 @@ export const StatusBar: React.FC = () => {
           <div
             className="flex items-center gap-1 flex-shrink-0 ml-4 pl-4 border-l border-border cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => window.dispatchEvent(new CustomEvent('qserial:open-nfs'))}
-            title={t("statusBar.nfsRunning")}
+            title={t('statusBar.nfsRunning')}
           >
             <span className="w-2 h-2 rounded-full bg-success" />
             <span className="text-text-secondary">NFS</span>
@@ -166,7 +189,7 @@ export const StatusBar: React.FC = () => {
           <div
             className="flex items-center gap-1 flex-shrink-0 ml-4 pl-4 border-l border-border cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => window.dispatchEvent(new CustomEvent('qserial:open-ftp'))}
-            title={t("statusBar.ftpRunning")}
+            title={t('statusBar.ftpRunning')}
           >
             <span className="w-2 h-2 rounded-full bg-success" />
             <span className="text-text-secondary">FTP</span>
@@ -178,7 +201,7 @@ export const StatusBar: React.FC = () => {
           <div
             className="flex items-center gap-1 flex-shrink-0 ml-4 pl-4 border-l border-border cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => window.dispatchEvent(new CustomEvent('qserial:open-mcp'))}
-            title={t("statusBar.mcpRunning")}
+            title={t('statusBar.mcpRunning')}
           >
             <span className="w-2 h-2 rounded-full bg-success" />
             <span className="text-text-secondary">MCP</span>
@@ -195,9 +218,9 @@ export const StatusBar: React.FC = () => {
             className={`flex items-center gap-1 px-2 py-0.5 rounded hover:bg-hover transition-colors ${
               panelVisible ? 'bg-hover text-success' : 'text-text-secondary/60'
             }`}
-            title={t("sftp.openBrowser")}
+            title={t('sftp.openBrowser')}
           >
-            <span className="text-[11px] tracking-wide">{t("sidebar.fileTransfer")}</span>
+            <span className="text-[11px] tracking-wide">{t('sidebar.fileTransfer')}</span>
           </button>
         )}
         <button
@@ -207,7 +230,7 @@ export const StatusBar: React.FC = () => {
           共享
         </button>
         <span className="w-px h-3.5 bg-border flex-shrink-0" />
-        <span className="text-text-secondary/60">{t("app.version")}</span>
+        <span className="text-text-secondary/60">{t('app.version')}</span>
       </div>
     </div>
   );

@@ -107,7 +107,7 @@ describe('ConnectionFactory', () => {
           name: 'B',
           type: ConnectionType.PTY,
           shell: 'zsh',
-        }),
+        })
       ).rejects.toThrow('already exists');
     });
 
@@ -117,7 +117,7 @@ describe('ConnectionFactory', () => {
           id: 'bad',
           name: 'Bad',
           type: 'invalid' as ConnectionType,
-        } as any),
+        } as any)
       ).rejects.toThrow('Unsupported connection type');
     });
   });
@@ -137,17 +137,21 @@ describe('ConnectionFactory', () => {
     });
 
     it('should handle destroy on non-existent id gracefully', async () => {
-      await expect(
-        ConnectionFactory.destroy('nonexistent'),
-      ).resolves.toBeUndefined();
+      await expect(ConnectionFactory.destroy('nonexistent')).resolves.toBeUndefined();
     });
 
     it('should destroy all connections', async () => {
       await ConnectionFactory.create({
-        id: 'a', name: 'A', type: ConnectionType.PTY, shell: 'bash',
+        id: 'a',
+        name: 'A',
+        type: ConnectionType.PTY,
+        shell: 'bash',
       });
       await ConnectionFactory.create({
-        id: 'b', name: 'B', type: ConnectionType.PTY, shell: 'zsh',
+        id: 'b',
+        name: 'B',
+        type: ConnectionType.PTY,
+        shell: 'zsh',
       });
 
       await ConnectionFactory.destroyAll();
@@ -158,7 +162,10 @@ describe('ConnectionFactory', () => {
 
     it('should list all connections', async () => {
       await ConnectionFactory.create({
-        id: 'a', name: 'A', type: ConnectionType.PTY, shell: 'bash',
+        id: 'a',
+        name: 'A',
+        type: ConnectionType.PTY,
+        shell: 'bash',
       });
 
       const all = ConnectionFactory.getAll();

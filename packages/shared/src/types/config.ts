@@ -160,14 +160,13 @@ export const DEFAULT_CONFIG: AppConfig = {
     defaultListenAddress: '0.0.0.0',
   },
 
-
-	  mcp: {
-	    enabled: false,
-	    port: 9800,
-	    listenAddress: '127.0.0.1',
-	    authPassword: '',
+  mcp: {
+    enabled: false,
+    port: 9800,
+    listenAddress: '127.0.0.1',
+    authPassword: '',
     corsOrigins: [],
-	  },
+  },
   window: {
     width: 1200,
     height: 800,

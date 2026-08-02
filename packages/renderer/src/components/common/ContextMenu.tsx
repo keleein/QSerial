@@ -70,9 +70,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
             disabled={item.disabled}
             className={`
               w-full px-3 py-1.5 text-left text-sm
-              ${item.disabled
-                ? 'text-text-secondary cursor-not-allowed'
-                : 'hover:bg-hover'}
+              ${item.disabled ? 'text-text-secondary cursor-not-allowed' : 'hover:bg-hover'}
             `}
           >
             {item.label}

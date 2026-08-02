@@ -49,7 +49,13 @@ interface TerminalState {
   renameTab: (tabId: string, name: string) => void;
 
   // Session 操作
-  createSession: (connectionId: string, type: ConnectionType, serialPath?: string, host?: string, savedSessionId?: string) => string;
+  createSession: (
+    connectionId: string,
+    type: ConnectionType,
+    serialPath?: string,
+    host?: string,
+    savedSessionId?: string
+  ) => string;
   closeSession: (sessionId: string) => void;
   updateSessionState: (sessionId: string, state: ConnectionState) => void;
   updateSessionSize: (sessionId: string, cols: number, rows: number) => void;
@@ -107,9 +113,12 @@ export const useTerminalStore = create<TerminalState>()(
               console.error('Failed to destroy connection:', err);
             });
             // 同步关闭对应的 SFTP 会话
-            useSftpStore.getState().destroySessionByConnection(session.connectionId).catch((err) => {
-              console.error('Failed to destroy SFTP session:', err);
-            });
+            useSftpStore
+              .getState()
+              .destroySessionByConnection(session.connectionId)
+              .catch((err) => {
+                console.error('Failed to destroy SFTP session:', err);
+              });
           }
           delete state.sessions[sessionId];
         });
@@ -187,9 +196,12 @@ export const useTerminalStore = create<TerminalState>()(
             console.error('Failed to destroy connection:', err);
           });
           // 同步关闭对应的 SFTP 会话
-          useSftpStore.getState().destroySessionByConnection(session.connectionId).catch((err) => {
-            console.error('Failed to destroy SFTP session:', err);
-          });
+          useSftpStore
+            .getState()
+            .destroySessionByConnection(session.connectionId)
+            .catch((err) => {
+              console.error('Failed to destroy SFTP session:', err);
+            });
         }
         delete state.sessions[sessionId];
         for (let i = state.tabs.length - 1; i >= 0; i--) {
@@ -239,7 +251,12 @@ export const useTerminalStore = create<TerminalState>()(
       if (!session) return sessionId;
 
       // 创建新的 Session (复用相同连接配置)
-      const newSessionId = state.createSession(session.connectionId, session.connectionType, session.serialPath, session.host);
+      const newSessionId = state.createSession(
+        session.connectionId,
+        session.connectionType,
+        session.serialPath,
+        session.host
+      );
 
       set((s) => {
         const tab = s.tabs.find((t) => t.sessions.includes(sessionId));
@@ -273,8 +290,8 @@ export const useTerminalStore = create<TerminalState>()(
           tabName: tab?.name?.slice(0, 20),
           tabSessionCount: tab?.sessions?.length,
           currentActiveTabId: (state.activeTabId as string)?.slice(0, 8),
-          allTabIds: state.tabs.map(t => t.id.slice(0, 8)),
-          allSessionIds: Object.keys(state.sessions).map(s => s.slice(0, 8)),
+          allTabIds: state.tabs.map((t) => t.id.slice(0, 8)),
+          allSessionIds: Object.keys(state.sessions).map((s) => s.slice(0, 8)),
         });
         if (session) {
           // 异步关闭连接
@@ -282,9 +299,12 @@ export const useTerminalStore = create<TerminalState>()(
             console.error('Failed to destroy connection:', err);
           });
           // 同步关闭对应的 SFTP 会话
-          useSftpStore.getState().destroySessionByConnection(session.connectionId).catch((err) => {
-            console.error('Failed to destroy SFTP session:', err);
-          });
+          useSftpStore
+            .getState()
+            .destroySessionByConnection(session.connectionId)
+            .catch((err) => {
+              console.error('Failed to destroy SFTP session:', err);
+            });
         }
         delete state.sessions[sessionId];
 
