@@ -86,7 +86,7 @@ function waitForPort(port, timeout = 30000) {
   });
 }
 
-// 鏋勫缓鍏变韩鍖?
+// 构建共享包
 console.log('Building shared package...');
 const buildShared = trackedSpawn('pnpm', ['build:shared'], {
   cwd: path.join(__dirname, '..'),
@@ -100,7 +100,7 @@ buildShared.on('close', (code) => {
     return;
   }
 
-  // 鏋勫缓涓昏繘绋?
+  // 构建主进程
   console.log('Building main process...');
   const buildMain = trackedSpawn('pnpm', ['build:main'], {
     cwd: path.join(__dirname, '..'),
@@ -115,16 +115,16 @@ buildShared.on('close', (code) => {
     }
 
     if (isDev) {
-      // 寮€鍙戞ā寮忥細鍚姩 Vite 鍜?Electron
+      // 开发模式：启动 Vite 和 Electron
       console.log('Starting development servers...');
 
-      // 鍚姩娓叉煋杩涚▼寮€鍙戞湇鍔″櫒
+      // 启动渲染进程开发服务器
       const vite = trackedSpawn('pnpm', ['dev:renderer'], {
         cwd: path.join(__dirname, '..'),
         shell: true,
       });
 
-      // 绛夊緟 Vite 鍚姩鍚庡惎鍔?Electron
+      // 等待 Vite 启动后启动 Electron
       waitForPort(VITE_PORT).then(() => {
         console.log(`Vite ready on port ${VITE_PORT}, starting Electron...`);
         const electron = trackedSpawn('electron', ['packages/main/dist/index.js'], {
@@ -144,7 +144,7 @@ buildShared.on('close', (code) => {
         cleanupAll();
       });
     } else {
-      // 鐢熶骇妯″紡锛氭瀯寤烘覆鏌撹繘绋?
+      // 生产模式：构建渲染进程
       console.log('Building renderer...');
       const buildRenderer = trackedSpawn('pnpm', ['build:renderer'], {
         cwd: path.join(__dirname, '..'),
